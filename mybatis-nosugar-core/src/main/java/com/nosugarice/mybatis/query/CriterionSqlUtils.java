@@ -47,19 +47,27 @@ public class CriterionSqlUtils {
         if (CollectionUtils.isEmpty(groupCriterions)) {
             return SqlPart.EMPTY;
         }
+        String sql;
         if (groupCriterions.size() == 1) {
-            return criterionsToSql.apply(groupCriterions.get(0).getCriterions());
+            sql = criterionsToSql.apply(groupCriterions.get(0).getCriterions());
         } else {
             StringBuilder whereSqlBuilder = new StringBuilder();
             for (GroupCriterion groupCriterion : groupCriterions) {
                 String criterionSql = criterionsToSql.apply(groupCriterion.getCriterions());
-                StringJoiner sqlPart = new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name() + "(", ")");
+                StringJoiner sqlPart = groupCriterion.getCriterions().size() > 1
+                        ? new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name() + "(", ")")
+                        : new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name(), SqlPart.SPACE);
                 sqlPart.add(StringUtils.trim(criterionSql, Arrays.asList(Criterion.Separator.AND.name()
                         , Criterion.Separator.OR.name()), null));
                 whereSqlBuilder.append(sqlPart);
             }
-            return whereSqlBuilder.toString();
+            sql = whereSqlBuilder.toString();
         }
+        if (sql.contains(Criterion.Separator.OR.name())) {
+            sql = Criterion.Separator.AND.name() + "( " + StringUtils.trim(sql, Arrays.asList(Criterion.Separator.AND.name()
+                    , Criterion.Separator.OR.name()), null) + ")";
+        }
+        return sql;
     }
 
 }

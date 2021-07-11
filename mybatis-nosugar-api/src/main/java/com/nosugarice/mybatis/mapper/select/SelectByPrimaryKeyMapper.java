@@ -23,6 +23,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -38,7 +39,7 @@ public interface SelectByPrimaryKeyMapper<T, ID> extends PrimaryKeyMapper, Selec
      */
     @SupportedFunction(supportPrimaryKey = true)
     @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.SELECT_BY_ID)
-    T selectById(ID id);
+    Optional<T> selectById(ID id);
 
     /**
      * 根据 id 集合查询符合条件的所有实体

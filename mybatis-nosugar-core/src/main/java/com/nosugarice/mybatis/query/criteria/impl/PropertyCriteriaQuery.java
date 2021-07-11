@@ -26,12 +26,16 @@ import java.util.function.Function;
  */
 public class PropertyCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
 
+    public PropertyCriteriaQuery(Class<T> entityClass) {
+        super(entityClass);
+    }
+
     public PropertyCriteriaQuery(T entity) {
         super(entity);
     }
 
     @Override
     public Function<String, String> convert() {
-        return property -> MetadataCache.getColumnByProperty(getEntity().getClass(), property);
+        return property -> MetadataCache.getColumnByProperty(getEntityClass(), property);
     }
 }

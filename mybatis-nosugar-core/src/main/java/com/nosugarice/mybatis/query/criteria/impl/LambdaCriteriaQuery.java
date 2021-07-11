@@ -38,7 +38,7 @@ public class LambdaCriteriaQuery<T> extends AbstractCriteriaQuery<T, FunS.Getter
     public Function<FunS.Getter<T, ?>, String> convert() {
         return getter -> Optional.of(getter)
                 .map(LambdaCriteriaQuery::getPropertyName)
-                .map(property -> MetadataCache.getColumnByProperty(getEntity().getClass(), property))
+                .map(property -> MetadataCache.getColumnByProperty(getEntityClass(), property))
                 .orElseThrow(() -> new NullPointerException("未找到属性对应的列信息!"));
     }
 

@@ -35,11 +35,11 @@ public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper
     /**
      * 判断是否存在
      *
-     * @param entity 实体参数
+     * @param criteria 查询条件封装
      * @return 是否存在
      */
-    default boolean exists(T entity) {
-        return count(entity) > 0;
+    default boolean exists(EntityCriteriaQuery<T> criteria) {
+        return count(criteria) > 0;
     }
 
     /**
@@ -91,17 +91,6 @@ public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper
     }
 
     /**
-     * 查询第一条记录
-     *
-     * @param entity 实体参数
-     * @return 一条记录
-     */
-    default T selectFist(T entity) {
-        List<T> list = selectListByQuantity(entity, 1);
-        return (list == null || list.isEmpty()) ? null : list.get(0);
-    }
-
-    /**
      * 查询指定数量条记录
      *
      * @param entity   实体参数
@@ -110,7 +99,7 @@ public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper
      */
     default List<T> selectListByQuantity(T entity, int quantity) {
         Page<T> page = new PageImpl<>(quantity);
-        page = selectPage(entity, Integer.MAX_VALUE, page);
+        page = selectPage(entity, page);
         return page.getContent();
     }
 
@@ -139,18 +128,6 @@ public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper
     /**
      * 分页查询
      *
-     * @param entity 实体参数
-     * @param count  总记录数
-     * @param page   分页参数
-     * @return 分页数据
-     */
-    default Page<T> selectPage(T entity, long count, Page<T> page) {
-        return selectPage(new SimpleCriteriaQuery<>(entity), count, page);
-    }
-
-    /**
-     * 分页查询
-     *
      * @param criteria 查询参数
      * @param page     分页参数
      * @return 分页数据
@@ -158,20 +135,6 @@ public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper
     default Page<T> selectPage(EntityCriteriaQuery<T> criteria, Page<T> page) {
         return selectPage(criteria, page, this::count, this::selectListLimit);
     }
-
-    /**
-     * 分页查询
-     *
-     * @param criteria 查询参数
-     * @param count    总记录数
-     * @param page     分页参数
-     * @return 分页数据
-     */
-    default Page<T> selectPage(EntityCriteriaQuery<T> criteria, long count, Page<T> page) {
-        Function<EntityCriteriaQuery<T>, Long> countFunction = e -> count;
-        return selectPage(criteria, page, countFunction, this::selectListLimit);
-    }
-
 
     /**
      * 分页查询

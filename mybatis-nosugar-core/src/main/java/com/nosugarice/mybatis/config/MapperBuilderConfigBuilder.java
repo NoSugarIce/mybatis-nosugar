@@ -166,8 +166,8 @@ public class MapperBuilderConfigBuilder {
 
     @SuppressWarnings("unchecked")
     private void setIdGeneratorTypes(Consumer<Map<String, IdGenerator<?>>> action) {
-        Map<String, String> map = (Map<String, String>) properties.get(RELATIONAL_CONFIG_ID_GENERATOR_TYPES);
-        if (map != null && !map.isEmpty()) {
+        Map<String, String> map = getSimpleMapByProperties(properties, RELATIONAL_CONFIG_ID_GENERATOR_TYPES);
+        if (!map.isEmpty()) {
             Map<String, IdGenerator<?>> mapValue = new HashMap<>();
             map.forEach((name, className) -> {
                 try {
@@ -195,6 +195,40 @@ public class MapperBuilderConfigBuilder {
             action.accept(bean);
         }
         return bean;
+    }
+
+    /**
+     * 获取map 的简单实现
+     *
+     * @param properties
+     * @param key
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getSimpleMapByProperties(Properties properties, String key) {
+        Map<String, String> map = (Map<String, String>) properties.get(RELATIONAL_CONFIG_ID_GENERATOR_TYPES);
+        if (map == null) {
+            map = new HashMap<>();
+        }
+        if (!map.isEmpty()) {
+            return map;
+        }
+        for (String stringPropertyName : properties.stringPropertyNames()) {
+            if (stringPropertyName.startsWith(key)) {
+                String substring = stringPropertyName.substring(key.length());
+                if (substring.startsWith(".")) {
+                    substring = substring.substring(1);
+                } else if (substring.startsWith("[") && substring.endsWith("]")) {
+                    substring = substring.substring(1, substring.length() - 1);
+                } else {
+                    substring = null;
+                }
+                if (substring != null) {
+                    map.put(substring, properties.getProperty(stringPropertyName));
+                }
+            }
+        }
+        return map;
     }
 
 }

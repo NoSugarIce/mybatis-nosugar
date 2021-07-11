@@ -18,7 +18,6 @@ package com.nosugarice.mybatis.mapper.select;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -33,7 +32,7 @@ public interface DefaultSelectByPrimaryKeyMapper<T, ID> extends SelectByPrimaryK
      * @return 是否存在
      */
     default boolean existsById(ID id) {
-        return Objects.nonNull(selectById(id));
+        return selectById(id).isPresent();
     }
 
     /**

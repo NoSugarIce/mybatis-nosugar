@@ -107,8 +107,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 Placeholder.FROM_WITH_ALIAS + LINE_SEPARATOR +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 entitySqlPart.selectParameter +
-                entitySqlPart.selectParameterLogicDelete +
                 "${criteria.criterionSql}\n" +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n" +
                 "${criteria.groupSql}\n" +
                 "${criteria.havingSql}\n" +
@@ -170,8 +170,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND\">\n" +
                 entitySqlPart.updatePrimaryKeyColumn +
-                entitySqlPart.updateParameterLogicDelete +
                 entitySqlPart.selectParameterVersion +
+                entitySqlPart.updateParameterLogicDelete +
                 "</trim>";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -184,8 +184,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND\">\n" +
                 entitySqlPart.updatePrimaryKeyColumn +
-                entitySqlPart.updateParameterLogicDelete +
                 entitySqlPart.selectParameterVersion +
+                entitySqlPart.updateParameterLogicDelete +
                 "</trim>";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -198,8 +198,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND\">\n" +
                 entitySqlPart.updatePrimaryKeyColumn +
-                entitySqlPart.updateParameterLogicDelete +
                 entitySqlPart.selectParameterVersionNullable +
+                entitySqlPart.updateParameterLogicDelete +
                 "</trim>";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -213,9 +213,9 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 entitySqlPart.selectParameter +
-                entitySqlPart.selectParameterLogicDelete +
-                entitySqlPart.selectParameterVersion +
                 "${criteria.criterionSql}\n" +
+                entitySqlPart.selectParameterVersion +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -229,9 +229,9 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 entitySqlPart.selectParameter +
-                entitySqlPart.selectParameterLogicDelete +
-                entitySqlPart.selectParameterVersionNullable +
                 "${criteria.criterionSql}\n" +
+                entitySqlPart.selectParameterVersionNullable +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -268,8 +268,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 entitySqlPart.deleteHead +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 entitySqlPart.selectParameter +
-                entitySqlPart.selectParameterLogicDelete +
                 "${criteria.criterionSql}\n" +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -315,8 +315,8 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 "</trim>\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 entitySqlPart.selectParameter +
-                entitySqlPart.selectParameterLogicDelete +
                 "${criteria.criterionSql}\n" +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -330,6 +330,7 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 Placeholder.FROM_TABLE + "\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 Placeholder.JPA_WHERE + "\n" +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -340,6 +341,7 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
                 Placeholder.FROM_TABLE + "\n" +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 Placeholder.JPA_WHERE +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>";
         return sqlRender.renderWithTableAlias(sql, false);
     }
@@ -349,6 +351,7 @@ public class SqlTempLateServiceImpl implements SqlTempLateService, SqlPart {
         String sql = entitySqlPart.deleteHead +
                 "<trim prefix=\"WHERE\" prefixOverrides=\"AND|OR\">\n" +
                 Placeholder.JPA_WHERE + "\n" +
+                entitySqlPart.selectParameterLogicDelete +
                 "</trim>\n";
         return sqlRender.renderWithTableAlias(sql, false);
     }

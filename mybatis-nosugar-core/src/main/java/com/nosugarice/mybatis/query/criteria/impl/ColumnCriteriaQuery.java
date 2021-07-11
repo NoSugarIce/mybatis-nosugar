@@ -24,6 +24,10 @@ import java.util.function.Function;
  */
 public class ColumnCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
 
+    public ColumnCriteriaQuery(Class<T> entityClass) {
+        super(entityClass);
+    }
+
     public ColumnCriteriaQuery(T entity) {
         super(entity);
     }

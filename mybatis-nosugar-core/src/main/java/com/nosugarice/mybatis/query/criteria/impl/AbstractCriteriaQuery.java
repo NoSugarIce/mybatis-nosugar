@@ -50,7 +50,9 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractCriteriaQuery<T, C> implements EntityCriteriaQuery<T>, CriteriaQuery<T, C> {
 
-    private final T entity;
+    private final Class<?> entityClass;
+
+    private T entity;
 
     private boolean distinct;
 
@@ -73,7 +75,12 @@ public abstract class AbstractCriteriaQuery<T, C> implements EntityCriteriaQuery
 
     private Sort sort;
 
+    public AbstractCriteriaQuery(Class<T> entityClass) {
+        this.entityClass = entityClass;
+    }
+
     public AbstractCriteriaQuery(T entity) {
+        this.entityClass = entity.getClass();
         this.entity = entity;
     }
 
@@ -191,13 +198,13 @@ public abstract class AbstractCriteriaQuery<T, C> implements EntityCriteriaQuery
     @Override
     public String getChooseResultSql() {
         if (CollectionUtils.isNotEmpty(excludeColumns)) {
-            return MetadataCache.getPropertyCaches(entity.getClass()).stream()
+            return MetadataCache.getPropertyCaches(getEntityClass()).stream()
                     .filter(propertyCache -> !excludeColumns.contains(propertyCache.getColumn()))
                     .map(MetadataCache.PropertyCache::getResultItem)
                     .collect(Collectors.joining(",", "", ","));
         }
         if (CollectionUtils.isNotEmpty(includeColumns)) {
-            Map<String, MetadataCache.PropertyCache> columnSqlPartMap = MetadataCache.getPropertyCaches(entity.getClass()).stream()
+            Map<String, MetadataCache.PropertyCache> columnSqlPartMap = MetadataCache.getPropertyCaches(getEntityClass()).stream()
                     .collect(Collectors.toMap(MetadataCache.PropertyCache::getColumn, Function.identity()));
             return includeColumns.stream()
                     .map(column -> columnSqlPartMap.containsKey(column) ? columnSqlPartMap.get(column).getResultItem() : column)
@@ -222,7 +229,7 @@ public abstract class AbstractCriteriaQuery<T, C> implements EntityCriteriaQuery
     @Override
     public String getCriterionSql() {
         criterionParameter = new HashMap<>();
-        PropertyCriterionVisitor<String> visitor = new DefaultRenderPlaceholderVisitor(entity.getClass(), criterionParameter);
+        PropertyCriterionVisitor<String> visitor = new DefaultRenderPlaceholderVisitor(getEntityClass(), criterionParameter);
         return CriterionSqlUtils.getCriterionSql(visitor, groupCriterions);
     }
 
@@ -249,4 +256,7 @@ public abstract class AbstractCriteriaQuery<T, C> implements EntityCriteriaQuery
         }
     }
 
+    public Class<?> getEntityClass() {
+        return entityClass;
+    }
 }

@@ -113,19 +113,19 @@ public interface PredicateCondition<T, C> extends Where<T, C>, CriterionBuilder<
     }
 
     default CriteriaQuery<T, C> likeBefore(C column, String value) {
-        return addCriterion(true, buildLike(column, value));
+        return addCriterion(true, buildLikeBefore(column, value));
     }
 
     default CriteriaQuery<T, C> notLikeBefore(C column, String value) {
-        return addCriterion(true, buildNotLike(column, value));
+        return addCriterion(true, buildNotLikeBefore(column, value));
     }
 
     default CriteriaQuery<T, C> likeAfter(C column, String value) {
-        return addCriterion(true, buildLike(column, value));
+        return addCriterion(true, buildLikeAfter(column, value));
     }
 
     default CriteriaQuery<T, C> notLikeAfter(C column, String value) {
-        return addCriterion(true, buildNotLike(column, value));
+        return addCriterion(true, buildNotLikeAfter(column, value));
     }
 
 }
