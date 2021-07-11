@@ -100,11 +100,16 @@ NoSugar项目Maven引用Spring相关的依赖作用范围是`provided`,使用时
 
 后续会添加到[maven中央仓库](https://mvnrepository.com/)
 
-### 全新使用
+- ### 全新使用
 
 只需要在原来`Mybatis-Spring`配置的基础上把`factoryBean`替换成NoSugar中的`MybatisMapperFactoryBean`,即可体验所有功能.
 
 ##### 基于`@MapperScan`注解
+
+应用环境
+
+- 配置了注解扫描的Spring环境
+- Spring-boot
 
 ```java
 @MapperScan(basePackages = {"com.xxx"}, sqlSessionFactoryRef = "xxx", factoryBean = MybatisMapperFactoryBean.class)
@@ -113,6 +118,11 @@ public class MyBatisBizarkPostConfiguration {
 ```
 
 ##### 基于`@Bean`
+
+应用环境
+
+- 配置了注解扫描的Spring环境
+- Spring-boot
 
 ```java
 @Bean
@@ -127,17 +137,26 @@ public MapperScannerConfigurer mapperScannerConfigurer() {
 
 ##### 基于`spring.xml`
 
+应用环境
+
+- 基于Xml配置的Spring环境
+
 ```xml
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-    <property name="basePackage" value="com.xxx"/>
+    <property name="basePackage" value="com.bizark.post.dao.mapper.post"/>
     <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     <property name="mapperFactoryBeanClass" value="MybatisMapperFactoryBean"/>
 </bean>
 ```
 
-### 增强使用
+- ### 增强使用
 
 和其他Mybatis框架同时存在.
+
+应用环境
+
+- 配置了注解扫描的Spring环境
+- Spring-boot
 
 ##### 受限功能
 
@@ -152,24 +171,63 @@ public class MyBatisConfiguration {
 
 ###### 注意:
 
-增强使用模式部分功能受限,`MapperProvider`是从已经配置Mybatis环境中寻找相匹配的Mapper,并不是从项目中.`BaseMapper`内置了基础的方法,有可能因为主键,软删除等配置有的内置的方法是用不到的,这个时候可以参考`BaseMapper`实现自己的基础`Mapper`.
+增强使用模式部分功能受限,`MapperProvider`是从已经配置Mybatis环境中寻找相匹配的Mapper,并不是从项目中.
+
+
+
+### 继承基础功能Mapper接口类
+
+`BaseMapper`内置了基础的方法,有可能因为主键,软删除等配置有的内置的方法是失效的,这个时候可以参考`BaseMapper`实现自己的基础`Mapper`.
+
+| Mapper接口                                              | 支持的功能         |
+| ------------------------------------------------------- | ------------------ |
+| com.nosugarice.mybatis.mapper.BaseMapper                | 默认继承了所有功能 |
+| com.nosugarice.mybatis.mapper.select.SelectPageMapper   | 分页,Count查询     |
+| com.nosugarice.mybatis.mapper.function.MethodNameMapper | 根据方法名查询     |
+
+Mapper接口
+
+```java
+import com.nosugarice.mybatis.annotation.SpeedBatch;
+import com.nosugarice.mybatis.mode.Student;
+
+/**
+ * @author dingjingyang@foxmail.com
+ * @date 2021-6-8
+ */
+@SpeedBatch
+public interface StudentMapper extends BaseMapper<Student, String> {
+}
+```
+
 
 ## 使用参考
 
 待续...
 
 - 示例基础数据
+
 - 配置
-- 增删改查
-- 查询条件构造
+
 - 插入时主键策略
-- 软删除
-- 乐观锁
-- 动态表名
-- 批处理增强模式
-- 全新分页
-- 全新Count查询
+
+- 增删改查
+
+- 查询条件构造
+
 - 根据方法名实现查询
+
+- 全新Count查询
+
+- 全新分页
+
+- 软删除
+
+- 乐观锁
+
+- 动态表名
+
+- 批处理增强模式
 
 
 ## 计划或非计划
@@ -183,6 +241,8 @@ public class MyBatisConfiguration {
 当前版本仅是样例版,功能测试还没完成
 
 当前测试环境是MySql,其他数据库暂未开始测试
+
+如果有类名或方法名等命名闹笑话的请勿介意,作者英语不及格
 
 ...
 
