@@ -31,5 +31,6 @@ public class DialectRegistry extends BeanRegistry<Dialect> {
         register("SQLSERVER2012", SqlServer2012Dialect.class);
         register("POSTGRESQL", PostgreSqlDialect.class);
         register("DB2", DB2Dialect.class);
+        register("HSQL DATABASE ENGINE", HSQLDialect.class);
     }
 }

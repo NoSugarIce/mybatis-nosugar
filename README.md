@@ -113,7 +113,7 @@ NoSugar项目Maven引用Spring相关的依赖作用范围是`provided`,使用时
 
 ```java
 @MapperScan(basePackages = {"com.xxx"}, sqlSessionFactoryRef = "xxx", factoryBean = MybatisMapperFactoryBean.class)
-public class MyBatisBizarkPostConfiguration {
+public class MyBatisConfiguration {
 }
 ```
 
@@ -143,7 +143,7 @@ public MapperScannerConfigurer mapperScannerConfigurer() {
 
 ```xml
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-    <property name="basePackage" value="com.bizark.post.dao.mapper.post"/>
+    <property name="basePackage" value="com.xxx"/>
     <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     <property name="mapperFactoryBeanClass" value="MybatisMapperFactoryBean"/>
 </bean>

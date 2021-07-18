@@ -55,7 +55,7 @@ public class CriterionSqlUtils {
             for (GroupCriterion groupCriterion : groupCriterions) {
                 String criterionSql = criterionsToSql.apply(groupCriterion.getCriterions());
                 StringJoiner sqlPart = groupCriterion.getCriterions().size() > 1
-                        ? new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name() + "(", ")")
+                        ? new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name() + " ( ", " ) ")
                         : new StringJoiner(SqlPart.SPACE, groupCriterion.getSeparator().name(), SqlPart.SPACE);
                 sqlPart.add(StringUtils.trim(criterionSql, Arrays.asList(Criterion.Separator.AND.name()
                         , Criterion.Separator.OR.name()), null));
@@ -63,9 +63,10 @@ public class CriterionSqlUtils {
             }
             sql = whereSqlBuilder.toString();
         }
+        //TODO 简单粗暴
         if (sql.contains(Criterion.Separator.OR.name())) {
-            sql = Criterion.Separator.AND.name() + "( " + StringUtils.trim(sql, Arrays.asList(Criterion.Separator.AND.name()
-                    , Criterion.Separator.OR.name()), null) + ")";
+            sql = Criterion.Separator.AND.name() + " ( " + StringUtils.trim(sql, Arrays.asList(Criterion.Separator.AND.name()
+                    , Criterion.Separator.OR.name()), null) + " ) ";
         }
         return sql;
     }

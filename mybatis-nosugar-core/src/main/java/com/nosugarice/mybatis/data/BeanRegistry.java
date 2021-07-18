@@ -55,7 +55,7 @@ public abstract class BeanRegistry<T> {
         name = name.toUpperCase();
         return objMap.computeIfAbsent(name, nameTemp -> {
             Class<? extends T> clazz = typeMap.get(nameTemp);
-            Preconditions.checkNotNull(clazz, "未找到标识为:[" + nameTemp + "]对应主键生成器类型!");
+            Preconditions.checkNotNull(clazz, "标识为:[" + nameTemp + "]对应类型未注册!");
             return ReflectionUtils.newInstance(clazz);
         });
     }
