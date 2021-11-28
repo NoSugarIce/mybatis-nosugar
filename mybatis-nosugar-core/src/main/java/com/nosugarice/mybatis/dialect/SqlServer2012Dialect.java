@@ -28,13 +28,16 @@ public class SqlServer2012Dialect extends SqlServerDialect {
 
     @Override
     public Limit getLimitHandler() {
-        return Holder.LIMIT_INSTANCE;
+        return LimitHolder.LIMIT_INSTANCE;
     }
 
-    public static class SqlServer2012Limit extends SqlServerLimit {
+    private static class LimitHolder {
+        private static final Limit LIMIT_INSTANCE = new SqlServer2012Limit();
+    }
 
-        private static final String ORDER_BY_SQL_TEMP_LATE = "" +
-                "{} OFFSET {} ROWS FETCH NEXT {} ROWS ONLY";
+    public static class SqlServer2012Limit extends SqlServerDialect.SqlServerLimit {
+
+        private static final String ORDER_BY_SQL_TEMP_LATE = "{} OFFSET {} ROWS FETCH NEXT {} ROWS ONLY";
 
         @Override
         public String processSql(String sql, int offset, int limit) {
@@ -53,10 +56,6 @@ public class SqlServer2012Dialect extends SqlServerDialect {
             return ORDER_BY_SQL_TEMP_LATE;
         }
 
-    }
-
-    private static class Holder {
-        private static final Limit LIMIT_INSTANCE = new SqlServer2012Limit();
     }
 
 }

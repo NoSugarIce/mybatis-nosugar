@@ -19,7 +19,6 @@ package com.nosugarice.mybatis.query.criterion;
 import com.nosugarice.mybatis.sql.RenderingContext;
 import com.nosugarice.mybatis.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Predicate;
 
@@ -27,32 +26,20 @@ import java.util.function.Predicate;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class ListValueCriterion<T, E extends ListValueCriterion<T, E>> extends AbstractPropertyCriterion<T, E> {
+public abstract class ListValueCriterion<T, E extends ListValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
 
     private static final long serialVersionUID = 1138903658585350512L;
 
     protected final Collection<T> values;
 
-    public ListValueCriterion(String column, String operator, T[] values) {
-        this(column, operator, values, Separator.AND);
-    }
-
-    public ListValueCriterion(String column, String operator, T[] values, Separator separator) {
-        this(column, operator, Arrays.asList(values), separator);
-    }
-
-    public ListValueCriterion(String column, String operator, Collection<T> values) {
-        this(column, operator, values, Separator.AND);
-    }
-
-    public ListValueCriterion(String column, String operator, Collection<T> values, Separator separator) {
+    protected ListValueCriterion(String column, String operator, Collection<T> values, Separator separator) {
         super(column, operator, separator);
         this.values = values;
     }
 
     @Override
     public String getSql() {
-        return SQL_FUNCTION.apply("(" + StringUtils.join(value, ",") + ")");
+        return SQL_FUNCTION.apply("(" + StringUtils.join(values, ",") + ")");
     }
 
     @Override

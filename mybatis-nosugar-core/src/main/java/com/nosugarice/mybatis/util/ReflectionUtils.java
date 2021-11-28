@@ -20,6 +20,7 @@ import com.nosugarice.mybatis.exception.NoSugarException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ public class ReflectionUtils {
         return !method.isSynthetic()
                 && !method.isBridge()
                 && !Modifier.isStatic(method.getModifiers())
-                && !method.isAnnotationPresent(javax.persistence.Transient.class)
                 && method.getParameterTypes().length == 0
                 && (method.getName().startsWith("get") || method.getName().startsWith("is"));
     }
@@ -57,7 +57,6 @@ public class ReflectionUtils {
     public static boolean isProperty(Field field) {
         return !Modifier.isStatic(field.getModifiers())
                 && !Modifier.isTransient(field.getModifiers())
-                && !field.isAnnotationPresent(javax.persistence.Transient.class)
                 && !field.isSynthetic();
     }
 
@@ -127,6 +126,38 @@ public class ReflectionUtils {
             throw new NoSugarException("[" + clazz.getName() + "]未找到公共无参构造函数!");
         } catch (Exception e) {
             throw new NoSugarException(e);
+        }
+    }
+
+    public static Class<?> getPropertyType(Member member) {
+        return member instanceof Field ? ((Field) member).getType() : ((Method) member).getReturnType();
+    }
+
+    public static String getPropertyName(Member member) {
+        if (member instanceof Method) {
+            String fullName = member.getName();
+            if (fullName.startsWith("get")) {
+                return decapitalize(fullName.substring(3));
+            }
+            if (fullName.startsWith("is")) {
+                return decapitalize(fullName.substring(2));
+            }
+            throw new NoSugarException("Method " + fullName + " is not a property getter");
+        }
+        return member.getName();
+    }
+
+    private static String decapitalize(String name) {
+        if (name != null && name.length() != 0) {
+            if (name.length() > 1 && Character.isUpperCase(name.charAt(1))) {
+                return name;
+            } else {
+                char[] chars = name.toCharArray();
+                chars[0] = Character.toLowerCase(chars[0]);
+                return new String(chars);
+            }
+        } else {
+            return name;
         }
     }
 

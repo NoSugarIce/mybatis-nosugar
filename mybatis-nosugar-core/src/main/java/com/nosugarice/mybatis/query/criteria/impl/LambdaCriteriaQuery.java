@@ -16,48 +16,21 @@
 
 package com.nosugarice.mybatis.query.criteria.impl;
 
-import com.nosugarice.mybatis.builder.sql.MetadataCache;
-import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.mapper.function.FunS;
-import com.nosugarice.mybatis.util.LambdaUtils;
-
-import java.util.Optional;
-import java.util.function.Function;
+import com.nosugarice.mybatis.query.criteria.tocolumn.LambdaToColumn;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public class LambdaCriteriaQuery<T> extends AbstractCriteriaQuery<T, FunS.Getter<T, ?>> {
+public class LambdaCriteriaQuery<T> extends AbstractEntityCriteriaQuery<T, FunS.Getter<T, ?>> implements LambdaToColumn<T> {
+
+    public LambdaCriteriaQuery(Class<T> entityClass) {
+        super(entityClass);
+    }
 
     public LambdaCriteriaQuery(T entity) {
         super(entity);
-    }
-
-    @Override
-    public Function<FunS.Getter<T, ?>, String> convert() {
-        return getter -> Optional.of(getter)
-                .map(LambdaCriteriaQuery::getPropertyName)
-                .map(property -> MetadataCache.getColumnByProperty(getEntityClass(), property))
-                .orElseThrow(() -> new NullPointerException("未找到属性对应的列信息!"));
-    }
-
-    private static String getPropertyName(FunS.Getter<?, ?> lambda) {
-        String methodName = LambdaUtils.getFunctionalName(lambda);
-        final String get = "get";
-        final String is = "is";
-
-        String name;
-        if (methodName.startsWith(get)) {
-            name = methodName.substring(get.length());
-        } else if (methodName.startsWith(is)) {
-            name = methodName.substring(is.length());
-        } else {
-            throw new NoSugarException("[? extends Getter] 不是一个有效的属性方法!");
-        }
-        return name.length() > 1
-                ? Character.toLowerCase(name.charAt(0)) + name.substring(1)
-                : String.valueOf(Character.toLowerCase(name.charAt(0)));
     }
 
 }

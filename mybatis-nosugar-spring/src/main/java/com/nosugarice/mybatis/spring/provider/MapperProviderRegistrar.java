@@ -41,7 +41,6 @@ public class MapperProviderRegistrar implements ImportBeanDefinitionRegistrar {
         AnnotationAttributes annAttrs = AnnotationAttributes
                 .fromMap(importingClassMetadata.getAnnotationAttributes(MapperProvider.class.getName()));
         if (annAttrs != null) {
-
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(MapperProviderConfigurer.class);
 
             Class<? extends Annotation> annotationClass = annAttrs.getClass("annotationClass");

@@ -16,20 +16,25 @@
 
 package com.nosugarice.mybatis.config;
 
+import com.nosugarice.mybatis.builder.AbstractMapperBuilder;
+import com.nosugarice.mybatis.util.Preconditions;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/6
  */
 public class SwitchConfig {
 
-    /** 开启crud */
-    private boolean crud = true;
+    /** 开启的功能 */
+    private final List<Class<? extends AbstractMapperBuilder<?>>> includeMapperBuilders = new ArrayList<>();
 
-    /** 开启根据方法名构建查询语句 */
-    private boolean findByMethodName = true;
-
-    /** 开启分页等功能 */
-    private boolean mutative = true;
+    /** 排除的功能 */
+    private List<Class<?>> excludeMapperBuilders;
 
     /** 逻辑删除开关 */
     private boolean logicDelete = true;
@@ -43,28 +48,24 @@ public class SwitchConfig {
     /** 批量增强 */
     private boolean speedBatch = true;
 
-    public boolean isCrud() {
-        return crud;
+    public Set<Class<? extends AbstractMapperBuilder<?>>> getMapperBuilders() {
+        return includeMapperBuilders.stream()
+                .filter(clazz -> excludeMapperBuilders == null || !excludeMapperBuilders.contains(clazz))
+                .collect(Collectors.toSet());
     }
 
-    public void setCrud(boolean crud) {
-        this.crud = crud;
+    @SuppressWarnings("unchecked")
+    public void addIncludeMapperBuilder(Class<?> mapperBuilderClass) {
+        Preconditions.checkArgument(AbstractMapperBuilder.class.isAssignableFrom(mapperBuilderClass)
+                , mapperBuilderClass.getName() + "类型不正确!");
+        includeMapperBuilders.add((Class<? extends AbstractMapperBuilder<?>>) mapperBuilderClass);
     }
 
-    public boolean isFindByMethodName() {
-        return findByMethodName;
-    }
-
-    public void setFindByMethodName(boolean findByMethodName) {
-        this.findByMethodName = findByMethodName;
-    }
-
-    public boolean isMutative() {
-        return mutative;
-    }
-
-    public void setMutative(boolean mutative) {
-        this.mutative = mutative;
+    public void addExcludeMapperBuilder(Class<?> mapperBuilderClass) {
+        if (excludeMapperBuilders == null) {
+            excludeMapperBuilders = new ArrayList<>();
+        }
+        excludeMapperBuilders.add(mapperBuilderClass);
     }
 
     public boolean isLogicDelete() {

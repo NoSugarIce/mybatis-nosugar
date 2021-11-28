@@ -16,39 +16,29 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import com.nosugarice.mybatis.builder.query.parser.PartTree;
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
-import com.nosugarice.mybatis.mapper.function.Mapper;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
+import com.nosugarice.mybatis.query.jpa.parser.PartTree;
 import org.apache.ibatis.mapping.SqlCommandType;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.regex.Pattern;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/2
  */
-public class MethodNameMapperStatementBuilder extends BaseMapperStatementBuilder {
+public class MethodNameMapperStatementBuilder extends MapperStatementBuilder {
 
     private static final Pattern DELETE_PATTERN = Pattern.compile("^(" + PartTree.DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
-
-    public MethodNameMapperStatementBuilder(SqlScriptBuilder sqlScriptBuilder, MapperBuilderAssistant assistant) {
-        super(sqlScriptBuilder, assistant);
-    }
-
-    @Override
-    public Collection<Class<? extends Mapper>> getMapperTypes() {
-        return Collections.emptyList();
-    }
+    private static final Pattern LOGIC_DELETE_PATTERN = Pattern.compile("^(" + PartTree.LOGIC_DELETE_PATTERN + ")((\\p{Lu}.*?))??By");
 
     @Override
     public SqlCommandType getSqlCommandType(Method method) {
         SqlCommandType sqlCommandType = SqlCommandType.SELECT;
         if (DELETE_PATTERN.matcher(method.getName()).find()) {
             sqlCommandType = SqlCommandType.DELETE;
+        }
+        if (LOGIC_DELETE_PATTERN.matcher(method.getName()).find()) {
+            sqlCommandType = SqlCommandType.UPDATE;
         }
         return sqlCommandType;
     }

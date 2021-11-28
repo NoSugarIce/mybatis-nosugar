@@ -16,6 +16,8 @@
 
 package com.nosugarice.mybatis.query.criterion;
 
+import static com.nosugarice.mybatis.sql.SQLConstants.LIKE;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -25,7 +27,7 @@ public class Like extends SingleValueCriterion<String, Like> {
     private static final long serialVersionUID = -6810211854915959905L;
 
     public Like(String column, String value, MatchMode matchMode) {
-        super(column, "LIKE ", matchMode.toMatchString(value));
+        super(column, LIKE, matchMode.toMatchString(value));
     }
 
     public enum MatchMode {

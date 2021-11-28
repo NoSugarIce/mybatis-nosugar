@@ -16,11 +16,10 @@
 
 package com.nosugarice.mybatis.query.criterion;
 
-import com.nosugarice.mybatis.query.SqlFragment;
-import com.nosugarice.mybatis.sql.criterion.Criterion;
+import com.nosugarice.mybatis.sql.SqlFragment;
 
 /**
- * @author dingjingyang@foxmail.com(dingjingyang)
+ * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
 public abstract class AbstractCriterion<T extends AbstractCriterion<T>> extends SqlFragment implements Criterion {
@@ -50,15 +49,18 @@ public abstract class AbstractCriterion<T extends AbstractCriterion<T>> extends 
         this.separator = separator;
     }
 
-    @SuppressWarnings("unchecked")
     public T and() {
         setSeparator(Separator.AND);
-        return (T) this;
+        return getThis();
+    }
+
+    public T or() {
+        setSeparator(Separator.OR);
+        return getThis();
     }
 
     @SuppressWarnings("unchecked")
-    public T or() {
-        setSeparator(Separator.OR);
+    protected T getThis() {
         return (T) this;
     }
 

@@ -19,8 +19,6 @@ package com.nosugarice.mybatis.mapper.insert;
 import com.nosugarice.mybatis.annotation.SpeedBatch;
 import com.nosugarice.mybatis.mapper.function.BatchMapper;
 
-import java.util.Collection;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/9
@@ -30,23 +28,31 @@ public interface DefaultInsertMapper<T> extends InsertMapper<T>, BatchMapper {
     /**
      * 批量模式插入
      *
-     * @param entities
+     * @param entities  实体列表
+     * @param batchSize 每批的数量
+     * @param nullable  字段是否忽空值
      */
     @SpeedBatch
-    default void insertBatchMode(Collection<T> entities) {
-        entities.forEach(this::insert);
+    default void insertBatch(Iterable<T> entities, int batchSize, boolean nullable) {
+        int index = 0;
+        for (T entity : entities) {
+            int i = nullable ? insertNullable(entity) : insert(entity);
+            index++;
+            if (index % batchSize == 0) {
+                flush();
+            }
+        }
         flush();
     }
 
     /**
-     * 批量模式插入,值为NULL忽略
+     * 批量模式插入,默认每批次1000条,属性不忽略空值
      *
      * @param entities
      */
     @SpeedBatch
-    default void insertNullableBatchMode(Collection<T> entities) {
-        entities.forEach(this::insertNullable);
-        flush();
+    default void insertBatch(Iterable<T> entities) {
+        insertBatch(entities, 1000, false);
     }
 
 }

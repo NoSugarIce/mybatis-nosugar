@@ -16,6 +16,8 @@
 
 package com.nosugarice.mybatis.query.criterion;
 
+import static com.nosugarice.mybatis.sql.SQLConstants.BETWEEN;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -33,7 +35,7 @@ public class Between<T> extends TwoValueCriterion<T, Between<T>> {
     }
 
     public Between(String column, T low, T high, Separator separator) {
-        super(column, "Between", low, high, separator);
+        super(column, BETWEEN, low, high, separator);
     }
 
 }

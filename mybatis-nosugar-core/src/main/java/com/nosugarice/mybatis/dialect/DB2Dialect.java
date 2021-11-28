@@ -51,43 +51,43 @@ public class DB2Dialect implements Dialect {
 
     @Override
     public Limit getLimitHandler() {
-        return Holder.LIMIT_INSTANCE;
+        return LimitImpl.INSTANCE;
     }
 
-    private static class Holder {
-        private static final Limit LIMIT_INSTANCE = new Limit() {
+    private enum LimitImpl implements Limit {
 
-            private static final String SQL_TEMP_LATE = "" +
-                    "SELECT\n" +
-                    "   * \n" +
-                    "FROM\n" +
-                    "   (\n" +
-                    "   SELECT\n" +
-                    "       INNER2_.*,\n" +
-                    "       ROWNUMBER ( ) OVER ( ORDER BY ORDER of INNER2_ ) AS ROWNUMBER_ \n" +
-                    "   FROM\n" +
-                    "       ( {} FETCH FIRST {} ROWS ONLY ) AS INNER2_ \n" +
-                    "   ) AS INNER1_ \n" +
-                    "WHERE\n" +
-                    "   ROWNUMBER_ > {} \n" +
-                    "ORDER BY\n" +
-                    "   ROWNUMBER_";
+        INSTANCE;
 
-            private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "" +
-                    "{} FETCH FIRST {} ROWS ONLY";
+        private static final String SQL_TEMP_LATE = "" +
+                "SELECT\n" +
+                "   * \n" +
+                "FROM\n" +
+                "   (\n" +
+                "   SELECT\n" +
+                "       INNER2_.*,\n" +
+                "       ROWNUMBER ( ) OVER ( ORDER BY ORDER of INNER2_ ) AS ROWNUMBER_ \n" +
+                "   FROM\n" +
+                "       ( {} FETCH FIRST {} ROWS ONLY ) AS INNER2_ \n" +
+                "   ) AS INNER1_ \n" +
+                "WHERE\n" +
+                "   ROWNUMBER_ > {} \n" +
+                "ORDER BY\n" +
+                "   ROWNUMBER_";
 
-            @Override
-            public boolean supportsLimit() {
-                return true;
-            }
+        private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "" +
+                "{} FETCH FIRST {} ROWS ONLY";
 
-            @Override
-            public String processSql(String sql, int offset, int limit) {
-                boolean hasFirstRow = hasFirstRow(offset);
-                return hasFirstRow ? StringFormatter.format(SQL_TEMP_LATE, sql, offset + limit, offset)
-                        : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
-            }
-        };
+        @Override
+        public boolean supportsLimit() {
+            return true;
+        }
+
+        @Override
+        public String processSql(String sql, int offset, int limit) {
+            boolean hasFirstRow = hasFirstRow(offset);
+            return hasFirstRow ? StringFormatter.format(SQL_TEMP_LATE, sql, offset + limit, offset)
+                    : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
+        }
     }
 
 }

@@ -16,12 +16,14 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.relational.AbstractEntityBuilder;
+import com.nosugarice.mybatis.builder.relational.EntityBuilder;
+import com.nosugarice.mybatis.handler.ValueHandler;
+import com.nosugarice.mybatis.mapping.id.IdGenerator;
+import com.nosugarice.mybatis.support.MapperStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
-import com.nosugarice.mybatis.support.NameStrategyType;
-import com.nosugarice.mybatis.valuegenerator.id.IdGenerator;
 
 import javax.persistence.AccessType;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,29 +32,38 @@ import java.util.Map;
  */
 public class RelationalConfig {
 
-    private Class<? extends AbstractEntityBuilder<?>> entityBuilderType;
+    private MapperStrategy mapperStrategy;
+
+    private Class<? extends EntityBuilder> entityBuilderType;
 
     /** 属性从哪种类型获取 */
     private AccessType accessType = AccessType.FIELD;
 
     /** 类名转换到表名的方式 */
-    private NameStrategy classNameToTableNameStrategy = NameStrategyType.CAMEL_TO_UNDERSCORE;
+    private NameStrategy classNameToTableNameStrategy;
 
     /** 属性名转换到表列名的方式 */
-    private NameStrategy fieldNameToColumnNameStrategy = NameStrategyType.CAMEL_TO_UNDERSCORE;
-
-    /** javax.validation 的注解映射到数据库的非空判断 */
-    private boolean javaxValidationMappingNotNull = true;
+    private NameStrategy fieldNameToColumnNameStrategy;
 
     private Map<String, IdGenerator<?>> idGenerators;
 
-    public Class<? extends AbstractEntityBuilder<?>> getEntityBuilderType() {
+    private List<ValueHandler<?>> valueHandlers;
+
+    public MapperStrategy getMapperStrategy() {
+        return mapperStrategy;
+    }
+
+    public void setMapperStrategy(MapperStrategy mapperStrategy) {
+        this.mapperStrategy = mapperStrategy;
+    }
+
+    public Class<? extends EntityBuilder> getEntityBuilderType() {
         return entityBuilderType;
     }
 
     @SuppressWarnings("unchecked")
     public void setEntityBuilderType(Class<?> entityBuilderType) {
-        this.entityBuilderType = (Class<? extends AbstractEntityBuilder<?>>) entityBuilderType;
+        this.entityBuilderType = (Class<? extends EntityBuilder>) entityBuilderType;
     }
 
     public AccessType getAccessType() {
@@ -79,14 +90,6 @@ public class RelationalConfig {
         this.fieldNameToColumnNameStrategy = fieldNameToColumnNameStrategy;
     }
 
-    public boolean isJavaxValidationMappingNotNull() {
-        return javaxValidationMappingNotNull;
-    }
-
-    public void setJavaxValidationMappingNotNull(boolean javaxValidationMappingNotNull) {
-        this.javaxValidationMappingNotNull = javaxValidationMappingNotNull;
-    }
-
     public Map<String, IdGenerator<?>> getIdGenerators() {
         return idGenerators;
     }
@@ -94,4 +97,14 @@ public class RelationalConfig {
     public void setIdGenerators(Map<String, IdGenerator<?>> idGenerators) {
         this.idGenerators = idGenerators;
     }
+
+    public List<ValueHandler<?>> getValueHandlers() {
+        return valueHandlers;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setValueHandlers(List<?> valueHandlers) {
+        this.valueHandlers = (List<ValueHandler<?>>) valueHandlers;
+    }
+
 }

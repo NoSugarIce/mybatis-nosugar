@@ -16,11 +16,17 @@
 
 package com.nosugarice.mybatis.sql;
 
+import com.nosugarice.mybatis.domain.Page;
+import com.nosugarice.mybatis.mapper.function.FunS;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -31,111 +37,118 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SqlBuilder {
 
-    enum SqlSourceFunction implements SqlProvider {
+    enum SqlFunction {
         SELECT_BY_ID() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.selectById();
+            public <T, ID> FunS.Param2<ProviderTempLate, ID, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::selectById;
             }
         },
         SELECT_BY_IDS() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.selectByIds();
+            public <T, ID> FunS.Param2<ProviderTempLate, Collection<ID>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::selectByIds;
             }
         },
         SELECT_LIST() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.selectList();
+            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::selectList;
+            }
+        },
+        SELECT_LIST_LIMIT() {
+            @Override
+            public <T, ID> FunS.Param3<ProviderTempLate, EntityCriteriaQuery<T>, Page<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::selectListLimit;
             }
         },
         INSERT() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.insert();
+            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::insert;
             }
         },
         INSERT_NULLABLE() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.insertNullable();
-            }
-        },
-        INSERT_BATCH() {
-            @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.insertBatch();
+            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::insertNullable;
             }
         },
         UPDATE_BY_ID() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.updateById();
+            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::updateById;
             }
         },
-        UPDATE_BY_ID_CHOSE_KEY() {
+        UPDATE_BY_ID_CHOSE_PROPERTY() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.updateByIdChoseKey();
+            public <T, ID> FunS.Param3<ProviderTempLate, T, Set<String>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::updateByIdChoseProperty;
             }
         },
         UPDATE_NULLABLE_BY_ID() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.updateNullableById();
+            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::updateByIdNullable;
             }
         },
         UPDATE() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.update();
+            public <T, ID> FunS.Param3<ProviderTempLate, T, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::update;
             }
         },
         UPDATE_NULLABLE() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.updateNullable();
+            public <T, ID> FunS.Param3<ProviderTempLate, T, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::updateNullable;
             }
         },
         DELETE_BY_ID() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.deleteById();
+            public <T, ID> FunS.Param2<ProviderTempLate, ID, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::deleteById;
             }
         },
         DELETE_BY_IDS() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.deleteByIds();
+            public <T, ID> FunS.Param2<ProviderTempLate, Collection<ID>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::deleteByIds;
             }
         },
         DELETE() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.delete();
+            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::delete;
             }
         },
         LOGIC_DELETE_BY_ID() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.logicDeleteById();
+            public <T, ID> FunS.Param2<ProviderTempLate, ID, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::logicDeleteById;
             }
         },
         LOGIC_DELETE_BY_IDS() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.logicDeleteByIds();
+            public <T, ID> FunS.Param2<ProviderTempLate, Collection<ID>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::logicDeleteByIds;
             }
         },
         LOGIC_DELETE() {
             @Override
-            public String provide(SqlTempLateService sqlTempLateService) {
-                return sqlTempLateService.logicDelete();
+            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+                return ProviderTempLate::logicDelete;
             }
         },
+        ;
+
+        public abstract <T, ID> FunS<SqlAndParameterBind> providerFun();
+
     }
 
-    SqlSourceFunction sqlSourceFunction();
+    SqlFunction sqlFunction();
+
+    /** 固定参数,仅适应单个参数 */
+    boolean fixedParameter() default false;
 
 }

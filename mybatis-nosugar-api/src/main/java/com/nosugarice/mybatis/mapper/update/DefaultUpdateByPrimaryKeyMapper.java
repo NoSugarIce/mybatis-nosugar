@@ -18,56 +18,44 @@ package com.nosugarice.mybatis.mapper.update;
 
 import com.nosugarice.mybatis.annotation.SpeedBatch;
 import com.nosugarice.mybatis.mapper.function.BatchMapper;
-import com.nosugarice.mybatis.mapper.function.MapperHelp;
-import com.nosugarice.mybatis.mapper.function.MapperService;
-import com.nosugarice.mybatis.mapper.insert.InsertMapper;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2017/8/30
  */
-public interface DefaultUpdateByPrimaryKeyMapper<T> extends UpdateByPrimaryKeyMapper<T>, InsertMapper<T>, BatchMapper {
-
-    default int updateByIdChoseKey(T entity, String... choseKey) {
-        return updateByIdChoseKey(entity, new HashSet<>(Arrays.asList(choseKey)));
-    }
+public interface DefaultUpdateByPrimaryKeyMapper<T> extends UpdateByPrimaryKeyMapper<T>, BatchMapper {
 
     /**
-     * 保存数据,当主键为空时插入,当主键有值时更新,不会忽略NULL值
+     * 根据主键更新选定
      *
      * @param entity
+     * @param choseKey
      * @return
      */
-    default int save(T entity) {
-        MapperService mapperService = MapperHelp.getMapperService();
-        boolean pkColumnValueNotNull = mapperService.entityIsNew(entity);
-        return pkColumnValueNotNull ? updateById(entity) : insert(entity);
+    default int updateByIdChoseKey(T entity, String... choseKey) {
+        return updateByIdChoseProperty(entity, new HashSet<>(Arrays.asList(choseKey)));
     }
 
     /**
      * 使用批处理模式更新
      *
-     * @param list
+     * @param entities  实体列表
+     * @param batchSize 每批的数量
+     * @param nullable  字段是否忽空值
      */
     @SpeedBatch
-    default void updateByIdBatchMode(Collection<T> list) {
-        list.forEach(this::updateById);
-        flush();
-    }
-
-    /**
-     * 使用批处理模式更新
-     * 属性可以为Null
-     *
-     * @param list
-     */
-    @SpeedBatch
-    default void updateNullableByIdBatchMode(Collection<T> list) {
-        list.forEach(this::updateByIdNullable);
+    default void updateByIdBatchMode(Iterable<T> entities, int batchSize, boolean nullable) {
+        int index = 0;
+        for (T entity : entities) {
+            int i = nullable ? updateByIdNullable(entity) : updateById(entity);
+            index++;
+            if (index % batchSize == 0) {
+                flush();
+            }
+        }
         flush();
     }
 

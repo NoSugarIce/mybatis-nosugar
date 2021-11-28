@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static com.nosugarice.mybatis.query.criterion.Criterion.Separator.AND;
+import static com.nosugarice.mybatis.sql.SQLConstants.IN;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -33,7 +36,7 @@ public class In<T> extends ListValueCriterion<T, In<T>> {
     }
 
     public In(String column, T[] values) {
-        this(column, values, Separator.AND);
+        this(column, values, AND);
     }
 
     public In(String column, T[] values, Separator separator) {
@@ -41,11 +44,11 @@ public class In<T> extends ListValueCriterion<T, In<T>> {
     }
 
     public In(String column, Collection<T> values) {
-        this(column, values, Separator.AND);
+        this(column, values, AND);
     }
 
     public In(String column, Collection<T> values, Separator separator) {
-        super(column, "IN", values, separator);
+        super(column, IN, values, separator);
     }
 
 }

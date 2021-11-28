@@ -16,19 +16,20 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.MapperMetadata;
-import com.nosugarice.mybatis.builder.relational.AbstractEntityBuilder;
-import com.nosugarice.mybatis.builder.relational.DefaultEntityBuilder;
+import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
+import com.nosugarice.mybatis.builder.relational.EntityBuilder;
 import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
-import com.nosugarice.mybatis.data.ReservedWords;
 import com.nosugarice.mybatis.dialect.Dialect;
-import com.nosugarice.mybatis.dialect.DialectRegistry;
-import com.nosugarice.mybatis.mapper.function.MapperHelp;
+import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
-import com.nosugarice.mybatis.reflection.EntityClass;
+import com.nosugarice.mybatis.mapping.id.IdGenerator;
+import com.nosugarice.mybatis.registry.BeanRegistry;
+import com.nosugarice.mybatis.registry.DialectRegistry;
+import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
+import com.nosugarice.mybatis.registry.IdGeneratorRegistry;
+import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.ReflectionUtils;
-import com.nosugarice.mybatis.valuegenerator.id.IdGenerator;
-import com.nosugarice.mybatis.valuegenerator.id.IdGeneratorRegistry;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.session.Configuration;
@@ -36,9 +37,9 @@ import org.apache.ibatis.session.Configuration;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -48,61 +49,85 @@ public class MetadataBuildingContext {
 
     private final Configuration configuration;
     private final MapperBuilderConfig config;
+    private final NoSugarMapperBuilder mapperBuilder;
     private final Dialect dialect;
-    private final IdGeneratorRegistry idGeneratorRegistry = new IdGeneratorRegistry();
-    private final Map<Class<?>, MapperMetadata> mapperBuildRawMap = new HashMap<>();
-    private final Map<Class<?>, SqlScriptBuilder> mapperSqlScriptBuilderMap = new HashMap<>();
-    private final Map<Class<?>, MapperBuilderAssistant> mapperMapperBuilderAssistantMap = new HashMap<>();
+    private final BeanRegistry<IdGenerator<?>> idGeneratorRegistry;
+    private final BeanRegistry<ValueHandler<?>> valueHandlerRegistry;
+    private final Map<Class<?>, Class<?>> mapperEntityClassMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, EntityMetadata> entityMetadataMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, SqlScriptBuilder> entitySqlScriptBuilderMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, MapperBuilderAssistant> mapperBuilderAssistantMap = new ConcurrentHashMap<>();
 
     public MetadataBuildingContext(Configuration configuration, MapperBuilderConfig config) {
         this.configuration = configuration;
         this.config = config;
-        this.dialect = config.getSqlBuildConfig().getDialect() != null ? config.getSqlBuildConfig().getDialect() : getDialect(configuration);
-        registryIdGenerator(config.getRelationalConfig().getIdGenerators());
+        this.mapperBuilder = new NoSugarMapperBuilder(this);
+        this.idGeneratorRegistry = new IdGeneratorRegistry();
+        this.valueHandlerRegistry = new BeanRegistry<>();
+        this.dialect = config.getSqlBuildConfig().getDialect() != null
+                ? config.getSqlBuildConfig().getDialect() : getDialect(configuration);
+        registryBean(config.getRelationalConfig());
     }
 
-    public MapperMetadata getMapperMetadata(Class<?> mapperInterface) {
-        return mapperBuildRawMap.computeIfAbsent(mapperInterface, interfaceClass -> {
-            Class<?> entityClass = MapperHelp.getMapperService().analyzeEntityClass(mapperInterface);
-            Class<? extends AbstractEntityBuilder<?>> entityBuilderType = config.getRelationalConfig().getEntityBuilderType();
-            entityBuilderType = entityBuilderType == null ? DefaultEntityBuilder.class : entityBuilderType;
-            AbstractEntityBuilder<?> entityBuilder = ReflectionUtils.newInstance(entityBuilderType);
-            RelationalEntity relationalEntity = entityBuilder
-                    .withEntityClass(new EntityClass(entityClass))
-                    .withRelationalConfig(config.getRelationalConfig())
-                    .build();
-
-            return new MapperMetadata(interfaceClass, dialect, relationalEntity, config);
+    public Class<?> getEntityClass(Class<?> mapperClass) {
+        return mapperEntityClassMap.computeIfAbsent(mapperClass, clazz -> {
+            Class<?> entityClass = config.getRelationalConfig().getMapperStrategy().analyzeEntityClass(clazz);
+            Preconditions.checkNotNull(entityClass, "从[" + clazz.getSimpleName() + "]未获取到实体类信息!");
+            return entityClass;
         });
     }
 
-    public SqlScriptBuilder getSqlScriptBuilder(Class<?> mapperInterface) {
-        return mapperSqlScriptBuilderMap.computeIfAbsent(mapperInterface
-                , interfaceClass -> new SqlScriptBuilder(mapperInterface, this));
+    public EntityMetadata getEntityMetadataByMapper(Class<?> mapperClass) {
+        return getEntityMetadata(getEntityClass(mapperClass));
     }
 
-    public MapperBuilderAssistant getMapperBuilderAssistant(Class<?> mapperInterface) {
-        return mapperMapperBuilderAssistantMap.computeIfAbsent(mapperInterface
-                , interfaceClass -> {
-                    String resource = mapperInterface.getName().replace('.', '/') + ".java (best guess)";
+    public EntityMetadata getEntityMetadata(Class<?> entityClass) {
+        return entityMetadataMap.computeIfAbsent(entityClass, clazz -> {
+            Class<? extends EntityBuilder> entityBuilderType = config.getRelationalConfig().getEntityBuilderType();
+            EntityBuilder entityBuilder = ReflectionUtils.newInstance(entityBuilderType);
+            RelationalEntity relationalEntity = entityBuilder
+                    .withEntityClass(clazz)
+                    .withRelationalConfig(config.getRelationalConfig())
+                    .withValueHandlerRegistry(valueHandlerRegistry)
+                    .build();
+            EntityMetadata entityMetadata = new EntityMetadata(relationalEntity, config);
+            EntityMetadataRegistry metadataRegistry = EntityMetadataRegistry.Holder.getInstance();
+            metadataRegistry.register(entityClass, entityMetadata);
+            return entityMetadata;
+        });
+    }
+
+    public SqlScriptBuilder getSqlScriptBuilderByMapper(Class<?> mapperClass) {
+        return getSqlScriptBuilder(getEntityClass(mapperClass));
+    }
+
+    public SqlScriptBuilder getSqlScriptBuilder(Class<?> entityClass) {
+        return entitySqlScriptBuilderMap.computeIfAbsent(entityClass
+                , clazz -> {
+                    EntityMetadata entityMetadata = getEntityMetadata(clazz);
+                    return new SqlScriptBuilder(entityMetadata, this);
+                });
+    }
+
+    public MapperBuilderAssistant getMapperBuilderAssistant(Class<?> mapperClass) {
+        return mapperBuilderAssistantMap.computeIfAbsent(mapperClass
+                , clazz -> {
+                    String resource = clazz.getName().replace('.', '/') + ".java (best guess)";
                     MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, resource);
-                    assistant.setCurrentNamespace(mapperInterface.getName());
+                    assistant.setCurrentNamespace(clazz.getName());
                     return assistant;
                 });
     }
 
     public void clearMapperBuildRaw(Class<?> mapperInterfaceClass) {
-        mapperBuildRawMap.remove(mapperInterfaceClass);
-        mapperSqlScriptBuilderMap.remove(mapperInterfaceClass);
-        mapperMapperBuilderAssistantMap.remove(mapperInterfaceClass);
+        mapperBuilderAssistantMap.remove(mapperInterfaceClass);
     }
 
     private Dialect getDialect(Configuration configuration) {
         String databaseName;
-        try {
-            Connection connection = configuration.getEnvironment().getDataSource().getConnection();
+        try (Connection connection = configuration.getEnvironment().getDataSource().getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
-            Arrays.stream(metaData.getSQLKeywords().split(",")).forEach(ReservedWords.SQL::registerKeyword);
+            //Arrays.stream(metaData.getSQLKeywords().split(",")).forEach(ReservedWords.SQL::registerKeyword);
             databaseName = metaData.getDatabaseProductName();
         } catch (SQLException e) {
             throw new BuilderException(e);
@@ -111,11 +136,15 @@ public class MetadataBuildingContext {
         return new DialectRegistry().getObject(databaseName);
     }
 
-    private void registryIdGenerator(Map<String, IdGenerator<?>> idGenerators) {
-        if (idGenerators == null) {
-            return;
+    private void registryBean(RelationalConfig relationalConfig) {
+        Map<String, IdGenerator<?>> idGenerators;
+        if ((idGenerators = relationalConfig.getIdGenerators()) != null) {
+            idGenerators.forEach(idGeneratorRegistry::register);
         }
-        idGenerators.forEach(idGeneratorRegistry::register);
+        List<ValueHandler<?>> valueHandlers;
+        if ((valueHandlers = relationalConfig.getValueHandlers()) != null) {
+            valueHandlers.forEach(valueHandlerRegistry::register);
+        }
     }
 
     public Configuration getConfiguration() {
@@ -126,11 +155,16 @@ public class MetadataBuildingContext {
         return config;
     }
 
+    public NoSugarMapperBuilder getMapperBuilder() {
+        return mapperBuilder;
+    }
+
     public Dialect getDialect() {
         return dialect;
     }
 
-    public IdGeneratorRegistry getIdGeneratorRegistry() {
+    public BeanRegistry<IdGenerator<?>> getIdGeneratorRegistry() {
         return idGeneratorRegistry;
     }
+
 }

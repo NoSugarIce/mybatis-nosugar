@@ -16,6 +16,10 @@
 
 package com.nosugarice.mybatis.query.criterion;
 
+import static com.nosugarice.mybatis.sql.SQLConstants.IS_NOT_NULL;
+import static com.nosugarice.mybatis.sql.SQLConstants.IS_NULL;
+import static com.nosugarice.mybatis.sql.SQLConstants.NULL;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -25,15 +29,15 @@ public class Null<T> extends NoValueCriterion<T, Null<T>> {
     private static final long serialVersionUID = 822371665744501155L;
 
     public Null(String column) {
-        super(column, "NULL");
+        super(column, NULL);
     }
 
     public Null(String column, Separator separator) {
-        super(column, "NULL", separator);
+        super(column, NULL, separator);
     }
 
     @Override
     public String getOperator(boolean negated) {
-        return negated ? "IS NOT NULL" : "IS NULL";
+        return negated ? IS_NOT_NULL : IS_NULL;
     }
 }

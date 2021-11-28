@@ -16,21 +16,20 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
-import com.nosugarice.mybatis.query.process.Order;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface OrderBy<T, C> extends ConvertToColumn<C> {
+public interface OrderBy<C, X extends OrderBy<C, X>> extends ConvertToColumn<C> {
 
     /**
-     * 正序排列
+     * 排序
      *
-     * @param order
+     * @param column    列
+     * @param ascending 是否正序
      * @return
      */
-    CriteriaQuery<T, C> orderBy(Order order);
+    X orderBy(C column, boolean ascending);
 
     /**
      * 正序排列
@@ -38,7 +37,7 @@ public interface OrderBy<T, C> extends ConvertToColumn<C> {
      * @param column
      * @return
      */
-    default CriteriaQuery<T, C> orderBy(C column) {
+    default X orderBy(C column) {
         return orderByAsc(column);
     }
 
@@ -48,8 +47,8 @@ public interface OrderBy<T, C> extends ConvertToColumn<C> {
      * @param column
      * @return
      */
-    default CriteriaQuery<T, C> orderByAsc(C column) {
-        return orderBy(true, column);
+    default X orderByAsc(C column) {
+        return orderBy(column, true);
     }
 
     /**
@@ -58,19 +57,8 @@ public interface OrderBy<T, C> extends ConvertToColumn<C> {
      * @param column 列
      * @return
      */
-    default CriteriaQuery<T, C> orderByDesc(C column) {
-        return orderBy(false, column);
-    }
-
-    /**
-     * 排序
-     *
-     * @param ascending 是否正序
-     * @param column    列
-     * @return
-     */
-    default CriteriaQuery<T, C> orderBy(boolean ascending, C column) {
-        return orderBy(new Order(ascending, toColumn(column)));
+    default X orderByDesc(C column) {
+        return orderBy(column, false);
     }
 
 }

@@ -16,13 +16,13 @@
 
 package com.nosugarice.mybatis.query.criteria.impl;
 
-import java.util.function.Function;
+import com.nosugarice.mybatis.query.criteria.tocolumn.ColumnToColumn;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public class ColumnCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
+public class ColumnCriteriaQuery<T> extends AbstractEntityCriteriaQuery<T, String> implements ColumnToColumn {
 
     public ColumnCriteriaQuery(Class<T> entityClass) {
         super(entityClass);
@@ -32,8 +32,4 @@ public class ColumnCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
         super(entity);
     }
 
-    @Override
-    public Function<String, String> convert() {
-        return Function.identity();
-    }
 }

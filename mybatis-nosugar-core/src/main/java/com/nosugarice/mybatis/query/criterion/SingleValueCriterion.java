@@ -24,23 +24,15 @@ import java.util.function.Predicate;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class SingleValueCriterion<T, E extends SingleValueCriterion<T, E>> extends AbstractPropertyCriterion<T, E> {
+public abstract class SingleValueCriterion<T, E extends SingleValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
 
     private static final long serialVersionUID = 662382880058191739L;
 
-    public SingleValueCriterion(String column, String operator) {
-        super(column, operator);
-    }
-
-    public SingleValueCriterion(String column, String operator, Separator separator) {
-        super(column, operator, separator);
-    }
-
-    public SingleValueCriterion(String column, String operator, T value) {
+    protected SingleValueCriterion(String column, String operator, T value) {
         super(column, operator, value);
     }
 
-    public SingleValueCriterion(String column, String operator, T value, Separator separator) {
+    protected SingleValueCriterion(String column, String operator, T value, Separator separator) {
         super(column, operator, value, separator);
     }
 

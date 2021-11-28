@@ -55,6 +55,9 @@ public class StringFormatter {
     }
 
     public static String replacePlaceholder(String format, Map<String, String> placeholderValues) {
+        if (format == null) {
+            return null;
+        }
         if (placeholderValues == null || placeholderValues.isEmpty()) {
             return format;
         }

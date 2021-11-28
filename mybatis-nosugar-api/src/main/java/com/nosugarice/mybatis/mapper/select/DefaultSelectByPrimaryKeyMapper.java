@@ -26,16 +26,6 @@ import java.util.List;
 public interface DefaultSelectByPrimaryKeyMapper<T, ID> extends SelectByPrimaryKeyMapper<T, ID> {
 
     /**
-     * 根据主键判断是否存在
-     *
-     * @param id 主键
-     * @return 是否存在
-     */
-    default boolean existsById(ID id) {
-        return selectById(id).isPresent();
-    }
-
-    /**
      * 根据 id 数组查询符合条件的所有实体
      *
      * @param ids 主键数组

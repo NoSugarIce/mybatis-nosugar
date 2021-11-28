@@ -16,25 +16,39 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.relational.AbstractEntityBuilder;
+import com.nosugarice.mybatis.builder.AbstractMapperBuilder;
+import com.nosugarice.mybatis.builder.MapperEntityStatementBuilder;
+import com.nosugarice.mybatis.builder.MapperMethodNameBuilder;
+import com.nosugarice.mybatis.builder.MutativeSqlBuilder;
 import com.nosugarice.mybatis.builder.relational.DefaultEntityBuilder;
+import com.nosugarice.mybatis.builder.relational.EntityBuilder;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.exception.NoSugarException;
+import com.nosugarice.mybatis.handler.ValueHandler;
+import com.nosugarice.mybatis.mapping.id.IdGenerator;
+import com.nosugarice.mybatis.registry.ConfigRegistry;
+import com.nosugarice.mybatis.support.DefaultMapperStrategy;
+import com.nosugarice.mybatis.support.EntityPropertyNameStrategy;
+import com.nosugarice.mybatis.support.MapperStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
 import com.nosugarice.mybatis.support.NameStrategyType;
+import com.nosugarice.mybatis.util.CollectionUtils;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.ReflectionUtils;
 import com.nosugarice.mybatis.util.StringFormatter;
 import com.nosugarice.mybatis.util.StringUtils;
-import com.nosugarice.mybatis.valuegenerator.id.IdGenerator;
 
 import javax.persistence.AccessType;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 注册到Spring 环境中的配置优先于 Properties中配置
@@ -45,32 +59,30 @@ import java.util.function.Supplier;
 public class MapperBuilderConfigBuilder {
 
     private static final String SWITCH_CONFIG = "mybatis.no-sugar.switch.";
-    private static final String SWITCH_CONFIG_CRUD = SWITCH_CONFIG + "crud";
-    private static final String SWITCH_CONFIG_FIND_BY_METHODNAME = SWITCH_CONFIG + "find-by-methodName";
-    private static final String SWITCH_CONFIG_MUTATIVE = SWITCH_CONFIG + "mutative";
+    private static final String SWITCH_CONFIG_INCLUDE_MAPPER_BUILDERS = SWITCH_CONFIG + "include-mapper-builders";
+    private static final String SWITCH_CONFIG_EXCLUDE_MAPPER_BUILDERS = SWITCH_CONFIG + "exclude-mapper-builders";
     private static final String SWITCH_CONFIG_LOGIC_DELETE = SWITCH_CONFIG + "logic-delete";
     private static final String SWITCH_CONFIG_VERSION = SWITCH_CONFIG + "version";
     private static final String SWITCH_CONFIG_LAZY_BUILDER = SWITCH_CONFIG + "lazy-builder";
     private static final String SWITCH_CONFIG_SPEED_BATCH = SWITCH_CONFIG + "speed-batch";
 
     private static final String RELATIONAL_CONFIG = "mybatis.no-sugar.relational.";
+    private static final String RELATIONAL_CONFIG_MAPPER_STRATEGY_CLASS = RELATIONAL_CONFIG + "mapper-strategy";
     private static final String RELATIONAL_CONFIG_ENTITY_BUILDER_CLASS = RELATIONAL_CONFIG + "entity-builder-class";
     private static final String RELATIONAL_CONFIG_ACCESS_TYPE = RELATIONAL_CONFIG + "access-type";
     private static final String RELATIONAL_CONFIG_CLASS_NAME_TO_TABLE_NAME_STRATEGY = RELATIONAL_CONFIG + "class-name-to-table-name-strategy";
     private static final String RELATIONAL_CONFIG_CLASS_NAME_TO_TABLE_NAME_STRATEGY_CLASS = RELATIONAL_CONFIG + "class-name-to-table-name-strategy-class";
     private static final String RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY = RELATIONAL_CONFIG + "field-name-to-column-name-strategy";
     private static final String RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY_CLASS = RELATIONAL_CONFIG + "field-name-to-column-name-strategy-class";
-    private static final String RELATIONAL_CONFIG_JAVAX_VALIDATION_MAPPING_NOT_NULL = RELATIONAL_CONFIG + "javax-validation-mapping-not-null";
     private static final String RELATIONAL_CONFIG_ID_GENERATOR_TYPES = RELATIONAL_CONFIG + "id-generator-types";
+    private static final String RELATIONAL_CONFIG_VALUE_HANDLER_TYPES = RELATIONAL_CONFIG + "value-handler-types";
 
     private static final String SQL_BUILD_CONFIG = "mybatis.no-sugar.sql-build.";
-    private static final String SQL_BUILD_CONFIG_SQL_USE_ALIAS = SQL_BUILD_CONFIG + "sql-use-alias";
-    private static final String SQL_BUILD_CONFIG_IGNORE_RESULT_LOGIC_DELETE = SQL_BUILD_CONFIG + "ignore-result-logic-delete";
     private static final String SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR = SQL_BUILD_CONFIG + "ignore-empty-char";
     private static final String SQL_BUILD_CONFIG_DIALECT_CLASS = SQL_BUILD_CONFIG + "dialect-class";
 
     private final ConfigRegistry configRegistry;
-    private final Properties properties;
+    private Properties properties;
 
     public MapperBuilderConfigBuilder(ConfigRegistry configRegistry, Properties properties) {
         this.configRegistry = configRegistry;
@@ -88,31 +100,35 @@ public class MapperBuilderConfigBuilder {
     private MapperBuilderConfig buildByProperties() {
         MapperBuilderConfig config = new MapperBuilderConfig();
         if (properties == null) {
-            return config;
+            properties = new Properties();
         }
         SwitchConfig switchConfig = config.getSwitchConfig();
         RelationalConfig relationalConfig = config.getRelationalConfig();
         SqlBuildConfig sqlBuildConfig = config.getSqlBuildConfig();
 
-        setPrimitiveValue(SWITCH_CONFIG_CRUD, Boolean::parseBoolean, () -> true, switchConfig::setCrud);
-        setPrimitiveValue(SWITCH_CONFIG_FIND_BY_METHODNAME, Boolean::parseBoolean, () -> true, switchConfig::setFindByMethodName);
-        setPrimitiveValue(SWITCH_CONFIG_MUTATIVE, Boolean::parseBoolean, () -> true, switchConfig::setMutative);
+        setClassesValue(SWITCH_CONFIG_INCLUDE_MAPPER_BUILDERS
+                , AbstractMapperBuilder.class, () -> Stream.of(MapperEntityStatementBuilder.class
+                                , MapperMethodNameBuilder.class
+                                , MutativeSqlBuilder.class)
+                        .collect(Collectors.toList())
+                , classes -> classes.forEach(switchConfig::addIncludeMapperBuilder));
+        setClassesValue(SWITCH_CONFIG_EXCLUDE_MAPPER_BUILDERS, AbstractMapperBuilder.class, () -> null
+                , classes -> classes.forEach(switchConfig::addExcludeMapperBuilder));
         setPrimitiveValue(SWITCH_CONFIG_LOGIC_DELETE, Boolean::parseBoolean, () -> true, switchConfig::setLogicDelete);
         setPrimitiveValue(SWITCH_CONFIG_VERSION, Boolean::parseBoolean, () -> true, switchConfig::setVersion);
         setPrimitiveValue(SWITCH_CONFIG_LAZY_BUILDER, Boolean::parseBoolean, () -> true, switchConfig::setLazyBuilder);
         setPrimitiveValue(SWITCH_CONFIG_SPEED_BATCH, Boolean::parseBoolean, () -> true, switchConfig::setSpeedBatch);
 
-        setClassValue(RELATIONAL_CONFIG_ENTITY_BUILDER_CLASS, AbstractEntityBuilder.class, () -> DefaultEntityBuilder.class, relationalConfig::setEntityBuilderType);
+        setBeanValue(RELATIONAL_CONFIG_MAPPER_STRATEGY_CLASS, MapperStrategy.class, DefaultMapperStrategy::new, relationalConfig::setMapperStrategy);
+        setClassValue(RELATIONAL_CONFIG_ENTITY_BUILDER_CLASS, EntityBuilder.class, () -> DefaultEntityBuilder.class, relationalConfig::setEntityBuilderType);
         setPrimitiveValue(RELATIONAL_CONFIG_ACCESS_TYPE, AccessType::valueOf, () -> AccessType.FIELD, relationalConfig::setAccessType);
         setPrimitiveValue(RELATIONAL_CONFIG_CLASS_NAME_TO_TABLE_NAME_STRATEGY, NameStrategyType::valueOf, () -> NameStrategyType.CAMEL_TO_UNDERSCORE, relationalConfig::setClassNameToTableNameStrategy);
         setBeanValue(RELATIONAL_CONFIG_CLASS_NAME_TO_TABLE_NAME_STRATEGY_CLASS, NameStrategy.class, () -> null, relationalConfig::setClassNameToTableNameStrategy);
         setPrimitiveValue(RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY, NameStrategyType::valueOf, () -> NameStrategyType.CAMEL_TO_UNDERSCORE, relationalConfig::setFieldNameToColumnNameStrategy);
-        setBeanValue(RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY_CLASS, NameStrategy.class, () -> null, relationalConfig::setFieldNameToColumnNameStrategy);
-        setPrimitiveValue(RELATIONAL_CONFIG_JAVAX_VALIDATION_MAPPING_NOT_NULL, Boolean::parseBoolean, () -> true, relationalConfig::setJavaxValidationMappingNotNull);
+        setBeanValue(RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY_CLASS, EntityPropertyNameStrategy.class, () -> null, relationalConfig::setFieldNameToColumnNameStrategy);
         setIdGeneratorTypes(relationalConfig::setIdGenerators);
+        setClassInstanceValue(RELATIONAL_CONFIG_VALUE_HANDLER_TYPES, ValueHandler.class, relationalConfig::setValueHandlers);
 
-        setPrimitiveValue(SQL_BUILD_CONFIG_SQL_USE_ALIAS, Boolean::parseBoolean, () -> true, sqlBuildConfig::setUseTableAlias);
-        setPrimitiveValue(SQL_BUILD_CONFIG_IGNORE_RESULT_LOGIC_DELETE, Boolean::parseBoolean, () -> true, sqlBuildConfig::setIgnoreResultLogicDelete);
         setPrimitiveValue(SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR, Boolean::parseBoolean, () -> false, sqlBuildConfig::setIgnoreEmptyChar);
         setBeanValue(SQL_BUILD_CONFIG_DIALECT_CLASS, Dialect.class, () -> null, sqlBuildConfig::setDialect);
         return config;
@@ -131,7 +147,7 @@ public class MapperBuilderConfigBuilder {
         if (StringUtils.isNotBlank(value)) {
             try {
                 Class<?> clazz = Class.forName(value);
-                Preconditions.checkArgument(superClass.isAssignableFrom(clazz), true
+                Preconditions.checkArgument(superClass.isAssignableFrom(clazz)
                         , StringFormatter.format("配置类型[{}]需实现[{}]!", value, superClass));
                 bean = (T) ReflectionUtils.newInstance(clazz);
             } catch (Exception e) {
@@ -151,7 +167,7 @@ public class MapperBuilderConfigBuilder {
         if (StringUtils.isNotBlank(value)) {
             try {
                 clazz = Class.forName(value);
-                Preconditions.checkArgument(superClass.isAssignableFrom(clazz), true
+                Preconditions.checkArgument(superClass.isAssignableFrom(clazz)
                         , StringFormatter.format("配置类型[{}]需实现[{}]!", value, superClass));
             } catch (Exception e) {
                 throw new NoSugarException(e);
@@ -164,6 +180,55 @@ public class MapperBuilderConfigBuilder {
         }
     }
 
+    private void setClassesValue(String key, Class<?> superClass, Supplier<List<Class<?>>> defaultSupplier, Consumer<List<Class<?>>> action) {
+        String value = properties.getProperty(key);
+        List<Class<?>> clazzs = null;
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                value = value.replaceAll(",", ";");
+                String[] classNames = value.split(";");
+                clazzs = new ArrayList<>(classNames.length);
+                for (String className : classNames) {
+                    Class<?> clazz = Class.forName(className);
+                    Preconditions.checkArgument(superClass.isAssignableFrom(clazz)
+                            , StringFormatter.format("配置类型[{}]需实现[{}]!", value, superClass));
+                    clazzs.add(clazz);
+                }
+            } catch (Exception e) {
+                throw new NoSugarException(e);
+            }
+        }
+        if (CollectionUtils.isEmpty(clazzs)) {
+            clazzs = defaultSupplier.get();
+        }
+        if (action != null && clazzs != null) {
+            action.accept(clazzs);
+        }
+    }
+
+    private void setClassInstanceValue(String key, Class<?> superClass, Consumer<List<?>> action) {
+        String value = properties.getProperty(key);
+        List<Object> instances = null;
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                value = value.replaceAll(",", ";");
+                String[] classNames = value.split(";");
+                instances = new ArrayList<>(classNames.length);
+                for (String className : classNames) {
+                    Class<?> clazz = Class.forName(className);
+                    Preconditions.checkArgument(superClass.isAssignableFrom(clazz)
+                            , StringFormatter.format("配置类型[{}]需实现[{}]!", value, superClass));
+                    instances.add(ReflectionUtils.newInstance(clazz));
+                }
+            } catch (Exception e) {
+                throw new NoSugarException(e);
+            }
+        }
+        if (action != null && instances != null) {
+            action.accept(instances);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private void setIdGeneratorTypes(Consumer<Map<String, IdGenerator<?>>> action) {
         Map<String, String> map = getSimpleMapByProperties(properties, RELATIONAL_CONFIG_ID_GENERATOR_TYPES);
@@ -172,7 +237,7 @@ public class MapperBuilderConfigBuilder {
             map.forEach((name, className) -> {
                 try {
                     Class<?> clazz = Class.forName(className);
-                    Preconditions.checkArgument(IdGenerator.class.isAssignableFrom(clazz), true
+                    Preconditions.checkArgument(IdGenerator.class.isAssignableFrom(clazz)
                             , StringFormatter.format("类型[{}]需实现[{}]!", className, IdGenerator.class));
                     mapValue.put(name, ReflectionUtils.newInstance((Class<IdGenerator<?>>) clazz));
                 } catch (ClassNotFoundException e) {
@@ -206,7 +271,7 @@ public class MapperBuilderConfigBuilder {
      */
     @SuppressWarnings("unchecked")
     private Map<String, String> getSimpleMapByProperties(Properties properties, String key) {
-        Map<String, String> map = (Map<String, String>) properties.get(RELATIONAL_CONFIG_ID_GENERATOR_TYPES);
+        Map<String, String> map = (Map<String, String>) properties.get(key);
         if (map == null) {
             map = new HashMap<>();
         }

@@ -18,12 +18,12 @@ package com.nosugarice.mybatis.builder;
 
 import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.annotation.ProviderAdapter;
-import com.nosugarice.mybatis.builder.mybatis.AdapterSqlSource;
-import com.nosugarice.mybatis.builder.mybatis.CountMutativeSqlSource;
-import com.nosugarice.mybatis.builder.mybatis.MutativeSqlSource;
-import com.nosugarice.mybatis.builder.mybatis.PageMutativeSqlSource;
-import com.nosugarice.mybatis.builder.statement.BaseMapperStatementBuilder;
-import com.nosugarice.mybatis.config.MetadataBuildingContext;
+import com.nosugarice.mybatis.builder.statement.MapperStatementBuilder;
+import com.nosugarice.mybatis.sqlsource.AdapterSqlSource;
+import com.nosugarice.mybatis.sqlsource.CountMutativeSqlSource;
+import com.nosugarice.mybatis.sqlsource.ExistsMutativeSqlSource;
+import com.nosugarice.mybatis.sqlsource.MutativeSqlSource;
+import com.nosugarice.mybatis.sqlsource.PageMutativeSqlSource;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMap;
 import org.apache.ibatis.mapping.ParameterMapping;
@@ -42,15 +42,20 @@ import java.util.Optional;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public class MutativeSqlBuilder extends AbstractMapperBuilder {
+public class MutativeSqlBuilder extends AbstractMapperBuilder<MutativeSqlBuilder> {
 
-    public MutativeSqlBuilder(MetadataBuildingContext buildingContext, Class<?> mapperInterface) {
-        super(buildingContext, mapperInterface);
+    @Override
+    public boolean isMapper() {
+        return true;
     }
 
     @Override
-    public boolean isNeedAchieveMethod(Method method) {
-        return isCountMethod(method) || isPageMethod(method) || isProviderAdapterMethod(method) || isAdapterMethod(method);
+    public boolean isCrudMethod(Method method) {
+        return isCountMethod(method)
+                || isExistsMethod(method)
+                || isPageMethod(method)
+                || isProviderAdapterMethod(method)
+                || isAdapterMethod(method);
     }
 
     @Override
@@ -61,6 +66,9 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
     public void processMethod(Method method) {
         if (isCountMethod(method)) {
             processCountMethod(method);
+        }
+        if (isExistsMethod(method)) {
+            processExistsMethod(method);
         }
         if (isPageMethod(method)) {
             processPageMethod(method);
@@ -75,8 +83,14 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
 
     private boolean isCountMethod(Method method) {
         return (Optional.ofNullable(method.getAnnotation(Provider.class)).map(Provider::value).orElse(null) == Provider.Type.COUNT
-                || method.getName().startsWith("countWith"))
-                && !hasStatement(method);
+                || method.getName().startsWith(CountMutativeSqlSource.COUNT_METHOD_START))
+                && notHasStatement(method);
+    }
+
+    private boolean isExistsMethod(Method method) {
+        return (Optional.ofNullable(method.getAnnotation(Provider.class)).map(Provider::value).orElse(null) == Provider.Type.EXISTS
+                || method.getName().startsWith(ExistsMutativeSqlSource.EXISTS_METHOD_START))
+                && notHasStatement(method);
     }
 
     private boolean isPageMethod(Method method) {
@@ -93,7 +107,7 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
 
     private void processCountMethod(Method method) {
         String methodMappedStatementId = getMethodMappedStatementId(method);
-        MutativeSqlSource sqlSource = new CountMutativeSqlSource(configuration, mapperInterface, method);
+        MutativeSqlSource sqlSource = new CountMutativeSqlSource(configuration, mapperClass, method);
         MappedStatement mappedStatement = sqlSource.getDefaultSelectMappedStatement();
 
         ResultMap.Builder resultMapBuilder = new ResultMap.Builder(configuration, methodMappedStatementId + "-Inline"
@@ -101,20 +115,37 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
         List<ResultMap> resultMaps = new ArrayList<>();
         resultMaps.add(resultMapBuilder.build());
 
+        addMappedStatement(methodMappedStatementId, resultMaps, sqlSource, mappedStatement);
+    }
+
+    private void processExistsMethod(Method method) {
+        String methodMappedStatementId = getMethodMappedStatementId(method);
+        MutativeSqlSource sqlSource = new ExistsMutativeSqlSource(configuration, mapperClass, method, buildingContext.getDialect());
+        MappedStatement mappedStatement = sqlSource.getDefaultSelectMappedStatement();
+
+        ResultMap.Builder resultMapBuilder = new ResultMap.Builder(configuration, methodMappedStatementId + "-Inline"
+                , Integer.class, new ArrayList<>());
+        List<ResultMap> resultMaps = new ArrayList<>();
+        resultMaps.add(resultMapBuilder.build());
+
+        addMappedStatement(methodMappedStatementId, resultMaps, sqlSource, mappedStatement);
+    }
+
+    private void addMappedStatement(String methodMappedStatementId, List<ResultMap> resultMaps, SqlSource sqlSource
+            , MappedStatement originalMappedStatement) {
         MappedStatement newMappedStatement = new MappedStatement.Builder(configuration, methodMappedStatementId
                 , sqlSource
-                , mappedStatement.getSqlCommandType())
+                , originalMappedStatement.getSqlCommandType())
                 .resultMaps(resultMaps)
-                .resource(mappedStatement.getResource())
-                .fetchSize(mappedStatement.getFetchSize())
-                .statementType(mappedStatement.getStatementType())
-                .keyGenerator(mappedStatement.getKeyGenerator())
-                .timeout(mappedStatement.getTimeout())
-                .parameterMap(mappedStatement.getParameterMap())
-                .resultSetType(mappedStatement.getResultSetType())
-                .cache(mappedStatement.getCache())
-                .flushCacheRequired(mappedStatement.isFlushCacheRequired())
-                .useCache(mappedStatement.isUseCache())
+                .resource(originalMappedStatement.getResource())
+                .fetchSize(originalMappedStatement.getFetchSize())
+                .statementType(originalMappedStatement.getStatementType())
+                .keyGenerator(originalMappedStatement.getKeyGenerator())
+                .timeout(originalMappedStatement.getTimeout())
+                .parameterMap(originalMappedStatement.getParameterMap())
+                .resultSetType(originalMappedStatement.getResultSetType())
+                .cache(originalMappedStatement.getCache())
+                .flushCacheRequired(originalMappedStatement.isFlushCacheRequired())
                 .build();
         configuration.addMappedStatement(newMappedStatement);
     }
@@ -122,8 +153,8 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
     private void processPageMethod(Method method) {
         String methodMappedStatementId = getMethodMappedStatementId(method);
         MappedStatement mappedStatement = configuration.getMappedStatement(methodMappedStatementId);
-        if (mappedStatement != null && !PageMutativeSqlSource.class.isAssignableFrom(mappedStatement.getSqlSource().getClass())) {
-            MutativeSqlSource sqlSource = new PageMutativeSqlSource(configuration, buildingContext.getDialect(), mapperInterface, method);
+        if (!PageMutativeSqlSource.class.isAssignableFrom(mappedStatement.getSqlSource().getClass())) {
+            MutativeSqlSource sqlSource = new PageMutativeSqlSource(configuration, buildingContext.getDialect(), mapperClass, method);
             MetaObject metaObject = configuration.newMetaObject(mappedStatement);
             metaObject.setValue("sqlSource", sqlSource);
         }
@@ -132,14 +163,14 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
     private void processProviderAdapterMethod(Method method) {
         String methodMappedStatementId = getMethodMappedStatementId(method);
 
-        SqlSource sqlSource = new AdapterSqlSource(configuration, mapperInterface, method);
+        SqlSource sqlSource = new AdapterSqlSource(configuration, mapperClass);
 
         ResultMap.Builder resultMapBuilder = new ResultMap.Builder(configuration, methodMappedStatementId + "-Inline"
                 , Object.class, new ArrayList<>());
         List<ResultMap> resultMaps = new ArrayList<>();
         resultMaps.add(resultMapBuilder.build());
 
-        Class<?> parameterTypeClass = BaseMapperStatementBuilder.getParameterType(method);
+        Class<?> parameterTypeClass = MapperStatementBuilder.getParameterType(method);
 
         List<ParameterMapping> parameterMappings = new ArrayList<>();
         ParameterMap parameterMap = new ParameterMap.Builder(configuration, methodMappedStatementId + "-Inline"
@@ -163,4 +194,8 @@ public class MutativeSqlBuilder extends AbstractMapperBuilder {
         AdapterSqlSource.registerAdapterMethod(methodMappedStatementId, method);
     }
 
+    @Override
+    public int getOrder() {
+        return 20;
+    }
 }

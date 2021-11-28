@@ -34,6 +34,7 @@ public @interface Provider {
     enum Type {
         CRUD,
         COUNT,
+        EXISTS,
         PAGE,
         BY_NAME,
         NONE

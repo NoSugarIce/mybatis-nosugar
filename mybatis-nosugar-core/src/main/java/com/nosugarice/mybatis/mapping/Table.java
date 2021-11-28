@@ -17,8 +17,6 @@
 package com.nosugarice.mybatis.mapping;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.TreeSet;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -34,17 +32,6 @@ public class Table implements Serializable {
 
     /** 表名称 */
     private String name;
-
-    /** 列集合 */
-    private Collection<Column> columns = new TreeSet<>();
-
-    public void addColumns(Collection<Column> columns) {
-        columns.forEach(this::addColumn);
-    }
-
-    public synchronized void addColumn(Column column) {
-        columns.add(column);
-    }
 
     public String getCatalog() {
         return catalog;
@@ -69,13 +56,4 @@ public class Table implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
-    public Collection<Column> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(Collection<Column> columns) {
-        this.columns = columns;
-    }
-
 }

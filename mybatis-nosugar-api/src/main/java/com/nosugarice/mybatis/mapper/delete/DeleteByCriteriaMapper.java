@@ -16,9 +16,10 @@
 
 package com.nosugarice.mybatis.mapper.delete;
 
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.function.CriteriaMapper;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
 import com.nosugarice.mybatis.sql.SqlBuilder;
-import com.nosugarice.mybatis.sql.criteria.EntityCriteriaQuery;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -33,7 +34,7 @@ public interface DeleteByCriteriaMapper<T> extends CriteriaMapper, DeleteMapper 
      * @param criteria
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.DELETE)
-    int delete(@Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE)
+    int delete(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
 }

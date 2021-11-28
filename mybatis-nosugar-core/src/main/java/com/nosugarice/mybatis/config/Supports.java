@@ -17,14 +17,9 @@
 package com.nosugarice.mybatis.config;
 
 import com.nosugarice.mybatis.annotation.DynamicTableName;
-import com.nosugarice.mybatis.annotation.SpeedBatch;
-import com.nosugarice.mybatis.annotation.SupportedFunction;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.mapping.value.KeyValue;
-import com.nosugarice.mybatis.util.Preconditions;
-
-import java.lang.reflect.Method;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -32,10 +27,6 @@ import java.lang.reflect.Method;
  */
 public class Supports {
 
-    private final RelationalEntity relationalEntity;
-
-    private final boolean supportSqlUseAlias;
-    private final boolean supportIgnoreResultLogicDelete;
     private final boolean supportIgnoreEmptyChar;
 
     private final boolean supportLogicDelete;
@@ -47,10 +38,6 @@ public class Supports {
     private final boolean supportDynamicTableName;
 
     public Supports(RelationalEntity relationalEntity, MapperBuilderConfig config) {
-        this.relationalEntity = relationalEntity;
-
-        this.supportSqlUseAlias = supportSqlUseAlias(config.getSqlBuildConfig());
-        this.supportIgnoreResultLogicDelete = supportIgnoreResultLogicDelete(config.getSqlBuildConfig());
         this.supportIgnoreEmptyChar = supportIgnoreEmptyChar(config.getSqlBuildConfig());
 
         this.supportLogicDelete = supportLogicDelete(relationalEntity, config.getSwitchConfig());
@@ -60,14 +47,6 @@ public class Supports {
         this.supportAutoIncrement = supportAutoIncrement(relationalEntity);
         this.supportIdGenerator = supportIdGenerator(relationalEntity);
         this.supportDynamicTableName = supportDynamicTableName(relationalEntity);
-    }
-
-    private boolean supportSqlUseAlias(SqlBuildConfig sqlBuildConfig) {
-        return sqlBuildConfig.isUseTableAlias();
-    }
-
-    private boolean supportIgnoreResultLogicDelete(SqlBuildConfig sqlBuildConfig) {
-        return sqlBuildConfig.isIgnoreResultLogicDelete();
     }
 
     private boolean supportIgnoreEmptyChar(SqlBuildConfig sqlBuildConfig) {
@@ -80,14 +59,6 @@ public class Supports {
 
     private boolean supportVersion(RelationalEntity relationalEntity, SwitchConfig config) {
         return config.isVersion() && relationalEntity.getVersionProperty().isPresent();
-    }
-
-    private boolean supportLazyBuilder(SwitchConfig switchConfig) {
-        return switchConfig.isLazyBuilder();
-    }
-
-    private boolean supportSpeedBatch(Class<?> mapperInterface, SwitchConfig config) {
-        return config.isSpeedBatch() && mapperInterface.isAnnotationPresent(SpeedBatch.class);
     }
 
     private boolean supportPrimaryKey(RelationalEntity relationalEntity) {
@@ -111,31 +82,6 @@ public class Supports {
 
     private boolean supportDynamicTableName(RelationalEntity relationalEntity) {
         return relationalEntity.getEntityClass().isAnnotationPresent(DynamicTableName.class);
-    }
-
-    public void checkMethod(Method method) {
-        SupportedFunction supportedFunctionAnn = method.getAnnotation(SupportedFunction.class);
-        if (supportedFunctionAnn != null) {
-            if (!this.supportPrimaryKey) {
-                boolean annSupportPrimaryKey = supportedFunctionAnn.supportPrimaryKey();
-                Preconditions.checkArgument(!annSupportPrimaryKey, true, "[" + relationalEntity.getQualifiedName() + "]"
-                        + "方法[" + method.getName() + "] 请设置唯一主键或Mapper不要继承[PrimaryKeyMapper].");
-            }
-            if (!this.supportLogicDelete) {
-                boolean annSupportLogicDelete = supportedFunctionAnn.supportLogicDelete();
-                Preconditions.checkArgument(!annSupportLogicDelete, false, "[" + relationalEntity.getQualifiedName() + "]"
-                        + "方法[" + method.getName() + "] 请设置逻辑删除字段或Mapper不要继承[LogicDeleteMapper]" +
-                        ". 否则相关方法时将不生效");
-            }
-        }
-    }
-
-    public boolean isSupportSqlUseAlias() {
-        return supportSqlUseAlias;
-    }
-
-    public boolean isSupportIgnoreResultLogicDelete() {
-        return supportIgnoreResultLogicDelete;
     }
 
     public boolean isSupportIgnoreEmptyChar() {

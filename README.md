@@ -1,14 +1,8 @@
  ![](https://gitee.com/NoSugarIce/document-gallery/raw/master/mybatis-nosugar/NoSugar-log.svg)
-
-## 为什么要有NoSugar
-
-Mybatis的简单轻巧使得很多人和项目的喜爱,但不像Jpa使用那么简单.一张表的基础的操作方法还是需要额外的工作才能正常使用.可以使用MyBatis-Generator进行简便的开发.最开始是构建一个功能类似与Generator的模板代码生成的项目A对MyBatis的支持工作,但是每次更改表结构的时候,代码还是需要重新生成一遍,还是有点麻烦.部分项目是Jpa,机子配置不怎么样,每次启动都巨慢,每天花费大量时间等待程序启动.于是NoSugar就开发了.
-
-
+ 
 ## NoSugar简介
 
-NoSugar目前仅支持单表,希望单表的简单操作不需要开发人员去进行一些额外的开发就可以直接使用.NoSugar只做Mybatis增强这一件事.部分项目使用的是Jpa(Hibernate),Hibernate是个很牛X的框架,但是使用的过程中还是有些众口难调的地方.所以NoSugar会带有在Jpa使用遗憾上的改进.NoSugar并没有实现Jpa,时间精力有限,只实现了Jpa根据方法名查询的功能.当前项目只是预览阶段,有很多Bug还待完善,基础代码已经完成,但还没有全功能测试.
-
+旨在为开发者提供简单易用功能完善的Api.NoSugar目前仅支持单表,希望单表的简单操作不需要开发人员去进行一些额外的开发就可以直接使用.NoSugar只做Mybatis增强这一件事.部分项目使用的是Jpa(Hibernate),Hibernate是个很牛X的框架,但是使用的过程中还是有些众口难调的地方.所以NoSugar会带有在Jpa使用遗憾上的改进.NoSugar并没有实现Jpa,时间精力有限,只实现了Jpa根据方法名查询的功能.当前项目只是预览阶段,有很多Bug还待完善,基础代码已经完成,但还没有全功能测试.
 
 
 ## 功能概览
@@ -16,17 +10,17 @@ NoSugar目前仅支持单表,希望单表的简单操作不需要开发人员去
 - 使用简单,不影响原有项目,无需修改原Mybatis类声明,没有重构任何Mybatis基础配置类,只需增加一行配置即可开启
 - 无缝增强现有Mybatis项目 (+功能),即使现在的项目在使用其他Mybatis框架依旧可增强
 - 部分功能如分页,count查询,Jpa方式的根据方法名查询,可以单独选用(实现方式并非Mybatis插件接口)
-- 性能非常丝滑,和原Mybatis无差别
+- 性能非常丝滑,部分功能超越Mybatis XML动态标签.
 - 基础的增删改查
 - 查询条件构造
 - 插入时主键策略
 - 批处理增强模式
 - 全新的分页方式,无需插件
-- 一种没遇到的count查询方法
+- 一种没遇见的count查询方法
 - 软删除
 - 乐观锁
 - 动态表名
-- 根据方法名实现条件查询(效果如同Jpa)
+- Jpa式根据方法名查询
 
 
 #### 部分功能演示
@@ -52,7 +46,6 @@ long count = studentMapper.selectAdapter((FunS.Param3<String, Integer, Integer, 
 
 1. JDK1.8+
 2. Maven
-
 3. MyBatis
 
 ##### 选择性环境

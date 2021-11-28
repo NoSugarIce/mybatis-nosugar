@@ -22,6 +22,7 @@ import com.nosugarice.mybatis.mapper.base.BaseLogicDeleteMapper;
 import com.nosugarice.mybatis.mapper.base.BaseSelectMapper;
 import com.nosugarice.mybatis.mapper.base.BaseUpdateMapper;
 import com.nosugarice.mybatis.mapper.function.MethodNameMapper;
+import com.nosugarice.mybatis.mapper.save.SaveMapper;
 
 import java.io.Serializable;
 
@@ -30,6 +31,6 @@ import java.io.Serializable;
  * @date 2017/8/29
  */
 public interface BaseMapper<T, ID extends Serializable> extends BaseSelectMapper<T, ID>, BaseInsertMapper<T>
-        , BaseUpdateMapper<T>, BaseDeleteMapper<T, ID>, BaseLogicDeleteMapper<T, ID>, MethodNameMapper<T> {
+        , BaseUpdateMapper<T>, SaveMapper<T, ID>, BaseDeleteMapper<T, ID>, BaseLogicDeleteMapper<T, ID>, MethodNameMapper<T> {
 }
 

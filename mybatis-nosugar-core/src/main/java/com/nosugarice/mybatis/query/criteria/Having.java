@@ -16,18 +16,20 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
+import com.nosugarice.mybatis.query.process.HavingCriterion;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Having<T, C> {
+public interface Having<X extends Having<X>> {
 
     /**
      * HAVING
      *
-     * @param having
+     * @param havingCriterion
      * @return
      */
-    CriteriaQuery<T, C> having(com.nosugarice.mybatis.query.process.Having having);
+    X having(HavingCriterion havingCriterion);
 
 }

@@ -16,9 +16,10 @@
 
 package com.nosugarice.mybatis.mapper.update;
 
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.function.CriteriaMapper;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
 import com.nosugarice.mybatis.sql.SqlBuilder;
-import com.nosugarice.mybatis.sql.criteria.EntityCriteriaQuery;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -35,8 +36,8 @@ public interface UpdateByCriteriaMapper<T> extends CriteriaMapper, UpdateMapper 
      * @param criteria 查询条件
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.UPDATE)
-    int update(@Param(UPDATE_COLUMN) T entity, @Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE)
+    int update(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
     /**
      * 根据所选条件更新
@@ -46,7 +47,7 @@ public interface UpdateByCriteriaMapper<T> extends CriteriaMapper, UpdateMapper 
      * @param criteria
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.UPDATE_NULLABLE)
-    int updateNullable(@Param(UPDATE_COLUMN) T entity, @Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_NULLABLE)
+    int updateNullable(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
 }
