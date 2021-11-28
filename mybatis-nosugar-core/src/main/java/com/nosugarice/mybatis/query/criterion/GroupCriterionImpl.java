@@ -17,8 +17,6 @@
 package com.nosugarice.mybatis.query.criterion;
 
 import com.nosugarice.mybatis.sql.Expression;
-import com.nosugarice.mybatis.sql.criterion.GroupCriterion;
-import com.nosugarice.mybatis.sql.criterion.PropertyCriterion;
 import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.ArrayList;
@@ -26,7 +24,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static com.nosugarice.mybatis.sql.SQLConstants.AND;
+import static com.nosugarice.mybatis.sql.SQLConstants.EMPTY;
+import static com.nosugarice.mybatis.sql.SQLConstants.OR;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -36,38 +37,38 @@ public class GroupCriterionImpl extends AbstractCriterion<GroupCriterionImpl> im
 
     private static final long serialVersionUID = -6979194990435135901L;
 
-    private final List<PropertyCriterion<?>> propertyCriterions = new ArrayList<>();
+    private final List<ColumnCriterion<?>> columnCriteria = new ArrayList<>();
 
     public GroupCriterionImpl(Separator separator) {
         this.separator = separator;
     }
 
-    public GroupCriterionImpl(PropertyCriterion<?>... criterions) {
-        this.propertyCriterions.addAll(Stream.of(criterions).collect(Collectors.toList()));
+    public GroupCriterionImpl(ColumnCriterion<?>... criterions) {
+        this.columnCriteria.addAll(Arrays.asList(criterions));
     }
 
-    public GroupCriterionImpl(Separator separator, PropertyCriterion<?>... criterions) {
+    public GroupCriterionImpl(Separator separator, ColumnCriterion<?>... criterions) {
         this.separator = separator;
-        this.propertyCriterions.addAll(Stream.of(criterions).collect(Collectors.toList()));
+        this.columnCriteria.addAll(Arrays.asList(criterions));
     }
 
-    public GroupCriterionImpl(Collection<PropertyCriterion<?>> criterions) {
-        this.propertyCriterions.addAll(criterions);
+    public GroupCriterionImpl(Collection<ColumnCriterion<?>> criterions) {
+        this.columnCriteria.addAll(criterions);
     }
 
-    public GroupCriterionImpl(Separator separator, Collection<PropertyCriterion<?>> criterions) {
+    public GroupCriterionImpl(Separator separator, Collection<ColumnCriterion<?>> criterions) {
         this.separator = separator;
-        this.propertyCriterions.addAll(criterions);
+        this.columnCriteria.addAll(criterions);
     }
 
     @Override
-    public final GroupCriterionImpl append(PropertyCriterion<?>... criterions) {
-        this.propertyCriterions.addAll(Stream.of(criterions).collect(Collectors.toList()));
+    public final GroupCriterionImpl append(ColumnCriterion<?>... criterions) {
+        this.columnCriteria.addAll(Arrays.asList(criterions));
         return this;
     }
 
-    public GroupCriterionImpl append(Collection<PropertyCriterion<?>> criterions) {
-        this.propertyCriterions.addAll(criterions);
+    public GroupCriterionImpl append(Collection<ColumnCriterion<?>> criterions) {
+        this.columnCriteria.addAll(criterions);
         return this;
     }
 
@@ -78,20 +79,21 @@ public class GroupCriterionImpl extends AbstractCriterion<GroupCriterionImpl> im
 
     @Override
     public String getSql() {
-        if (propertyCriterions.isEmpty()) {
-            return "";
+        if (columnCriteria.isEmpty()) {
+            return EMPTY;
         }
-        String criterionSql = propertyCriterions.stream()
+        String criterionSql = columnCriteria.stream()
                 .map(Expression::getSql)
                 .collect(Collectors.joining());
 
-        append(getSeparator().name(), "(", StringUtils.trim(criterionSql
-                , Arrays.asList(Separator.AND.name(), Separator.OR.name()), null), ")");
+        append(getSeparator().name(), "("
+                , StringUtils.trim(criterionSql, Arrays.asList(AND, OR), null)
+                , ")");
         return merge();
     }
 
     @Override
-    public List<PropertyCriterion<?>> getCriterions() {
-        return propertyCriterions;
+    public List<ColumnCriterion<?>> getCriterions() {
+        return columnCriteria;
     }
 }

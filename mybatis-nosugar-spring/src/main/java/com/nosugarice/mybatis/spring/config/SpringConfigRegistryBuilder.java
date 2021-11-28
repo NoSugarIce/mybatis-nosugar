@@ -16,11 +16,11 @@
 
 package com.nosugarice.mybatis.spring.config;
 
-import com.nosugarice.mybatis.config.ConfigRegistry;
 import com.nosugarice.mybatis.config.MapperBuilderConfig;
 import com.nosugarice.mybatis.config.RelationalConfig;
 import com.nosugarice.mybatis.config.SqlBuildConfig;
 import com.nosugarice.mybatis.config.SwitchConfig;
+import com.nosugarice.mybatis.registry.ConfigRegistry;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.springframework.context.ApplicationContext;
 
@@ -52,7 +52,7 @@ public class SpringConfigRegistryBuilder {
         if (applicationContext != null) {
             Collection<T> beans = applicationContext.getBeansOfType(clazz).values();
             if (!beans.isEmpty()) {
-                Preconditions.checkArgument(beans.size() <= 1, true, "多个[" + clazz.getName() + "]定义!");
+                Preconditions.checkArgument(beans.size() <= 1, "多个[" + clazz.getName() + "]定义!");
                 bean = beans.iterator().next();
             }
         }

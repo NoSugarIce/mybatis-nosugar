@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.mapper.logicdelete;
 
-import com.nosugarice.mybatis.annotation.SupportedFunction;
 import com.nosugarice.mybatis.mapper.function.PrimaryKeyMapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 
@@ -34,8 +33,7 @@ public interface LogicDeleteByPrimaryKeyMapper<ID> extends PrimaryKeyMapper, Log
      * @param id
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true, supportLogicDelete = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.LOGIC_DELETE_BY_ID)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE_BY_ID, fixedParameter = true)
     int logicDeleteById(ID id);
 
     /**
@@ -44,8 +42,7 @@ public interface LogicDeleteByPrimaryKeyMapper<ID> extends PrimaryKeyMapper, Log
      * @param ids
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true, supportLogicDelete = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.LOGIC_DELETE_BY_IDS)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE_BY_IDS)
     int logicDeleteByIds(Collection<ID> ids);
 
 }

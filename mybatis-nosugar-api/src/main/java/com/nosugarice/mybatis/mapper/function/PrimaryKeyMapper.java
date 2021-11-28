@@ -21,7 +21,4 @@ package com.nosugarice.mybatis.mapper.function;
  * @date 2020/12/4
  */
 public interface PrimaryKeyMapper extends Mapper {
-
-    String IDS = "ids";
-
 }

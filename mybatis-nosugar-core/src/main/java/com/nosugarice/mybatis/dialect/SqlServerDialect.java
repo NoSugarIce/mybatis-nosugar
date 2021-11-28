@@ -58,7 +58,11 @@ public class SqlServerDialect implements Dialect {
 
     @Override
     public Limit getLimitHandler() {
-        return Holder.LIMIT_INSTANCE;
+        return LimitHolder.LIMIT_INSTANCE;
+    }
+
+    private static class LimitHolder {
+        private static final Limit LIMIT_INSTANCE = new SqlServerLimit();
     }
 
     public static class SqlServerLimit implements Limit {
@@ -141,10 +145,6 @@ public class SqlServerDialect implements Dialect {
             return sql.substring(sql.toUpperCase().indexOf("SELECT"));
         }
 
-    }
-
-    private static class Holder {
-        private static final Limit LIMIT_INSTANCE = new SqlServerLimit();
     }
 
 }

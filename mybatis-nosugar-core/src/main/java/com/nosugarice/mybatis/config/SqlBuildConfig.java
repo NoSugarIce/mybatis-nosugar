@@ -24,33 +24,11 @@ import com.nosugarice.mybatis.dialect.Dialect;
  */
 public class SqlBuildConfig {
 
-    /** sql 操作是否使用别名 */
-    private boolean useTableAlias = true;
-
-    /** 查询结果忽略软删除 */
-    private boolean ignoreResultLogicDelete;
-
     /** 忽略空字符 */
     private boolean ignoreEmptyChar;
 
     /** 数据库方言 */
     private Dialect dialect;
-
-    public boolean isUseTableAlias() {
-        return useTableAlias;
-    }
-
-    public void setUseTableAlias(boolean useTableAlias) {
-        this.useTableAlias = useTableAlias;
-    }
-
-    public boolean isIgnoreResultLogicDelete() {
-        return ignoreResultLogicDelete;
-    }
-
-    public void setIgnoreResultLogicDelete(boolean ignoreResultLogicDelete) {
-        this.ignoreResultLogicDelete = ignoreResultLogicDelete;
-    }
 
     public boolean isIgnoreEmptyChar() {
         return ignoreEmptyChar;

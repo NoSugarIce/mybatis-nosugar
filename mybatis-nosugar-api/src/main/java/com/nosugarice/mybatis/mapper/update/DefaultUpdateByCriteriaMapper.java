@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.mapper.update;
 
-import com.nosugarice.mybatis.sql.criteria.SimpleCriteriaQuery;
+import com.nosugarice.mybatis.query.criteria.SimpleCriteriaQuery;
 
 /**
  * @author dingjingyang@foxmail.com

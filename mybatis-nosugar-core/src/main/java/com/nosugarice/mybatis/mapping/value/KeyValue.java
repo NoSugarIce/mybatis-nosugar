@@ -16,15 +16,11 @@
 
 package com.nosugarice.mybatis.mapping.value;
 
-import java.io.Serializable;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2021/6/12
  */
-public class KeyValue<T extends Serializable> extends SimpleValue<T> {
-
-    private static final long serialVersionUID = -4609581874619363862L;
+public class KeyValue extends SimpleValue {
 
     /** 自增 */
     private boolean autoIncrement;

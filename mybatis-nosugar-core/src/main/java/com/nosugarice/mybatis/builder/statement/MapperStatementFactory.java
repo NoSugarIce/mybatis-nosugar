@@ -16,15 +16,12 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
+import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.mapper.delete.DeleteMapper;
 import com.nosugarice.mybatis.mapper.function.MethodNameMapper;
 import com.nosugarice.mybatis.mapper.insert.InsertMapper;
 import com.nosugarice.mybatis.mapper.logicdelete.LogicDeleteMapper;
-import com.nosugarice.mybatis.mapper.select.SelectMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateMapper;
-import org.apache.ibatis.builder.BuilderException;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -32,27 +29,25 @@ import org.apache.ibatis.builder.MapperBuilderAssistant;
  */
 public class MapperStatementFactory {
 
-    public static BaseMapperStatementBuilder getMapperStatementBuilder(Class<?> mapperType, SqlScriptBuilder sqlScriptBuilder
-            , MapperBuilderAssistant assistant) {
-        if (SelectMapper.class.isAssignableFrom(mapperType)) {
-            return new SelectMapperStatementBuilder(sqlScriptBuilder, assistant);
-        }
+    public static MapperStatementBuilder getMapperStatementBuilder(Class<?> mapperClass
+            , Class<?> mapperType, MetadataBuildingContext buildingContext) {
+        MapperStatementBuilder mapperStatementBuilder = null;
         if (InsertMapper.class.isAssignableFrom(mapperType)) {
-            return new InsertMapperStatementBuilder(sqlScriptBuilder, assistant);
+            mapperStatementBuilder = new InsertMapperStatementBuilder();
         }
-        if (UpdateMapper.class.isAssignableFrom(mapperType)) {
-            return new UpdateMapperStatementBuilder(sqlScriptBuilder, assistant);
+        if (UpdateMapper.class.isAssignableFrom(mapperType) || LogicDeleteMapper.class.isAssignableFrom(mapperType)) {
+            mapperStatementBuilder = new UpdateMapperStatementBuilder();
         }
         if (DeleteMapper.class.isAssignableFrom(mapperType)) {
-            return new DeleteMapperStatementBuilder(sqlScriptBuilder, assistant);
-        }
-        if (LogicDeleteMapper.class.isAssignableFrom(mapperType)) {
-            return new LogicDeleteMapperStatementBuilder(sqlScriptBuilder, assistant);
+            mapperStatementBuilder = new DeleteMapperStatementBuilder();
         }
         if (MethodNameMapper.class.isAssignableFrom(mapperType)) {
-            return new MethodNameMapperStatementBuilder(sqlScriptBuilder, assistant);
+            mapperStatementBuilder = new MethodNameMapperStatementBuilder();
         }
-        throw new BuilderException("");
+        if (mapperStatementBuilder == null) {
+            mapperStatementBuilder = new MapperStatementBuilder();
+        }
+        return mapperStatementBuilder.withMapperInterface(mapperClass).withMetadataBuildingContext(buildingContext).build();
     }
 
 }

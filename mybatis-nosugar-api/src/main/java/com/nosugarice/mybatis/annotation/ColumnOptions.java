@@ -16,6 +16,8 @@
 
 package com.nosugarice.mybatis.annotation;
 
+import com.nosugarice.mybatis.handler.ValueHandler;
+import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 import java.lang.annotation.Documented;
@@ -23,6 +25,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  * 列其他选项
@@ -37,6 +42,39 @@ public @interface ColumnOptions {
 
     boolean ignoreEmptyChar() default false;
 
-    Class<? extends TypeHandler<?>> typeHandler();
+    Class<? extends TypeHandler<?>> typeHandler() default VoidHandler.class;
+
+    Class<? extends ValueHandler<?>> insertHandler() default VoidHandler.class;
+
+    Class<? extends ValueHandler<?>> updateHandler() default VoidHandler.class;
+
+    Class<? extends ValueHandler<?>> resultHandler() default VoidHandler.class;
+
+    class VoidHandler implements TypeHandler<Void>, ValueHandler<Void> {
+
+        @Override
+        public void setParameter(PreparedStatement ps, int i, Void parameter, JdbcType jdbcType) {
+        }
+
+        @Override
+        public Void getResult(ResultSet rs, String columnName) {
+            return null;
+        }
+
+        @Override
+        public Void getResult(ResultSet rs, int columnIndex) {
+            return null;
+        }
+
+        @Override
+        public Void getResult(CallableStatement cs, int columnIndex) {
+            return null;
+        }
+
+        @Override
+        public Void setValue(Void value) {
+            return null;
+        }
+    }
 
 }

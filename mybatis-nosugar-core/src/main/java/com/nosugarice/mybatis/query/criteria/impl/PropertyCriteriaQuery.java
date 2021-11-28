@@ -16,15 +16,13 @@
 
 package com.nosugarice.mybatis.query.criteria.impl;
 
-import com.nosugarice.mybatis.builder.sql.MetadataCache;
-
-import java.util.function.Function;
+import com.nosugarice.mybatis.query.criteria.tocolumn.PropertyToColumn;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public class PropertyCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
+public class PropertyCriteriaQuery<T> extends AbstractEntityCriteriaQuery<T, String> implements PropertyToColumn {
 
     public PropertyCriteriaQuery(Class<T> entityClass) {
         super(entityClass);
@@ -32,10 +30,5 @@ public class PropertyCriteriaQuery<T> extends AbstractCriteriaQuery<T, String> {
 
     public PropertyCriteriaQuery(T entity) {
         super(entity);
-    }
-
-    @Override
-    public Function<String, String> convert() {
-        return property -> MetadataCache.getColumnByProperty(getEntityClass(), property);
     }
 }

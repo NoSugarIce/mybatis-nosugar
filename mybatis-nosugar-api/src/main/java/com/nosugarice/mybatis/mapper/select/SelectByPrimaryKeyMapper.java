@@ -16,10 +16,8 @@
 
 package com.nosugarice.mybatis.mapper.select;
 
-import com.nosugarice.mybatis.annotation.SupportedFunction;
 import com.nosugarice.mybatis.mapper.function.PrimaryKeyMapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,8 +35,7 @@ public interface SelectByPrimaryKeyMapper<T, ID> extends PrimaryKeyMapper, Selec
      * @param id
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.SELECT_BY_ID)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_BY_ID, fixedParameter = true)
     Optional<T> selectById(ID id);
 
     /**
@@ -47,8 +44,7 @@ public interface SelectByPrimaryKeyMapper<T, ID> extends PrimaryKeyMapper, Selec
      * @param ids
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.SELECT_BY_IDS)
-    List<T> selectByIds(@Param(IDS) Collection<ID> ids);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_BY_IDS)
+    List<T> selectByIds(Collection<ID> ids);
 
 }

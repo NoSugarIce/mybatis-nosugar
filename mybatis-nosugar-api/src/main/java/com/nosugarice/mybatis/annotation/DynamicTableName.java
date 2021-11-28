@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * @date 2020/12/6
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DynamicTableName {
 }

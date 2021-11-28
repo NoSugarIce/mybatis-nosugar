@@ -16,36 +16,44 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
-import com.nosugarice.mybatis.query.function.FunctionExpression;
+import com.nosugarice.mybatis.sql.Expression;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Selection<T, C> {
+public interface Selection extends Expression {
 
     /**
-     * 查询字段
+     * 设置别名
      *
-     * @param properties
+     * @param alias
      * @return
      */
-    CriteriaQuery<T, C> select(C... properties);
+    <T extends Selection> T alias(String alias);
 
     /**
-     * 排除字段
+     * 获取别名
      *
-     * @param properties
      * @return
      */
-    CriteriaQuery<T, C> exclude(C... properties);
+    String getAlias();
 
     /**
-     * 聚合函数字段
+     * 是否列查询
      *
-     * @param aggregationFunctions
      * @return
      */
-    CriteriaQuery<T, C> expand(FunctionExpression<? extends FunctionExpression<?>>... aggregationFunctions);
+    default boolean isColumnSelection() {
+        return false;
+    }
 
+    /**
+     * 是否方法查询
+     *
+     * @return
+     */
+    default boolean isFunctionSelection() {
+        return false;
+    }
 }

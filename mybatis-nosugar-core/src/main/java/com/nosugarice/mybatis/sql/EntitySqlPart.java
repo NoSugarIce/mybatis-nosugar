@@ -1,0 +1,89 @@
+/*
+ *    Copyright 2021 NoSugarIce
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package com.nosugarice.mybatis.sql;
+
+import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.dialect.Dialect;
+import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.util.StringJoinerBuilder;
+
+import java.io.Serializable;
+
+import static com.nosugarice.mybatis.sql.SQLConstants.AND;
+import static com.nosugarice.mybatis.sql.SQLConstants.AS_;
+import static com.nosugarice.mybatis.sql.SQLConstants.EQUALS_TO;
+import static com.nosugarice.mybatis.sql.SQLConstants.IS_NULL;
+import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
+
+/**
+ * @author dingjingyang@foxmail.com
+ * @date 2021/1/1
+ */
+public class EntitySqlPart implements SqlPart {
+
+    private final EntityMetadata entityMetadata;
+    private final Dialect dialect;
+
+    public String selectResult;
+    public String selectParameterLogicDelete;
+    public String logicDeleteColumnValue;
+
+    public EntitySqlPart(EntityMetadata entityMetadata, Dialect dialect) {
+        this.entityMetadata = entityMetadata;
+        this.dialect = dialect;
+        this.selectResult = selectResult();
+        this.selectParameterLogicDelete = selectParameterLogicDelete();
+        this.logicDeleteColumnValue = logicDeleteColumnValue();
+    }
+
+    private String selectResult() {
+        StringBuilder sqlBuilder = new StringBuilder();
+        for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
+            String safeColumn = SqlPart.safeColumnName(property.getColumn(), dialect);
+            sqlBuilder.append(Placeholder.columnAliasState(safeColumn)).append(AS_)
+                    .append("\"").append(property.getName()).append("\"").append(",").append(SPACE);
+        }
+        return sqlBuilder.toString();
+    }
+
+    private String selectParameterLogicDelete() {
+        if (entityMetadata.getSupports().isSupportLogicDelete()) {
+            RelationalProperty logicDeleteProperty = entityMetadata.getLogicDeleteProperty();
+            StringJoinerBuilder joinerBuilder = StringJoinerBuilder.createSpaceJoin()
+                    .withElements(AND, Placeholder.columnAliasState(SqlPart.safeColumnName(logicDeleteProperty.getColumn(), dialect)));
+            Serializable defaultValue = logicDeleteProperty.getValue().getDefaultValue();
+            if (defaultValue == null) {
+                joinerBuilder.withElements(IS_NULL);
+            } else {
+                joinerBuilder.withElements(EQUALS_TO, dialect.getLiteralValueHandler().convert(defaultValue));
+            }
+            return joinerBuilder.build();
+        }
+        return null;
+    }
+
+    private String logicDeleteColumnValue() {
+        if (entityMetadata.getSupports().isSupportLogicDelete()) {
+            RelationalProperty logicDeleteProperty = entityMetadata.getLogicDeleteProperty();
+            return StringJoinerBuilder.createSpaceJoin().withElements(logicDeleteProperty.getColumn(), EQUALS_TO
+                            , dialect.getLiteralValueHandler().convert(logicDeleteProperty.getAsLogicDeleteValue().getLogicDeleteValue()))
+                    .build();
+        }
+        return null;
+    }
+
+}

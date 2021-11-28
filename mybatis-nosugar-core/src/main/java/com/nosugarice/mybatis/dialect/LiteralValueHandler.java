@@ -16,8 +16,6 @@
 
 package com.nosugarice.mybatis.dialect;
 
-import com.nosugarice.mybatis.builder.sql.SqlPart;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,15 +27,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static com.nosugarice.mybatis.sql.SQLConstants.NULL;
+
 /**
- * @author dingjingyang@foxmail.com(dingjingyang)
+ * @author dingjingyang@foxmail.com
  * @date 2021/6/27
  */
 public abstract class LiteralValueHandler {
 
     private final Map<Class<? extends Serializable>, Function<Serializable, String>> handlerRegistry = new HashMap<>();
 
-    public LiteralValueHandler() {
+    protected LiteralValueHandler() {
         register(String.class, this::defaultConvert);
         register(Byte.class, this::originalConvert);
         register(Short.class, this::originalConvert);
@@ -64,7 +64,7 @@ public abstract class LiteralValueHandler {
      */
     public String convert(Serializable value) {
         if (value == null) {
-            return SqlPart.NULL;
+            return NULL;
         }
         Function<Serializable, String> function = handlerRegistry.getOrDefault(value.getClass(), this::defaultConvert);
         return function.apply(value);

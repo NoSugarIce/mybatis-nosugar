@@ -18,8 +18,8 @@ package com.nosugarice.mybatis.mapper.select;
 
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.domain.PageImpl;
-import com.nosugarice.mybatis.sql.criteria.EntityCriteriaQuery;
-import com.nosugarice.mybatis.sql.criteria.SimpleCriteriaQuery;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
+import com.nosugarice.mybatis.query.criteria.SimpleCriteriaQuery;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 
 import java.util.List;
@@ -31,16 +31,6 @@ import java.util.function.Function;
  * @date 2017/8/30
  */
 public interface DefaultSelectByCriteriaMapper<T> extends SelectByCriteriaMapper<T> {
-
-    /**
-     * 判断是否存在
-     *
-     * @param criteria 查询条件封装
-     * @return 是否存在
-     */
-    default boolean exists(EntityCriteriaQuery<T> criteria) {
-        return count(criteria) > 0;
-    }
 
     /**
      * 查询符合的行数

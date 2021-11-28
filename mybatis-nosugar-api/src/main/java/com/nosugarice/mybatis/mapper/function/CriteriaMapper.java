@@ -21,7 +21,4 @@ package com.nosugarice.mybatis.mapper.function;
  * @date 2021/1/2
  */
 public interface CriteriaMapper extends Mapper {
-
-    String CRITERIA = "criteria";
-
 }

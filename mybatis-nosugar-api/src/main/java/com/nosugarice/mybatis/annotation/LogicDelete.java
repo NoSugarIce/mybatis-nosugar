@@ -34,8 +34,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LogicDelete {
 
+    String NULL = "NULL";
+    String NOW = "NOW";
+
     //默认值
-    String defaultValue() default "NULL";
+    String defaultValue() default NULL;
 
     //逻辑删除值
     String deleteValue();

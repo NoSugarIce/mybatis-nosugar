@@ -16,15 +16,35 @@
 
 package com.nosugarice.mybatis.mapping.value;
 
+import com.nosugarice.mybatis.handler.ValueHandler;
+
 import java.io.Serializable;
 
 /**
- * @author dingjingyang@foxmail.com(dingjingyang)
+ * @author dingjingyang@foxmail.com
  * @date 2021/6/12
  */
-public class SimpleValue<T extends Serializable> implements Value<T> {
+public class SimpleValue implements Value {
 
-    private static final long serialVersionUID = 2903179613818694904L;
+    private Class<?> type;
+
+    private ValueHandler<?> insertHandler;
+
+    private ValueHandler<?> updateHandler;
+
+    private ValueHandler<?> resultHandler;
+
+    public SimpleValue() {
+    }
+
+    public SimpleValue(Class<?> type) {
+        this.type = type;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return type;
+    }
 
     @Override
     public boolean isInsertable() {
@@ -37,7 +57,34 @@ public class SimpleValue<T extends Serializable> implements Value<T> {
     }
 
     @Override
-    public T getDefaultValue() {
+    public ValueHandler<?> insertHandler() {
+        return insertHandler;
+    }
+
+    public void setInsertHandler(ValueHandler<?> insertHandler) {
+        this.insertHandler = insertHandler;
+    }
+
+    @Override
+    public ValueHandler<?> updateHandler() {
+        return updateHandler;
+    }
+
+    public void setUpdateHandler(ValueHandler<?> updateHandler) {
+        this.updateHandler = updateHandler;
+    }
+
+    @Override
+    public ValueHandler<?> resultHandler() {
+        return resultHandler;
+    }
+
+    public void setResultHandler(ValueHandler<?> resultHandler) {
+        this.resultHandler = resultHandler;
+    }
+
+    @Override
+    public Serializable getDefaultValue() {
         return null;
     }
 }

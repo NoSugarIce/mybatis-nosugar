@@ -24,17 +24,13 @@ import java.util.function.BiPredicate;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class TwoValueCriterion<T, E extends TwoValueCriterion<T, E>> extends AbstractPropertyCriterion<T, E> {
+public abstract class TwoValueCriterion<T, E extends TwoValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
 
     private static final long serialVersionUID = 3407529238253654774L;
 
     private T secondValue;
 
-    public TwoValueCriterion(String column, String operator, T low, T high) {
-        this(column, operator, low, high, Separator.AND);
-    }
-
-    public TwoValueCriterion(String column, String operator, T low, T high, Separator separator) {
+    protected TwoValueCriterion(String column, String operator, T low, T high, Separator separator) {
         super(column, operator, low, separator);
         this.secondValue = high;
     }

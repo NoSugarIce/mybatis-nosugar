@@ -16,7 +16,19 @@
 
 package com.nosugarice.mybatis.mapping.value;
 
+import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.exception.NoSugarException;
+import com.nosugarice.mybatis.util.Preconditions;
+
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 逻辑删除的初始值和删除值是确定的,直接拼接到sql
@@ -24,17 +36,16 @@ import java.io.Serializable;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/6
  */
-public class LogicDeleteValue extends SimpleValue<Serializable> {
-
-    private static final long serialVersionUID = 3607357378934254038L;
+public class LogicDeleteValue extends SimpleValue {
 
     /** 默认值 */
-    private final Serializable defaultValue;
+    private final String defaultValue;
 
     /** 逻辑删除值 */
-    private final Serializable logicDeleteValue;
+    private final String logicDeleteValue;
 
-    public LogicDeleteValue(Serializable defaultValue, Serializable logicDeleteValue) {
+    public LogicDeleteValue(Class<?> type, String defaultValue, String logicDeleteValue) {
+        super(type);
         this.defaultValue = defaultValue;
         this.logicDeleteValue = logicDeleteValue;
     }
@@ -46,11 +57,56 @@ public class LogicDeleteValue extends SimpleValue<Serializable> {
 
     @Override
     public Serializable getDefaultValue() {
-        return defaultValue;
+        return LogicDeleteValueGenerator.INSTANCE.generateValue(defaultValue, getType());
     }
 
     public Serializable getLogicDeleteValue() {
-        return logicDeleteValue;
+        return LogicDeleteValueGenerator.INSTANCE.generateValue(logicDeleteValue, getType());
+    }
+
+    private static class LogicDeleteValueGenerator {
+
+        private static final Set<Class<?>> SUPPORTS_LOGIC_DELETE_TYPE = Stream.of(int.class, Integer.class, long.class
+                        , Long.class, boolean.class, Boolean.class, Date.class, LocalDateTime.class, String.class)
+                .collect(Collectors.toSet());
+
+        private static final LogicDeleteValueGenerator INSTANCE = new LogicDeleteValue.LogicDeleteValueGenerator();
+
+        public Serializable generateValue(String value, Class<?> type) {
+            Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type)
+                    , "不支持的逻辑删除字段类型" + "[" + type.getName() + "]");
+
+            if (LogicDelete.NULL.equalsIgnoreCase(value)) {
+                return null;
+            }
+
+            if (LogicDelete.NOW.equalsIgnoreCase(value)) {
+                value = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            }
+
+            if (String.class.isAssignableFrom(type)) {
+                return value;
+            }
+            if (Integer.class.isAssignableFrom(type)) {
+                return Integer.valueOf(value);
+            } else if (Long.class.isAssignableFrom(type)) {
+                return Long.valueOf(value);
+            } else if (LocalDateTime.class.isAssignableFrom(type)) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            } else if (Date.class.isAssignableFrom(type)) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    return dateFormat.parse(value);
+                } catch (ParseException e) {
+                    throw new NoSugarException(e);
+                }
+            } else if (Boolean.class.isAssignableFrom(type)) {
+                return Boolean.valueOf(value);
+            }
+            return null;
+        }
+
     }
 
 }

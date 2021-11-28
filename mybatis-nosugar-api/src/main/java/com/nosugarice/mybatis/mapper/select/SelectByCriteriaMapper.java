@@ -18,12 +18,14 @@ package com.nosugarice.mybatis.mapper.select;
 
 import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.domain.Page;
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.function.CriteriaMapper;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
 import com.nosugarice.mybatis.sql.SqlBuilder;
-import com.nosugarice.mybatis.sql.criteria.EntityCriteriaQuery;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -37,8 +39,8 @@ public interface SelectByCriteriaMapper<T> extends CriteriaMapper, SelectMapper 
      * @param criteria 查询条件封装
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.SELECT_LIST)
-    List<T> selectList(@Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_LIST)
+    List<T> selectList(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
     /**
      * 分页查询
@@ -47,8 +49,8 @@ public interface SelectByCriteriaMapper<T> extends CriteriaMapper, SelectMapper 
      * @param page     分页参数
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.SELECT_LIST)
-    List<T> selectListLimit(@Param(CRITERIA) EntityCriteriaQuery<T> criteria, @Param("page") Page<T> page);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_LIST_LIMIT)
+    List<T> selectListLimit(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria, @Param("page") Page<T> page);
 
     /**
      * 查询符合条件的记录数
@@ -57,6 +59,15 @@ public interface SelectByCriteriaMapper<T> extends CriteriaMapper, SelectMapper 
      * @return
      */
     @Provider(Provider.Type.COUNT)
-    long count(@Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    long count(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
+
+    /**
+     * 判断是否存在
+     *
+     * @param criteria 查询条件封装
+     * @return 是否存在包装
+     */
+    @Provider(Provider.Type.EXISTS)
+    Optional<Integer> exists(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
 }

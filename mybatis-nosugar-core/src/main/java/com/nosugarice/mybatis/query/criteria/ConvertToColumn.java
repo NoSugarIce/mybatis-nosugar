@@ -16,8 +16,6 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
-import java.util.function.Function;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -28,17 +26,9 @@ public interface ConvertToColumn<C> {
      * 转换成表列名
      *
      * @param column
+     * @param entityClass
      * @return
      */
-    default String toColumn(C column) {
-        return convert().apply(column);
-    }
-
-    /**
-     * 获取转换方法
-     *
-     * @return 转换方法
-     */
-    Function<C, String> convert();
+    String toColumn(C column, Class<?> entityClass);
 
 }

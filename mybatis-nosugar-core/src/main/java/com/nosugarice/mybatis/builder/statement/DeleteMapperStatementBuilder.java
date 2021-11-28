@@ -16,31 +16,15 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
-import com.nosugarice.mybatis.mapper.delete.DeleteByCriteriaMapper;
-import com.nosugarice.mybatis.mapper.delete.DeleteByPrimaryKeyMapper;
-import com.nosugarice.mybatis.mapper.function.Mapper;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.mapping.SqlCommandType;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/2
  */
-public class DeleteMapperStatementBuilder extends BaseMapperStatementBuilder {
-
-    protected DeleteMapperStatementBuilder(SqlScriptBuilder sqlScriptBuilder, MapperBuilderAssistant assistant) {
-        super(sqlScriptBuilder, assistant);
-    }
-
-    @Override
-    public Collection<Class<? extends Mapper>> getMapperTypes() {
-        return Arrays.asList(DeleteByPrimaryKeyMapper.class, DeleteByCriteriaMapper.class);
-    }
+public class DeleteMapperStatementBuilder extends MapperStatementBuilder {
 
     @Override
     public SqlCommandType getSqlCommandType(Method method) {

@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.mapper.update;
 
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.function.PrimaryKeyMapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 import org.apache.ibatis.annotations.Param;
@@ -34,18 +35,18 @@ public interface UpdateByPrimaryKeyMapper<T> extends PrimaryKeyMapper, UpdateMap
      * @param entity
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.UPDATE_BY_ID)
-    int updateById(@Param(UPDATE_COLUMN) T entity);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_BY_ID)
+    int updateById(@Param(MapperParam.UPDATE_COLUMN) T entity);
 
     /**
      * 根据主键更新,选择的属性强制更新
      *
      * @param entity
-     * @param choseKeys
+     * @param choseProperties
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.UPDATE_BY_ID_CHOSE_KEY)
-    int updateByIdChoseKey(@Param(UPDATE_COLUMN) T entity, @Param("choseKeys") Set<String> choseKeys);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_BY_ID_CHOSE_PROPERTY)
+    int updateByIdChoseProperty(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param("choseProperties") Set<String> choseProperties);
 
     /**
      * 根据主键更新,值为空的忽略
@@ -53,7 +54,7 @@ public interface UpdateByPrimaryKeyMapper<T> extends PrimaryKeyMapper, UpdateMap
      * @param entity
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.UPDATE_NULLABLE_BY_ID)
-    int updateByIdNullable(@Param(UPDATE_COLUMN) T entity);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_NULLABLE_BY_ID)
+    int updateByIdNullable(@Param(MapperParam.UPDATE_COLUMN) T entity);
 
 }

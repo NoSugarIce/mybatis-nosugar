@@ -16,23 +16,11 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
-import com.nosugarice.mybatis.query.process.Group;
-
-import java.util.Arrays;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface GroupBy<T, C> extends ConvertToColumn<C> {
-
-    /**
-     * 分组
-     *
-     * @param groupBy
-     * @return
-     */
-    CriteriaQuery<T, C> groupBy(Group groupBy);
+public interface GroupBy<C, X extends GroupBy<C, X>> {
 
     /**
      * 分组
@@ -40,11 +28,6 @@ public interface GroupBy<T, C> extends ConvertToColumn<C> {
      * @param columns 列
      * @return
      */
-    default CriteriaQuery<T, C> groupBy(C... columns) {
-        String[] newColumns = Arrays.stream(columns)
-                .map(convert())
-                .toArray(String[]::new);
-        return groupBy(new Group(newColumns));
-    }
+    X groupBy(C... columns);
 
 }

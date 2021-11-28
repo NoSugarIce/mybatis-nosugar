@@ -16,24 +16,16 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import com.nosugarice.mybatis.builder.mybatis.CustomizeKeyGenerator;
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
 import com.nosugarice.mybatis.config.Supports;
-import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.dialect.Identity;
-import com.nosugarice.mybatis.exception.NoSugarException;
-import com.nosugarice.mybatis.mapper.function.Mapper;
-import com.nosugarice.mybatis.mapper.insert.InsertMapper;
-import com.nosugarice.mybatis.mapping.Column;
-import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.mapping.id.IdGenerator;
 import com.nosugarice.mybatis.mapping.value.KeyValue;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.StringUtils;
-import com.nosugarice.mybatis.valuegenerator.id.IdGenerator;
-import com.nosugarice.mybatis.valuegenerator.id.IdGeneratorRegistry;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.builder.StaticSqlSource;
+import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.ExecutorException;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
@@ -43,30 +35,21 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.mapping.StatementType;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/2
  */
-public class InsertMapperStatementBuilder extends BaseMapperStatementBuilder {
-
-    private final RelationalEntity relationalEntity;
-
-    protected InsertMapperStatementBuilder(SqlScriptBuilder sqlScriptBuilder, MapperBuilderAssistant assistant) {
-        super(sqlScriptBuilder, assistant);
-        this.relationalEntity = sqlScriptBuilder.getMapperBuildRaw().getRelationalEntity();
-    }
-
-    @Override
-    public Collection<Class<? extends Mapper>> getMapperTypes() {
-        return Collections.singletonList(InsertMapper.class);
-    }
+public class InsertMapperStatementBuilder extends MapperStatementBuilder {
 
     @Override
     public SqlCommandType getSqlCommandType(Method method) {
@@ -80,43 +63,34 @@ public class InsertMapperStatementBuilder extends BaseMapperStatementBuilder {
             return configuration.getKeyGenerator(id);
         }
         KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
-        RelationalEntity relationalEntity = sqlScriptBuilder.getMapperBuildRaw().getRelationalEntity();
-        Supports supports = sqlScriptBuilder.getMapperBuildRaw().getSupports();
+        Supports supports = entityMetadata.getSupports();
         if (supports.isSupportAutoIncrement()) {
-            Dialect dialect = sqlScriptBuilder.getBuildingContext().getDialect();
-            Identity identity = dialect.getIdentity();
+            Identity identity = buildingContext.getDialect().getIdentity();
             boolean autoIncrement = identity.supportsAutoIncrement();
             if (autoIncrement) {
                 keyGenerator = Jdbc3KeyGenerator.INSTANCE;
             } else {
-                RelationalProperty relationalProperty = relationalEntity.getIdGeneratorProperty()
-                        .orElseThrow(() -> new NoSugarException("未找到自增主键"));
-                KeyValue<?> keyValue = relationalProperty.getAsKeyValue();
+                RelationalProperty idGeneratorProperty = entityMetadata.getIdGeneratorProperty();
+                KeyValue keyValue = idGeneratorProperty.getAsKeyValue();
                 String sql = keyValue.getGenerator();
                 if (identity.supportsSelectIdentity()) {
                     if (StringUtils.isEmpty(sql)) {
                         sql = identity.getIdentitySelectString();
                     }
                 } else {
-                    Preconditions.checkArgument(StringUtils.isNotEmpty(sql), true
-                            , relationalProperty.getRelationalModel().getEntityClass().getName()
-                                    + "." + relationalProperty.getName() + "没有设置主键生成语句");
+                    Preconditions.checkArgument(StringUtils.isNotEmpty(sql)
+                            , entityMetadata.getEntityClass().getName()
+                                    + "." + idGeneratorProperty.getName() + "没有设置主键生成语句");
                 }
-
-                MappedStatement keyStatement = getKeyMappedStatement(id, relationalProperty.getJavaType(), sql);
-
+                MappedStatement keyStatement = getKeyMappedStatement(id, idGeneratorProperty.getJavaType(), sql);
                 keyGenerator = new SelectKeyGenerator(keyStatement, identity.executeBeforeIdentitySelect());
                 configuration.addKeyGenerator(id, keyGenerator);
             }
         } else if (supports.isSupportIdGenerator()) {
-            RelationalProperty relationalProperty = relationalEntity.getIdGeneratorProperty()
-                    .orElseThrow(() -> new NoSugarException("未找到生成策略主键!"));
-            KeyValue<?> keyValue = relationalProperty.getAsKeyValue();
-            IdGeneratorRegistry idGeneratorRegistry = sqlScriptBuilder.getBuildingContext().getIdGeneratorRegistry();
-            IdGenerator<?> idGenerator = idGeneratorRegistry.getObject(keyValue.getGenerator());
-
+            RelationalProperty relationalProperty = entityMetadata.getIdGeneratorProperty();
             MappedStatement keyStatement = getKeyMappedStatement(id, relationalProperty.getJavaType(), null);
-
+            KeyValue keyValue = relationalProperty.getAsKeyValue();
+            IdGenerator<?> idGenerator = buildingContext.getIdGeneratorRegistry().getObject(keyValue.getGenerator());
             keyGenerator = new CustomizeKeyGenerator(keyStatement, idGenerator);
             configuration.addKeyGenerator(id, keyGenerator);
         }
@@ -125,16 +99,15 @@ public class InsertMapperStatementBuilder extends BaseMapperStatementBuilder {
 
     @Override
     public String getKeyProperty() {
-        return relationalEntity.getIdGeneratorProperty()
+        return entityMetadata.getRelationalEntity().getIdGeneratorProperty()
                 .map(RelationalProperty::getName)
                 .orElse(null);
     }
 
     @Override
     public String getKeyColumn() {
-        return relationalEntity.getIdGeneratorProperty()
+        return entityMetadata.getRelationalEntity().getIdGeneratorProperty()
                 .map(RelationalProperty::getColumn)
-                .map(Column::getName)
                 .orElse(null);
     }
 
@@ -154,6 +127,93 @@ public class InsertMapperStatementBuilder extends BaseMapperStatementBuilder {
 
         configuration.addMappedStatement(mappedStatement);
         return configuration.getMappedStatement(id, false);
+    }
+
+    private static class CustomizeKeyGenerator implements KeyGenerator {
+
+        private final MappedStatement keyStatement;
+        private final IdGenerator<?> idGenerator;
+
+        private CustomizeKeyGenerator(MappedStatement keyStatement, IdGenerator<?> idGenerator) {
+            this.keyStatement = keyStatement;
+            this.idGenerator = idGenerator;
+        }
+
+        @Override
+        public void processBefore(Executor executor, MappedStatement ms, Statement stmt, Object parameter) {
+            processGeneratedKeys(executor, ms, parameter);
+        }
+
+        @Override
+        public void processAfter(Executor executor, MappedStatement ms, Statement stmt, Object parameter) {
+        }
+
+        private void processGeneratedKeys(Executor executor, MappedStatement ms, Object parameter) {
+            try {
+                if (parameter != null && keyStatement != null && keyStatement.getKeyProperties() != null) {
+                    String[] keyProperties = keyStatement.getKeyProperties();
+                    final Configuration configuration = ms.getConfiguration();
+
+                    if (parameter instanceof Map) {
+                        Collection<?> collection = (Collection<?>) ((Map<?, ?>) parameter).get("collection");
+                        for (Object parameterItem : collection) {
+                            processGeneratedKeys(executor, ms, parameterItem);
+                        }
+                    } else {
+                        final MetaObject metaParam = configuration.newMetaObject(parameter);
+                        Object value = idGenerator.generate(executor, parameter);
+                        if (value == null) {
+                            throw new ExecutorException("SelectKey returned no data.");
+                        } else {
+                            MetaObject metaResult = configuration.newMetaObject(value);
+                            if (keyProperties.length == 1) {
+                                if (metaResult.hasGetter(keyProperties[0])) {
+                                    setValue(metaParam, keyProperties[0], metaResult.getValue(keyProperties[0]));
+                                } else {
+                                    // no getter for the property - maybe just a single value object
+                                    // so try that
+                                    setValue(metaParam, keyProperties[0], value);
+                                }
+                            } else {
+                                handleMultipleProperties(keyProperties, metaParam, metaResult);
+                            }
+                        }
+                    }
+
+                }
+            } catch (ExecutorException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ExecutorException("Error selecting key or setting result to parameter object. Cause: " + e, e);
+            }
+        }
+
+        private void handleMultipleProperties(String[] keyProperties,
+                                              MetaObject metaParam, MetaObject metaResult) {
+            String[] keyColumns = keyStatement.getKeyColumns();
+
+            if (keyColumns == null || keyColumns.length == 0) {
+                // no key columns specified, just use the property names
+                for (String keyProperty : keyProperties) {
+                    setValue(metaParam, keyProperty, metaResult.getValue(keyProperty));
+                }
+            } else {
+                if (keyColumns.length != keyProperties.length) {
+                    throw new ExecutorException("If SelectKey has key columns, the number must match the number of key properties.");
+                }
+                for (int i = 0; i < keyProperties.length; i++) {
+                    setValue(metaParam, keyProperties[i], metaResult.getValue(keyColumns[i]));
+                }
+            }
+        }
+
+        private void setValue(MetaObject metaParam, String property, Object value) {
+            if (metaParam.hasSetter(property)) {
+                metaParam.setValue(property, value);
+            } else {
+                throw new ExecutorException("No setter found for the keyProperty '" + property + "' in " + metaParam.getOriginalObject().getClass().getName() + ".");
+            }
+        }
     }
 
 }

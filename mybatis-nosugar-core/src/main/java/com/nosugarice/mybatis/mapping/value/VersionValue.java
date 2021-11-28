@@ -16,9 +16,8 @@
 
 package com.nosugarice.mybatis.mapping.value;
 
+import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.util.Preconditions;
-import com.nosugarice.mybatis.valuegenerator.PropertyParameter;
-import com.nosugarice.mybatis.valuegenerator.VersionValueGenerator;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -26,45 +25,110 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/6
  */
-public class VersionValue extends SimpleValue<Serializable> {
+public class VersionValue extends SimpleValue {
 
-    private static final long serialVersionUID = 8728506796783605330L;
+    private static final Set<Class<?>> SUPPORTS_LOGIC_DELETE_TYPE = Stream.of(int.class, Integer.class
+                    , long.class, Long.class, Date.class, Timestamp.class, LocalDateTime.class)
+            .collect(Collectors.toSet());
 
-    private static final Map<Class<?>, String> DEFAULT_VALUE = new HashMap<>();
+    private static final Map<Class<?>, VersionValue> VERSION_VALUE_CACHE = new HashMap<>(SUPPORTS_LOGIC_DELETE_TYPE.size(), 1);
 
-    private static final String INITIAL_TIME = "1970-01-01 00:00:00";
+    private final VersionDefaultValueHandler defaultValueHandler;
 
-    static {
-        DEFAULT_VALUE.put(int.class, "0");
-        DEFAULT_VALUE.put(Integer.class, "0");
-        DEFAULT_VALUE.put(long.class, "0");
-        DEFAULT_VALUE.put(Long.class, "0");
-        DEFAULT_VALUE.put(Timestamp.class, INITIAL_TIME);
-        DEFAULT_VALUE.put(Date.class, INITIAL_TIME);
-        DEFAULT_VALUE.put(LocalDateTime.class, INITIAL_TIME);
+    public static VersionValue of(Class<?> type) {
+        return VERSION_VALUE_CACHE.computeIfAbsent(type, VersionValue::new);
     }
 
-    /** 乐观锁字段类型 */
-    private final Class<?> columnType;
-
-    public VersionValue(Class<?> columnType) {
-        Preconditions.checkArgument(DEFAULT_VALUE.containsKey(columnType), true, "版本号字段不支持类型:" + columnType);
-        this.columnType = columnType;
+    private VersionValue(Class<?> type) {
+        super(type);
+        Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type), "版本号字段不支持类型:" + type);
+        this.defaultValueHandler = new VersionDefaultValueHandler(type);
     }
 
     @Override
-    public String getDefaultValue() {
-        return DEFAULT_VALUE.get(columnType);
+    public Serializable getDefaultValue() {
+        return null;
     }
 
-    public Serializable nextValue(Object value) {
-        PropertyParameter parameter = new PropertyParameter((Serializable) value);
-        return VersionValueGenerator.getInstance().generateValue(parameter);
+    @Override
+    public ValueHandler<?> insertHandler() {
+        return defaultValueHandler;
+    }
+
+    @Override
+    public ValueHandler<?> updateHandler() {
+        return VersionValueHandler.getInstance();
+    }
+
+    private static class VersionDefaultValueHandler implements ValueHandler<Serializable> {
+
+        private final Class<?> type;
+
+        public VersionDefaultValueHandler(Class<?> type) {
+            this.type = type;
+        }
+
+        @Override
+        public Serializable setValue(Serializable value) {
+            switch (type.getName()) {
+                case "int":
+                case "java.lang.Integer":
+                    return 0;
+                case "long":
+                case "java.lang.Long":
+                    return 0L;
+                case "java.sql.Timestamp":
+                    return new Timestamp(System.currentTimeMillis());
+                case "java.util.Date":
+                    return new Date();
+                case "java.time.LocalDateTime":
+                    return LocalDateTime.now();
+                default:
+                    return null;
+            }
+        }
+    }
+
+    private static class VersionValueHandler implements ValueHandler<Serializable> {
+
+        private static VersionValueHandler getInstance() {
+            return Holder.INSTANCE;
+        }
+
+        private static class Holder {
+            private static final VersionValueHandler INSTANCE = new VersionValueHandler();
+        }
+
+        @Override
+        public Serializable setValue(Serializable value) {
+            if (value == null) {
+                return null;
+            }
+            Class<? extends Serializable> type = value.getClass();
+            Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type)
+                    , "不支持的乐观锁版本字段类型" + "[" + type.getName() + "]");
+
+            if (int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)) {
+                return (Integer) value + 1;
+            } else if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type)) {
+                return (Long) value + 1L;
+            } else if (Date.class.isAssignableFrom(type)) {
+                return new Date();
+            } else if (Timestamp.class.isAssignableFrom(type)) {
+                return new Timestamp(System.currentTimeMillis());
+            } else if (LocalDateTime.class.isAssignableFrom(type)) {
+                return LocalDateTime.now();
+            }
+            return null;
+        }
     }
 
 }

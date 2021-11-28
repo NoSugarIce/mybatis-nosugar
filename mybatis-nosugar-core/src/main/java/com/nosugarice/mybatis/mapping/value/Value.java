@@ -16,13 +16,24 @@
 
 package com.nosugarice.mybatis.mapping.value;
 
+import com.nosugarice.mybatis.handler.ValueHandler;
+
 import java.io.Serializable;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/6
  */
-public interface Value<T extends Serializable> extends Serializable {
+public interface Value {
+
+    Value SIMPLE_VALUE = new SimpleValue();
+
+    /**
+     * 值类型
+     *
+     * @return
+     */
+    Class<?> getType();
 
     /**
      * 可插入
@@ -38,6 +49,27 @@ public interface Value<T extends Serializable> extends Serializable {
      */
     boolean isUpdateable();
 
+    /**
+     * 插入处理
+     *
+     * @return
+     */
+    ValueHandler<?> insertHandler();
+
+    /**
+     * 更新处理
+     *
+     * @return
+     */
+    ValueHandler<?> updateHandler();
+
+    /**
+     * 返回处理
+     *
+     * @return
+     */
+    ValueHandler<?> resultHandler();
+
 
     /**
      * 获取默认值
@@ -45,6 +77,6 @@ public interface Value<T extends Serializable> extends Serializable {
      *
      * @return
      */
-    T getDefaultValue();
+    Serializable getDefaultValue();
 
 }

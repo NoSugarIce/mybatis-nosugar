@@ -17,7 +17,10 @@
 package com.nosugarice.mybatis.spring.provider;
 
 import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
-import com.nosugarice.mybatis.config.ConfigRegistry;
+import com.nosugarice.mybatis.config.MapperBuilderConfig;
+import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
+import com.nosugarice.mybatis.config.MetadataBuildingContext;
+import com.nosugarice.mybatis.registry.ConfigRegistry;
 import com.nosugarice.mybatis.spring.config.SpringConfigRegistryBuilder;
 import com.nosugarice.mybatis.util.CollectionUtils;
 import com.nosugarice.mybatis.util.Preconditions;
@@ -65,8 +68,8 @@ public class MapperProviderConfigurer implements ApplicationListener<ContextRefr
             sqlSessionFactory = applicationContext.getBean(sqlSessionFactoryBeanName, SqlSessionFactory.class);
         } else {
             Map<String, SqlSessionFactory> sessionFactoryMap = applicationContext.getBeansOfType(SqlSessionFactory.class);
-            Preconditions.checkArgument(!sessionFactoryMap.isEmpty(), true, "未找到[SqlSessionFactory]实现");
-            Preconditions.checkArgument(sessionFactoryMap.size() == 1, true
+            Preconditions.checkArgument(!sessionFactoryMap.isEmpty(), "未找到[SqlSessionFactory]实现");
+            Preconditions.checkArgument(sessionFactoryMap.size() == 1
                     , "多个[SqlSessionFactory]实现,请指定MapperProvider.sqlSessionFactoryRef");
             sqlSessionFactory = sessionFactoryMap.values().iterator().next();
         }
@@ -95,9 +98,11 @@ public class MapperProviderConfigurer implements ApplicationListener<ContextRefr
             return;
         }
         ConfigRegistry configRegistry = new SpringConfigRegistryBuilder(applicationContext).build();
+        MapperBuilderConfig config = new MapperBuilderConfigBuilder(configRegistry, configuration.getVariables()).build();
+        MetadataBuildingContext metadataBuildingContext = new MetadataBuildingContext(configuration, config);
         for (Class<?> providerClass : providerClasses) {
-            NoSugarMapperBuilder mapperBuilder = new NoSugarMapperBuilder(configuration, providerClass, configRegistry);
-            mapperBuilder.process();
+            NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
+            mapperBuilder.process(providerClass);
         }
     }
 

@@ -22,7 +22,7 @@ import java.io.Serializable;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Expression<T> extends Serializable {
+public interface Expression extends Serializable {
 
     /**
      * 获取sql 片段

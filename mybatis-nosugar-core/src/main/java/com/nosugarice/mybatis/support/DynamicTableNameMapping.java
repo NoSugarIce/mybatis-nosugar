@@ -31,8 +31,6 @@ import java.util.function.Function;
  */
 public class DynamicTableNameMapping {
 
-    public static final String TABLE_NAME_METHOD = "getName";
-
     private static final ThreadLocal<Map<String, String>> TABLE_NAME_MAPPING = new ThreadLocal<>();
     private static final Map<String, Function<String, String>> TABLE_NAME_HANDLER_REGISTRY = new HashMap<>();
 

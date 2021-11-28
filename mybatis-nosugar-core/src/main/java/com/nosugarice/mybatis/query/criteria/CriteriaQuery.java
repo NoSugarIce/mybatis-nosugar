@@ -20,14 +20,11 @@ package com.nosugarice.mybatis.query.criteria;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface CriteriaQuery<T, C> extends Selection<T, C>, PredicateCondition<T, C>, GroupBy<T, C>
-        , Having<T, C>, OrderBy<T, C> {
-
-    /**
-     * 去重
-     *
-     * @return
-     */
-    CriteriaQuery<T, C> distinct();
-
+public interface CriteriaQuery<T, C> extends QueryStructure<T>
+        , Select<C, T, CriteriaQuery<T, C>>
+        , Where<T, C, CriteriaQuery<T, C>>
+        , GroupBy<C, CriteriaQuery<T, C>>
+        , Having<CriteriaQuery<T, C>>
+        , OrderBy<C, CriteriaQuery<T, C>>
+        , Join<C> {
 }

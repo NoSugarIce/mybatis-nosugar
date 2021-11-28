@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.mapper.delete;
 
-import com.nosugarice.mybatis.annotation.SupportedFunction;
 import com.nosugarice.mybatis.mapper.function.PrimaryKeyMapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 
@@ -34,8 +33,7 @@ public interface DeleteByPrimaryKeyMapper<ID> extends PrimaryKeyMapper, DeleteMa
      * @param id
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.DELETE_BY_ID)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_ID, fixedParameter = true)
     int deleteById(ID id);
 
     /**
@@ -44,8 +42,7 @@ public interface DeleteByPrimaryKeyMapper<ID> extends PrimaryKeyMapper, DeleteMa
      * @param ids
      * @return
      */
-    @SupportedFunction(supportPrimaryKey = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.DELETE_BY_IDS)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_IDS)
     int deleteByIds(Collection<ID> ids);
 
 }

@@ -23,18 +23,18 @@ import com.nosugarice.mybatis.mapping.value.VersionValue;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.type.TypeHandler;
 
-import java.io.Serializable;
-import java.util.Objects;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/11/22
  */
-public class RelationalProperty extends Relational<RelationalProperty> implements Comparable<RelationalProperty> {
+public class RelationalProperty {
 
-    private RelationalEntity relationalEntity;
-
-    private Column column;
+    private final Member member;
 
     /** 字段属性名称 */
     private String name;
@@ -42,11 +42,35 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
     /** java 类型 */
     private Class<?> javaType;
 
+    /** 对应列名 */
+    private String column;
+
+    /** 长度 */
+    private int length;
+
+    /** 精度 */
+    private int precision;
+
+    /** 保留小数点位数 */
+    private int scale;
+
+    /** jdbc类型 */
+    private Integer jdbcType;
+
+    /** jdbc类型名称 */
+    private String jdbcTypeName;
+
+    /** 是否是关键字 */
+    private boolean sqlKeyword;
+
     /** 可为空 */
     private boolean nullable = true;
 
     /** 是否主键 */
     private boolean primaryKey;
+
+    /** 自增 */
+    private boolean autoIncrement;
 
     /** 乐观锁 */
     private boolean version;
@@ -55,7 +79,7 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
     private boolean logicDelete;
 
     /** 值 */
-    private Value<? extends Serializable> value;
+    private Value value;
 
     /** typeHandler */
     private Class<? extends TypeHandler<?>> typeHandler;
@@ -66,59 +90,32 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
     /** 忽略空字符 */
     private boolean ignoreEmptyChar;
 
-    @Override
-    public int compareTo(RelationalProperty relationalProperty) {
-        return column.getOrder() - relationalProperty.getColumn().getOrder();
+    public RelationalProperty(Member member) {
+        ((AccessibleObject) member).setAccessible(true);
+        this.member = member;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
+    public Object getValue(Object obj) {
+        try {
+            return member instanceof Field ? ((Field) member).get(obj) : ((Method) member).invoke(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        if (!(obj instanceof RelationalProperty)) {
-            return false;
-        }
-        RelationalProperty relationalProperty = (RelationalProperty) obj;
-        if (column != relationalProperty.getColumn()) {
-            return false;
-        }
-        return Objects.equals(name, relationalProperty.getName());
     }
 
-    public boolean isChar() {
-        return CharSequence.class.isAssignableFrom(javaType);
-    }
-
-    public KeyValue<?> getAsKeyValue() {
-        Preconditions.checkArgument(isPrimaryKey(), true, name + ":不是主键类型!");
-        return (KeyValue<?>) getValue();
+    public KeyValue getAsKeyValue() {
+        Preconditions.checkArgument(isPrimaryKey(), name + ":不是主键类型!");
+        return (KeyValue) getValue();
     }
 
     public VersionValue getAsVersionValue() {
-        Preconditions.checkArgument(isVersion(), true, name + ":不是版本类型!");
+        Preconditions.checkArgument(isVersion(), name + ":不是版本类型!");
         return (VersionValue) getValue();
     }
 
     public LogicDeleteValue getAsLogicDeleteValue() {
-        Preconditions.checkArgument(isLogicDelete(), true, name + ":不是逻辑删除类型!");
+        Preconditions.checkArgument(isLogicDelete(), name + ":不是逻辑删除类型!");
         return (LogicDeleteValue) getValue();
-    }
-
-    public RelationalEntity getRelationalModel() {
-        return relationalEntity;
-    }
-
-    public void setRelationalModel(RelationalEntity relationalEntity) {
-        this.relationalEntity = relationalEntity;
-    }
-
-    public Column getColumn() {
-        return column;
-    }
-
-    public void setColumn(Column column) {
-        this.column = column;
     }
 
     public String getName() {
@@ -137,6 +134,62 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
         this.javaType = javaType;
     }
 
+    public String getColumn() {
+        return column;
+    }
+
+    public void setColumn(String column) {
+        this.column = column;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public Integer getJdbcType() {
+        return jdbcType;
+    }
+
+    public void setJdbcType(Integer jdbcType) {
+        this.jdbcType = jdbcType;
+    }
+
+    public String getJdbcTypeName() {
+        return jdbcTypeName;
+    }
+
+    public void setJdbcTypeName(String jdbcTypeName) {
+        this.jdbcTypeName = jdbcTypeName;
+    }
+
+    public boolean isSqlKeyword() {
+        return sqlKeyword;
+    }
+
+    public void setSqlKeyword(boolean sqlKeyword) {
+        this.sqlKeyword = sqlKeyword;
+    }
+
     public boolean isNullable() {
         return nullable;
     }
@@ -151,6 +204,14 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
 
     public void setPrimaryKey(boolean primaryKey) {
         this.primaryKey = primaryKey;
+    }
+
+    public boolean isAutoIncrement() {
+        return autoIncrement;
+    }
+
+    public void setAutoIncrement(boolean autoIncrement) {
+        this.autoIncrement = autoIncrement;
     }
 
     public boolean isVersion() {
@@ -169,11 +230,11 @@ public class RelationalProperty extends Relational<RelationalProperty> implement
         this.logicDelete = logicDelete;
     }
 
-    public Value<? extends Serializable> getValue() {
+    public Value getValue() {
         return value;
     }
 
-    public void setValue(Value<? extends Serializable> value) {
+    public void setValue(Value value) {
         this.value = value;
     }
 

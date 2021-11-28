@@ -16,32 +16,14 @@
 
 package com.nosugarice.mybatis.query.criteria;
 
+import com.nosugarice.mybatis.query.criterion.ColumnCriterion;
 import com.nosugarice.mybatis.query.criterion.GroupCriterionImpl;
-import com.nosugarice.mybatis.sql.criterion.GroupCriterion;
-import com.nosugarice.mybatis.sql.criterion.PropertyCriterion;
 
 /**
- * @author dingjingyang@foxmail.com(dingjingyang)
+ * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Where<T, C> {
-
-    /**
-     * 添加条件
-     *
-     * @param test       是否添加到条件列表
-     * @param criterions
-     * @return
-     */
-    CriteriaQuery<T, C> addCriterion(boolean test, PropertyCriterion<?>... criterions);
-
-    /**
-     * 添加组条件
-     *
-     * @param groupCriterions
-     * @return
-     */
-    CriteriaQuery<T, C> addGroupCriterion(GroupCriterion... groupCriterions);
+public interface Where<T, C, X extends Where<T, C, X>> extends PredicateCondition<T, C, X> {
 
     /**
      * 添加条件
@@ -49,17 +31,7 @@ public interface Where<T, C> {
      * @param criterions
      * @return
      */
-    default CriteriaQuery<T, C> addCriterion(PropertyCriterion<?>... criterions) {
-        return addCriterion(true, criterions);
-    }
-
-    /**
-     * 添加条件
-     *
-     * @param criterions
-     * @return
-     */
-    default CriteriaQuery<T, C> and(PropertyCriterion<?>... criterions) {
+    default X and(ColumnCriterion<?>... criterions) {
         return addCriterion(criterions);
     }
 
@@ -70,7 +42,7 @@ public interface Where<T, C> {
      * @param criterions
      * @return
      */
-    default CriteriaQuery<T, C> or(PropertyCriterion<?>... criterions) {
+    default X or(ColumnCriterion<?>... criterions) {
         return addGroupCriterion(new GroupCriterionImpl(criterions));
     }
 

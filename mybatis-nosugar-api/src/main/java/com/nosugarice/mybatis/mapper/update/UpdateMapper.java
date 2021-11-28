@@ -23,7 +23,4 @@ import com.nosugarice.mybatis.mapper.function.Mapper;
  * @date 2017/8/29
  */
 public interface UpdateMapper extends Mapper {
-
-    String UPDATE_COLUMN = "updateColumn";
-
 }

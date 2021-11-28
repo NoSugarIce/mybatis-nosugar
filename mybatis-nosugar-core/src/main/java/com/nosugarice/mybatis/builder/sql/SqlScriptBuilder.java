@@ -16,18 +16,33 @@
 
 package com.nosugarice.mybatis.builder.sql;
 
-import com.nosugarice.mybatis.builder.MapperMetadata;
+import com.nosugarice.mybatis.builder.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
-import com.nosugarice.mybatis.sql.SqlProvider;
-import com.nosugarice.mybatis.sql.SqlTempLateService;
+import com.nosugarice.mybatis.mapper.function.FunS;
+import com.nosugarice.mybatis.sql.ParameterBind.ParameterColumnBind;
+import com.nosugarice.mybatis.sql.Placeholder;
+import com.nosugarice.mybatis.sql.ProviderTempLate;
+import com.nosugarice.mybatis.sql.ProviderTempLateImpl;
+import com.nosugarice.mybatis.sql.SqlAndParameterBind;
+import com.nosugarice.mybatis.sql.SqlBuilder;
+import com.nosugarice.mybatis.sqlsource.DynamicHandlerSqlSource;
+import com.nosugarice.mybatis.sqlsource.FixedParameterHandlerSqlSource;
+import com.nosugarice.mybatis.sqlsource.HandlerSqlSource;
+import com.nosugarice.mybatis.support.DynamicTableNameMapping;
 import com.nosugarice.mybatis.util.Preconditions;
+import com.nosugarice.mybatis.util.StringFormatter;
+import org.apache.ibatis.builder.StaticSqlSource;
+import org.apache.ibatis.mapping.SqlCommandType;
+import org.apache.ibatis.mapping.SqlSource;
+import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
-import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -35,73 +50,81 @@ import java.util.Map;
  */
 public class SqlScriptBuilder {
 
-    private final Map<Method, SqlProvider> sqlSourceBuilderMap = new HashMap<>();
+    private Map<Method, FunS<SqlAndParameterBind>> providerFunMap;
 
     private final MetadataBuildingContext buildingContext;
-    private final Class<?> mapperInterface;
-    private final Configuration configuration;
-    private final MapperMetadata mapperMetadata;
-    private final EntitySqlPart entitySqlPart;
-    private final SqlTempLateService sqlTempLate;
-    private final LanguageDriver languageDriver;
+    private final EntityMetadata entityMetadata;
+    private final ProviderTempLate providerTempLate;
 
-    public SqlScriptBuilder(Class<?> mapperInterface, MetadataBuildingContext buildingContext) {
+    private static final Object PLACEHOLDER_OBJECT = new Object();
+
+    private static final Map<ParameterColumnBind, ParameterColumnBind> PARAMETER_COLUMN_BIND_CACHE = new HashMap<>();
+
+    public SqlScriptBuilder(EntityMetadata entityMetadata, MetadataBuildingContext buildingContext) {
         this.buildingContext = buildingContext;
-        this.mapperInterface = mapperInterface;
-        this.configuration = buildingContext.getConfiguration();
-        this.mapperMetadata = buildingContext.getMapperMetadata(mapperInterface);
-        this.entitySqlPart = new EntitySqlPart(this.mapperMetadata.getRelationalEntity(), this.mapperMetadata.getSupports()
-                , this.mapperMetadata.getDialect(), true);
-        this.sqlTempLate = new SqlTempLateServiceImpl(this.mapperMetadata, this.entitySqlPart);
-        this.languageDriver = getMuLanguageDriver();
+        this.entityMetadata = entityMetadata;
+        this.providerTempLate = new ProviderTempLateImpl(entityMetadata, buildingContext.getDialect());
     }
 
-    public void bind(Method method, SqlProvider sqlProvider) {
-        sqlSourceBuilderMap.put(method, sqlProvider);
-    }
-
-    public String build(Method method) {
-        SqlProvider sqlProvider = sqlSourceBuilderMap.get(method);
-        Preconditions.checkNotNull(sqlProvider, "[" + method.getDeclaringClass() + "." + method.getName() + "]"
-                + "没有找到构建sql的实现!");
-        String sql = sqlProvider.provide(sqlTempLate);
-        return SqlProvider.script(sql);
-    }
-
-    private LanguageDriver getMuLanguageDriver() {
-        LanguageDriver driver = configuration.getLanguageRegistry().getDriver(XMLLanguageDriver.class);
-        if (driver == null) {
-            driver = new XMLLanguageDriver();
-            configuration.getLanguageRegistry().register(driver);
+    public void bind(Method method, FunS<SqlAndParameterBind> providerFun) {
+        if (providerFunMap == null) {
+            providerFunMap = new ConcurrentHashMap<>(32);
         }
-        return configuration.getLanguageDriver(XMLLanguageDriver.class);
+        providerFunMap.put(method, providerFun);
     }
 
-    public MetadataBuildingContext getBuildingContext() {
-        return buildingContext;
+    public SqlAndParameterBind build(Method method, Object... args) {
+        FunS<SqlAndParameterBind> providerFun = providerFunMap.get(method);
+        Preconditions.checkNotNull(providerFun, "[" + method.getDeclaringClass() + "." + method.getName() + "]"
+                + "未找到构建SQL实现!");
+        return build(providerFun, args);
     }
 
-    public Class<?> getMapperInterface() {
-        return mapperInterface;
+    public SqlAndParameterBind build(FunS<SqlAndParameterBind> providerFun, Object... args) {
+        Object[] objects = new Object[args.length + 1];
+        System.arraycopy(args, 0, objects, 1, args.length);
+        objects[0] = providerTempLate;
+        return providerFun.invoke(objects);
     }
 
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public MapperMetadata getMapperBuildRaw() {
-        return mapperMetadata;
-    }
-
-    public EntitySqlPart getEntitySqlPart() {
-        return entitySqlPart;
-    }
-
-    public SqlTempLateService getDynamicSqlTempLate() {
-        return sqlTempLate;
+    public SqlSource buildSqlSource(Method method, SqlCommandType sqlCommandType) {
+        SqlSource sqlSource;
+        SqlBuilder sqlBuilder = method.getAnnotation(SqlBuilder.class);
+        if (sqlBuilder != null) {
+            String[] parameterNames = new ParamNameResolver(buildingContext.getConfiguration(), method).getNames();
+            if (sqlBuilder.fixedParameter()) {
+                SqlAndParameterBind sqlAndParameterBind = build(method, PLACEHOLDER_OBJECT);
+                List<ParameterColumnBind> parameterColumnBinds = sqlAndParameterBind.getParameterBind().getParameterColumnBinds();
+                for (int i = 0; i < parameterColumnBinds.size(); i++) {
+                    ParameterColumnBind parameterColumnBind = parameterColumnBinds.get(i);
+                    if (PARAMETER_COLUMN_BIND_CACHE.containsKey(parameterColumnBind)) {
+                        parameterColumnBinds.set(i, PARAMETER_COLUMN_BIND_CACHE.get(parameterColumnBind));
+                    } else {
+                        PARAMETER_COLUMN_BIND_CACHE.put(parameterColumnBind, parameterColumnBind);
+                    }
+                }
+                sqlSource = new FixedParameterHandlerSqlSource(sqlCommandType, buildingContext, sqlAndParameterBind);
+            } else {
+                sqlSource = new DynamicHandlerSqlSource(sqlCommandType, buildingContext, parameterNames
+                        , sqlBuilder.sqlFunction().providerFun(), this);
+            }
+        } else {
+            String script = build(method).getSql();
+            sqlSource = new StaticSqlSource(buildingContext.getConfiguration(), script);
+        }
+        if (entityMetadata.getSupports().isSupportDynamicTableName() && sqlSource instanceof HandlerSqlSource) {
+            ((HandlerSqlSource) sqlSource).addSqlHandler(sql -> {
+                String runTimeTableName = DynamicTableNameMapping.getName(entityMetadata.getRelationalEntity().getTable().getName());
+                Map<String, String> data = new HashMap<>(1, 1);
+                data.put(Placeholder.TABLE_P, runTimeTableName);
+                return StringFormatter.replacePlaceholder(sql, data);
+            });
+        }
+        return sqlSource;
     }
 
     public LanguageDriver getLanguageDriver() {
-        return languageDriver;
+        return buildingContext.getConfiguration().getLanguageDriver(XMLLanguageDriver.class);
     }
+
 }

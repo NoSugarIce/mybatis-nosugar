@@ -16,10 +16,10 @@
 
 package com.nosugarice.mybatis.mapper.logicdelete;
 
-import com.nosugarice.mybatis.annotation.SupportedFunction;
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.function.CriteriaMapper;
+import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
 import com.nosugarice.mybatis.sql.SqlBuilder;
-import com.nosugarice.mybatis.sql.criteria.EntityCriteriaQuery;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -34,8 +34,7 @@ public interface LogicDeleteByCriteriaMapper<T> extends CriteriaMapper, LogicDel
      * @param criteria
      * @return
      */
-    @SupportedFunction(supportLogicDelete = true)
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.LOGIC_DELETE)
-    int logicDelete(@Param(CRITERIA) EntityCriteriaQuery<T> criteria);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE)
+    int logicDelete(@Param(MapperParam.CRITERIA) EntityCriteriaQuery<T> criteria);
 
 }

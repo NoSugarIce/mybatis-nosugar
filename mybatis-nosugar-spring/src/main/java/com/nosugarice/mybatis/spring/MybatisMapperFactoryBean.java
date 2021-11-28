@@ -18,19 +18,31 @@ package com.nosugarice.mybatis.spring;
 
 import com.nosugarice.mybatis.annotation.SpeedBatch;
 import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
-import com.nosugarice.mybatis.builder.mybatis.MutativeMapperProxy;
-import com.nosugarice.mybatis.config.ConfigRegistry;
 import com.nosugarice.mybatis.config.MapperBuilderConfig;
+import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
+import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.mapper.function.Mapper;
+import com.nosugarice.mybatis.registry.ConfigRegistry;
 import com.nosugarice.mybatis.spring.config.SpringConfigRegistryBuilder;
+import org.apache.ibatis.annotations.Flush;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -40,23 +52,46 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
 
     private static final Log LOG = LogFactory.getLog(MybatisMapperFactoryBean.class);
 
-    private static ApplicationContext applicationContext = null;
+    private static final Map<Configuration, MetadataBuildingContext> BUILDING_CONTEXT_MAP = new ConcurrentHashMap<>();
+
+    private static final Map<SqlSessionFactory, SqlSessionTemplate> BATCH_SQL_SESSION_TEMPLATE_MAP = new ConcurrentHashMap<>();
+
     private static ConfigRegistry configRegistry;
 
-    private MapperBuilderConfig mapperBuilderConfig;
-    private NoSugarMapperBuilder mapperBuilder;
+    private SqlSessionFactory sqlSessionFactory;
+
+    private MetadataBuildingContext metadataBuildingContext;
 
     public MybatisMapperFactoryBean(Class<T> mapperInterface) {
         super(mapperInterface);
     }
 
     @Override
+    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
+        this.sqlSessionFactory = sqlSessionFactory;
+    }
+
+    @Override
     protected void checkDaoConfig() {
+        if (getSqlSessionTemplate() == null && sqlSessionFactory != null) {
+            setSqlSessionTemplate(createSqlSessionTemplate(sqlSessionFactory));
+        }
+        if (getSqlSessionTemplate() != null && sqlSessionFactory != null && sqlSessionFactory != getSqlSessionTemplate().getSqlSessionFactory()) {
+            setSqlSessionTemplate(createSqlSessionTemplate(sqlSessionFactory));
+        }
         super.checkDaoConfig();
-        mapperBuilder = new NoSugarMapperBuilder(getSqlSession().getConfiguration(), getMapperInterface(), configRegistry);
-        mapperBuilderConfig = mapperBuilder.getMapperBuilderConfig();
-        if (!mapperBuilderConfig.getSwitchConfig().isLazyBuilder()) {
-            mapperBuilder.process();
+    }
+
+    @Override
+    protected void initDao() {
+        this.metadataBuildingContext = BUILDING_CONTEXT_MAP.computeIfAbsent(getSqlSession().getConfiguration(), configuration -> {
+            MapperBuilderConfig mapperBuilderConfig = new MapperBuilderConfigBuilder(configRegistry
+                    , getSqlSession().getConfiguration().getVariables()).build();
+            return new MetadataBuildingContext(getSqlSession().getConfiguration(), mapperBuilderConfig);
+        });
+        NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
+        if (!metadataBuildingContext.getConfig().getSwitchConfig().isLazyBuilder()) {
+            mapperBuilder.process(getMapperInterface());
         }
     }
 
@@ -65,14 +100,16 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
         if (!Mapper.class.isAssignableFrom(getMapperInterface())) {
             return super.getObject();
         }
+        NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
         //可以延迟加载,当使用的时候再进行构建
-        if (!mapperBuilder.isLoaded()) {
-            mapperBuilder.process();
+        if (!mapperBuilder.isLoaded(getMapperInterface())) {
+            mapperBuilder.process(getMapperInterface());
         }
         T mapper;
-        if (mapperBuilderConfig.getSwitchConfig().isSpeedBatch() && getMapperInterface().isAnnotationPresent(SpeedBatch.class)) {
+        if (metadataBuildingContext.getConfig().getSwitchConfig().isSpeedBatch() && getMapperInterface().isAnnotationPresent(SpeedBatch.class)) {
             T defaultObj = super.getObject();
-            SqlSession sqlSession = getSqlSessionFactory().openSession(ExecutorType.BATCH);
+            SqlSession sqlSession = BATCH_SQL_SESSION_TEMPLATE_MAP.computeIfAbsent(getSqlSessionFactory(), sqlSessionFactory
+                    -> new SqlSessionTemplate(new DefaultSqlSessionFactory(getSqlSessionFactory().getConfiguration()), ExecutorType.BATCH));
             T batchMapper = sqlSession.getMapper(getMapperInterface());
             MutativeMapperProxy<T> mutativeMapperProxy = new MutativeMapperProxy<>(getMapperInterface(), defaultObj, batchMapper);
             if (LOG.isDebugEnabled()) {
@@ -82,19 +119,42 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
         } else {
             mapper = super.getObject();
         }
-        this.mapperBuilderConfig = null;
-        this.mapperBuilder = null;
-        applicationContext = null;
-        configRegistry = null;
         return mapper;
     }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if (MybatisMapperFactoryBean.applicationContext == null) {
-            MybatisMapperFactoryBean.applicationContext = applicationContext;
+        if (MybatisMapperFactoryBean.configRegistry == null) {
             configRegistry = new SpringConfigRegistryBuilder(applicationContext).build();
         }
+    }
+
+    private static class MutativeMapperProxy<T> implements InvocationHandler {
+
+        private final Class<T> mapperInterface;
+        private final T defaultMapperProxy;
+        private final T batchMapperProxy;
+
+        public MutativeMapperProxy(Class<T> mapperInterface, T defaultMapperProxy, T batchMapperProxy) {
+            this.mapperInterface = mapperInterface;
+            this.defaultMapperProxy = defaultMapperProxy;
+            this.batchMapperProxy = batchMapperProxy != null ? batchMapperProxy : defaultMapperProxy;
+        }
+
+        @SuppressWarnings("unchecked")
+        public T getObject() {
+            return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, this);
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.isAnnotationPresent(SpeedBatch.class) || method.isAnnotationPresent(Flush.class)) {
+                return method.invoke(batchMapperProxy, args);
+            } else {
+                return method.invoke(defaultMapperProxy, args);
+            }
+        }
+
     }
 
 }

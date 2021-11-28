@@ -23,14 +23,6 @@ package com.nosugarice.mybatis.support;
 public interface NameStrategy {
 
     /**
-     * 设置实体类名称
-     *
-     * @param entityName
-     */
-    default void setEntityName(String entityName) {
-    }
-
-    /**
      * 转换
      *
      * @param name 原字符串

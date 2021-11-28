@@ -22,15 +22,15 @@ import com.nosugarice.mybatis.sql.RenderingContext;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class NoValueCriterion<T, E extends NoValueCriterion<T, E>> extends AbstractPropertyCriterion<T, E> {
+public abstract class NoValueCriterion<T, E extends NoValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
 
     private static final long serialVersionUID = -8957654596073038239L;
 
-    public NoValueCriterion(String column, String operator) {
+    protected NoValueCriterion(String column, String operator) {
         super(column, operator);
     }
 
-    public NoValueCriterion(String column, String operator, Separator separator) {
+    protected NoValueCriterion(String column, String operator, Separator separator) {
         super(column, operator, separator);
     }
 

@@ -19,8 +19,6 @@ package com.nosugarice.mybatis.mapper.insert;
 import com.nosugarice.mybatis.mapper.function.Mapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 
-import java.util.Collection;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2017/8/29
@@ -33,7 +31,7 @@ public interface InsertMapper<T> extends Mapper {
      * @param entity
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.INSERT)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.INSERT, fixedParameter = true)
     int insert(T entity);
 
     /**
@@ -42,16 +40,7 @@ public interface InsertMapper<T> extends Mapper {
      * @param entity
      * @return
      */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.INSERT_NULLABLE)
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.INSERT_NULLABLE)
     int insertNullable(T entity);
-
-    /**
-     * 批量插入数据
-     *
-     * @param entities
-     * @return
-     */
-    @SqlBuilder(sqlSourceFunction = SqlBuilder.SqlSourceFunction.INSERT_BATCH)
-    int insertBatch(Collection<T> entities);
 
 }

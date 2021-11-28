@@ -18,7 +18,8 @@ package com.nosugarice.mybatis.builder;
 
 import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
-import com.nosugarice.mybatis.mapper.function.Mapper;
+import com.nosugarice.mybatis.config.OrderComparator;
+import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
@@ -33,38 +34,59 @@ import java.util.stream.Collectors;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public abstract class AbstractMapperBuilder {
+public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> implements OrderComparator {
 
-    protected final MetadataBuildingContext buildingContext;
-    protected final Class<?> mapperInterface;
-    protected final Configuration configuration;
+    protected MetadataBuildingContext buildingContext;
+    protected Configuration configuration;
+    protected Class<?> mapperClass;
+    protected EntityMetadata entityMetadata;
+
+    private boolean isMapper;
 
     private static final Map<Class<?>, List<Method>> MAPPER_METHOD_CACHE = new WeakHashMap<>();
 
-    AbstractMapperBuilder(MetadataBuildingContext buildingContext, Class<?> mapperInterface) {
+    public T withMetadataBuildingContext(MetadataBuildingContext buildingContext) {
         this.buildingContext = buildingContext;
-        this.mapperInterface = mapperInterface;
-        this.configuration = buildingContext.getConfiguration();
+        return getThis();
+    }
+
+    public T withMapperInterface(Class<?> mapperClass) {
+        this.mapperClass = mapperClass;
+        return getThis();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T getThis() {
+        return (T) this;
+    }
+
+    public T build() {
+        Preconditions.checkNotNull(buildingContext, "缺少MetadataBuildingContext!");
+        Preconditions.checkNotNull(mapperClass, "缺少MapperInterface!");
+
+        this.isMapper = isMapper();
+        if (this.isMapper) {
+            this.configuration = buildingContext.getConfiguration();
+            this.entityMetadata = buildingContext.getEntityMetadataByMapper(mapperClass);
+        }
+        return getThis();
     }
 
     public void parse() {
-        List<Method> needAchieveMapperMethods = needAchieveMapperMethod();
+        if (!isMapper) {
+            return;
+        }
+        List<Method> needAchieveMapperMethods = needParseMethods();
         needAchieveMapperMethods.forEach(this::checkBeforeProcessMethod);
         needAchieveMapperMethods.forEach(this::processMethod);
     }
 
     /**
-     * 获取需要实现的方法
+     * 是否合规Mapper接口
      *
      * @return
      */
-    public List<Method> needAchieveMapperMethod() {
-        List<Method> mapperMethod = getMapperMethod(mapperInterface);
-        return mapperMethod.stream()
-                .filter(this::isNeedAchieveMethod)
-                .filter(this::isRepository)
-                .collect(Collectors.toList());
-    }
+    public abstract boolean isMapper();
 
     /**
      * 是否需要构建
@@ -72,7 +94,20 @@ public abstract class AbstractMapperBuilder {
      * @param method
      * @return
      */
-    public abstract boolean isNeedAchieveMethod(Method method);
+    public abstract boolean isCrudMethod(Method method);
+
+    /**
+     * 获取需要实现的方法
+     *
+     * @return
+     */
+    public List<Method> needParseMethods() {
+        return getMapperMethod(mapperClass)
+                .stream()
+                .filter(this::isCrudMethod)
+                .filter(this::isRepository)
+                .collect(Collectors.toList());
+    }
 
     /**
      * 处理方法前检查
@@ -88,8 +123,8 @@ public abstract class AbstractMapperBuilder {
      */
     public abstract void processMethod(Method method);
 
-    public boolean hasStatement(Method method) {
-        return configuration.hasStatement(getMethodMappedStatementId(method));
+    public boolean notHasStatement(Method method) {
+        return !configuration.hasStatement(getMethodMappedStatementId(method));
     }
 
     private boolean isRepository(Method method) {
@@ -101,13 +136,12 @@ public abstract class AbstractMapperBuilder {
     }
 
     public String getMethodMappedStatementId(Method method) {
-        return mapperInterface.getName() + "." + method.getName();
+        return mapperClass.getName() + "." + method.getName();
     }
 
     public List<Method> getMapperMethod(Class<?> mapperClass) {
-        return MAPPER_METHOD_CACHE.computeIfAbsent(mapperClass, aClass -> Arrays.stream(aClass.getMethods())
+        return MAPPER_METHOD_CACHE.computeIfAbsent(mapperClass, clazz -> Arrays.stream(clazz.getMethods())
                 .filter(method -> method.getDeclaringClass().isInterface())
-                .filter(method -> Mapper.class.isAssignableFrom(method.getDeclaringClass()))
                 .filter(method -> Modifier.isAbstract(method.getModifiers()))
                 .filter(method -> !method.isBridge())
                 .collect(Collectors.toList()));

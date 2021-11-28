@@ -32,6 +32,16 @@ public class Preconditions {
      * 判断条件,不符合且致命级别将报错,其他只是warn 提醒
      *
      * @param expression
+     * @param message
+     */
+    public static void checkArgument(boolean expression, String message) {
+        checkArgument(expression, true, message);
+    }
+
+    /**
+     * 判断条件,不符合且致命级别将报错,其他只是warn 提醒
+     *
+     * @param expression
      * @param fatal
      * @param message
      */
