@@ -65,7 +65,7 @@ public class PageImpl<T> implements Page<T> {
     }
 
     @Override
-    public int getPageNumber() {
+    public int getNumber() {
         return pageNumber;
     }
 
@@ -74,7 +74,7 @@ public class PageImpl<T> implements Page<T> {
     }
 
     @Override
-    public int getPageSize() {
+    public int getSize() {
         return pageSize;
     }
 
@@ -84,7 +84,7 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public int getTotalPages() {
-        return total > 0 ? (int) Math.ceil((double) total / (double) getPageSize()) : 1;
+        return total > 0 ? (int) Math.ceil((double) total / (double) getSize()) : 1;
     }
 
     @Override
@@ -119,22 +119,22 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public boolean hasNext() {
-        return getPageNumber() + 1 <= getTotalPages();
+        return getNumber() + 1 <= getTotalPages();
     }
 
     @Override
     public boolean hasPrevious() {
-        return getPageNumber() > 1;
+        return getNumber() > 1;
     }
 
     @Override
     public Page<T> getPageable() {
-        return new PageImpl<>(getPageNumber(), getPageSize());
+        return new PageImpl<>(getNumber(), getSize());
     }
 
     @Override
     public Page<T> nextPageable() {
-        return new PageImpl<>(getPageNumber() + 1, getPageSize());
+        return new PageImpl<>(getNumber() + 1, getSize());
     }
 
 }

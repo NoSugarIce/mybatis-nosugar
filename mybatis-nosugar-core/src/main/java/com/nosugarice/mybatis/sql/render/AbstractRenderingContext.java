@@ -16,45 +16,85 @@
 
 package com.nosugarice.mybatis.sql.render;
 
+import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
-import com.nosugarice.mybatis.sql.RenderingContext;
-import com.nosugarice.mybatis.sql.SqlPart;
+import com.nosugarice.mybatis.sql.SQLConstants;
+import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.Iterator;
-import java.util.Optional;
-
-import static com.nosugarice.mybatis.sql.SQLConstants.EMPTY;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class AbstractRenderingContext implements RenderingContext {
+public abstract class AbstractRenderingContext {
 
     protected final Class<?> entityClass;
-    protected final Iterator<String> paramNameIterator;
+    protected Iterator<String> paramNameIterator;
 
-    protected AbstractRenderingContext(Class<?> entityClass, Iterator<String> paramNameIterator) {
+    protected AbstractRenderingContext(Class<?> entityClass) {
         this.entityClass = entityClass;
+    }
+
+    /**
+     * 获取单个值占位符
+     *
+     * @param column
+     * @return
+     */
+    public abstract String getSingleValuePlaceholder(String column);
+
+    /**
+     * 获取两个值占位符
+     *
+     * @param column
+     * @return
+     */
+    public abstract String getTwoValuePlaceholder(String column);
+
+    /**
+     * 获取一批占位符
+     *
+     * @param column
+     * @return
+     */
+    public abstract String getListValuePlaceholder(String column);
+
+
+    public void setParamNameIterator(Iterator<String> paramNameIterator) {
         this.paramNameIterator = paramNameIterator;
+    }
+
+    /**
+     * 获取属性查询条件SQL表达式
+     *
+     * @param criterion
+     * @return
+     */
+    public String getCriterionExpression(ColumnCriterion<?> criterion) {
+        String placeholder = SQLConstants.EMPTY;
+        if (criterion.isSingleValue()) {
+            placeholder = getSingleValuePlaceholder(criterion.getColumn());
+        } else if (criterion.isTwoValue()) {
+            placeholder = getTwoValuePlaceholder(criterion.getColumn());
+        } else if (criterion.isListValue()) {
+            placeholder = getListValuePlaceholder(criterion.getColumn());
+        }
+        return criterion.patternSql(placeholder);
     }
 
     public String getPlaceholder(String column, String paramName, String prefix, String assignJdbcType, String assignTypeHandler) {
         if (StringUtils.isEmpty(assignJdbcType) || StringUtils.isEmpty(assignTypeHandler)) {
-            Optional<RelationalProperty> propertyOptional = Optional.of(EntityMetadataRegistry.Holder.getInstance())
-                    .map(entityMetadataRegistry -> entityMetadataRegistry.getPropertyByColumn(entityClass, column));
-            if (StringUtils.isEmpty(assignJdbcType)) {
-                assignJdbcType = propertyOptional.map(property -> SqlPart.assignJdbcType(property.getJdbcType()))
-                        .orElse(EMPTY);
+            RelationalProperty property = EntityMetadataRegistry.getInstance().getPropertyByColumn(entityClass, column);
+            if (StringUtils.isEmpty(assignJdbcType) && property != null) {
+                assignJdbcType = SQLPart.assignJdbcType(property.getJdbcType());
             }
-            if (StringUtils.isEmpty(assignTypeHandler)) {
-                assignTypeHandler = propertyOptional.map(property -> SqlPart.assignTypeHandler(property.getTypeHandler()))
-                        .orElse(EMPTY);
+            if (StringUtils.isEmpty(assignTypeHandler) && property != null) {
+                assignTypeHandler = SQLPart.assignTypeHandler(property.getTypeHandler());
             }
         }
-        return SqlPart.placeholder(paramName, prefix, assignJdbcType, assignTypeHandler);
+        return SQLPart.placeholder(paramName, prefix, assignJdbcType, assignTypeHandler);
     }
-
 }

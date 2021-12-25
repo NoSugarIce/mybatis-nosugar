@@ -1,6 +1,6 @@
 package com.nosugarice.mybatis.registry;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.utils.ServiceLoaderUtils;
 
@@ -28,18 +28,12 @@ public interface EntityMetadataRegistry {
 
     String getColumnByProperty(Class<?> entityClass, String property);
 
+    static EntityMetadataRegistry getInstance() {
+        return Holder.INSTANCE;
+    }
+
     class Holder {
-
-        private static final EntityMetadataRegistry INSTANCE = getEntityMetadataRegistry();
-
-        private static EntityMetadataRegistry getEntityMetadataRegistry() {
-            return ServiceLoaderUtils.loadSingleInstance(EntityMetadataRegistry.class);
-        }
-
-        public static EntityMetadataRegistry getInstance() {
-            return INSTANCE;
-        }
-
+        private static final EntityMetadataRegistry INSTANCE = ServiceLoaderUtils.loadSingleInstance(EntityMetadataRegistry.class);
     }
 
 }

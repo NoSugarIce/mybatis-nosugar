@@ -23,7 +23,7 @@ import org.apache.ibatis.annotations.Flush;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/9
  */
-public interface BatchMapper extends Mapper {
+public interface BatchMapper {
 
     @SpeedBatch
     @Flush

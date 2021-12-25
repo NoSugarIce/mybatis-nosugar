@@ -16,28 +16,32 @@
 
 package com.nosugarice.mybatis.sql;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
+import com.nosugarice.mybatis.criteria.CriteriaDelete;
+import com.nosugarice.mybatis.criteria.CriteriaQuery;
+import com.nosugarice.mybatis.criteria.CriteriaUpdate;
+import com.nosugarice.mybatis.criteria.select.QueryStructure;
+import com.nosugarice.mybatis.criteria.update.UpdateStructure;
+import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
+import com.nosugarice.mybatis.criteria.where.GroupCriterion;
+import com.nosugarice.mybatis.criteria.where.WhereStructure;
+import com.nosugarice.mybatis.criteria.where.criterion.EqualTo;
+import com.nosugarice.mybatis.criteria.where.criterion.In;
 import com.nosugarice.mybatis.dialect.Dialect;
-import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
-import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
-import com.nosugarice.mybatis.query.criteria.QueryStructure;
-import com.nosugarice.mybatis.query.criterion.ColumnCriterion;
-import com.nosugarice.mybatis.query.criterion.Equal;
-import com.nosugarice.mybatis.query.criterion.In;
 import com.nosugarice.mybatis.sql.ParameterBind.ParameterColumnBind;
-import com.nosugarice.mybatis.sql.render.CriteriaQuerySQLRender;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
-import com.nosugarice.mybatis.sql.render.PreparedVisitor;
+import com.nosugarice.mybatis.sql.render.PreparedSQLVisitor;
+import com.nosugarice.mybatis.sql.render.QuerySQLRender;
+import com.nosugarice.mybatis.sql.render.WhereSQLRender;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.StringJoinerBuilder;
 import com.nosugarice.mybatis.util.StringUtils;
+import org.apache.ibatis.session.RowBounds;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -61,19 +65,19 @@ import static com.nosugarice.mybatis.sql.SQLConstants.WHERE;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/9/25
+ * @date 2021/9/22
  */
 public class ProviderTempLateImpl implements ProviderTempLate {
 
     private final EntityMetadata entityMetadata;
     private final Dialect dialect;
-    private final EntitySqlPart entitySqlPart;
+    private final EntitySQLPart entitySqlPart;
     private final EntitySQLRender sqlRender;
 
     public ProviderTempLateImpl(EntityMetadata entityMetadata, Dialect dialect) {
         this.entityMetadata = entityMetadata;
         this.dialect = dialect;
-        this.entitySqlPart = new EntitySqlPart(entityMetadata, dialect);
+        this.entitySqlPart = new EntitySQLPart(entityMetadata, dialect);
         this.sqlRender = new EntitySQLRender.Builder()
                 .withTable(entityMetadata.getRelationalEntity().getTable().getName())
                 .withSupportDynamicTableName(entityMetadata.getSupports().isSupportDynamicTableName())
@@ -103,16 +107,16 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind selectList(EntityCriteriaQuery<T> criteria) {
-        return selectListLimit(criteria, null);
-    }
-
-    @Override
-    public <T> SqlAndParameterBind selectListLimit(EntityCriteriaQuery<T> criteria, Page<T> page) {
-        SqlAndParameterBind sqlAndParameterBind = entityCriteriaQueryBind(criteria, null);
-        String sql;
+    public <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?> criteria) {
+        if (criteria == null) {
+            return selectAll();
+        }
+        Preconditions.checkArgument(criteria instanceof QueryStructure, "不支持的查询结构类型.");
+        QueryStructure<?> structure = (QueryStructure<?>) criteria;
+        SqlAndParameterBind sqlAndParameterBind = structureWhereBind(structure, null);
         String whereSql = buildWhereSql(sqlAndParameterBind.getSql());
-        if (criteria.isSimple()) {
+        String sql;
+        if (structure.isSimple()) {
             sql = StringJoinerBuilder.createSpaceJoin()
                     .withElements(SELECT)
                     .withElements(StringUtils.trim(entitySqlPart.selectResult, null, ","))
@@ -122,32 +126,44 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                     .build();
             sql = sqlRender.renderWithTableAlias(sql, false);
         } else {
-            Preconditions.checkArgument(criteria instanceof QueryStructure, "不支持的查询结构类型.");
-            QueryStructure<?> queryStructure = (QueryStructure<?>) criteria;
-            CriteriaQuerySQLRender render = queryStructure.getRender(sqlRender);
-
+            QuerySQLRender render = structure.getRender(sqlRender);
             String result = StringJoinerBuilder.createSpaceJoin()
-                    .withElements(queryStructure.getColumnSelections().isPresent() ? render.renderColumnSelect() : entitySqlPart.selectResult)
-                    .withElements(queryStructure.getFunctionSelections().isPresent(), render.renderFunctionSelect())
-                    .withElements(queryStructure.getJoinCriteria().isPresent(), render.renderJoinSelect())
+                    .withElements(structure.getColumnSelections().isPresent() ? render.renderColumnSelect() : entitySqlPart.selectResult)
+                    .withElements(structure.getFunctionSelections().isPresent(), render.renderFunctionSelect())
+                    .withElements(structure.getJoinCriteria().isPresent(), render.renderJoinSelect())
                     .build();
             sql = StringJoinerBuilder.createSpaceJoin()
                     .withElements(SELECT)
-                    .withElements(queryStructure.isDistinct(), DISTINCT)
+                    .withElements(structure.isDistinct(), DISTINCT)
                     .withElements(StringUtils.trim(result, null, ","))
                     .withElements(render.renderFrom())
-                    .withElements(queryStructure.getJoinCriteria().isPresent(), render.renderJoinFom())
+                    .withElements(structure.getJoinCriteria().isPresent(), render.renderJoinFom())
                     .withElements(StringUtils.isNotBlank(whereSql), WHERE)
                     .withElements(StringUtils.trim(whereSql, AND, null))
-                    .withElements(render.renderGroupBy())
-                    .withElements(render.renderHaving())
-                    .withElements(render.renderOrderBy())
+                    .withElements(structure.getGroupBy().isPresent(), render.renderGroupBy())
+                    .withElements(structure.getHaving().isPresent(), render.renderHaving())
+                    .withElements(structure.getOrderBy().isPresent(), render.renderOrderBy())
                     .build();
-            sql = sqlRender.renderWithTableAlias(sql, true);
+            sql = sqlRender.renderWithTableAlias(sql, structure.getJoinCriteria().isPresent());
         }
-        if (page != null) {
-            sql = dialect.getLimitHandler().processSql(sql, page.getOffset(), page.getLimit());
+
+        if (structure.getLimit().isPresent()) {
+            RowBounds rowBounds = structure.getLimit().get();
+            sql = dialect.getLimitHandler().processSql(sql, rowBounds.getOffset(), rowBounds.getLimit());
         }
+        sqlAndParameterBind.setSql(sql);
+        return sqlAndParameterBind;
+    }
+
+    private SqlAndParameterBind selectAll() {
+        SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind();
+        String sql = StringJoinerBuilder.createSpaceJoin()
+                .withElements(SELECT)
+                .withElements(StringUtils.trim(entitySqlPart.selectResult, null, ","))
+                .withElements(FROM_TABLE_P)
+                .withElements(entityMetadata.getSupports().isSupportLogicDelete(), WHERE, entitySqlPart.selectParameterLogicDelete)
+                .build();
+        sql = sqlRender.renderWithTableAlias(sql, false);
         sqlAndParameterBind.setSql(sql);
         return sqlAndParameterBind;
     }
@@ -176,7 +192,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         sql = sqlRender.renderWithTableAlias(sql, false);
         sqlAndParameterBind.setSql(sql);
         sqlAndParameterBind.setParameterHandle((t, parameterColumnBinds, boundSql) -> {
-            Map<String, Object> columnValues = getEntityColumnValues(t);
+            Map<String, Object> columnValues = getEntityColumnValues(t, true);
             for (ParameterColumnBind parameterColumnBind : parameterColumnBinds) {
                 boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), columnValues.get(parameterColumnBind.getColumn()));
             }
@@ -190,7 +206,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         StringJoinerBuilder columnJoin = StringJoinerBuilder.createSpaceJoin().withDelimiter(", ").withPrefix("(").withSuffix(")");
         StringJoinerBuilder valueJoin = StringJoinerBuilder.createSpaceJoin().withDelimiter(", ").withPrefix("(").withSuffix(")");
 
-        Map<String, Object> columnValues = getEntityColumnValues(entity);
+        Map<String, Object> columnValues = getEntityColumnValues(entity, false);
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind();
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
             if (!property.getValue().isInsertable()) {
@@ -201,7 +217,9 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 if (property.isNullable()) {
                     continue;
                 }
-                throw new IllegalArgumentException();
+                if (property.getValue().insertHandler() == null) {
+                    throw new IllegalArgumentException("[" + property.getName() + "]不能为空.");
+                }
             }
             sqlAndParameterBind.bind(value, property.getColumn(), entityMetadata.getEntityClass()).canHandle();
             columnJoin.withElements(property.getColumn());
@@ -221,69 +239,68 @@ public class ProviderTempLateImpl implements ProviderTempLate {
 
     @Override
     public <T> SqlAndParameterBind updateById(T entity) {
-        return updateById(entity, entityMetadata.getRelationalEntity().getProperties(), false);
+        return updateById(entity, null, true);
     }
 
     @Override
     public <T> SqlAndParameterBind updateByIdChoseProperty(T entity, Set<String> choseProperties) {
-        List<RelationalProperty> relationalProperties = entityMetadata.getRelationalEntity().getProperties().stream()
-                .filter(relationalProperty -> choseProperties.contains(relationalProperty.getName()))
-                .collect(Collectors.toList());
+        Set<String> relationalProperties = entityMetadata.getRelationalEntity().getProperties().stream()
+                .filter(relationalProperty -> choseProperties.contains(relationalProperty.getName()) || relationalProperty.isVersion())
+                .map(RelationalProperty::getColumn)
+                .collect(Collectors.toSet());
         return updateById(entity, relationalProperties, false);
     }
 
     @Override
     public <T> SqlAndParameterBind updateByIdNullable(T entity) {
-        return updateById(entity, entityMetadata.getRelationalEntity().getProperties(), true);
+        return updateById(entity, null, false);
     }
 
-    private <T> SqlAndParameterBind updateById(T entity, List<RelationalProperty> relationalProperties, boolean nullable) {
-        SqlAndParameterBind sqlAndParameterBind = updateValue(entity, relationalProperties, nullable);
+    private <T> SqlAndParameterBind updateById(T entity, Set<String> includeColumns, boolean nullable) {
+        Map<String, Object> values = entityToUpdateValues(entity, includeColumns, nullable);
+        SqlAndParameterBind sqlAndParameterBind = updateValueBind(values);
         String updateIdWhere = buildIdBind(entity, sqlAndParameterBind.getParameterBind());
-        return update(entity, sqlAndParameterBind.getSql(), updateIdWhere, sqlAndParameterBind.getParameterBind());
+        return update(values, sqlAndParameterBind.getSql(), updateIdWhere, sqlAndParameterBind.getParameterBind());
     }
 
     @Override
-    public <T> SqlAndParameterBind update(T entity, EntityCriteriaQuery<T> criteria) {
-        return updateByCriteria(entity, criteria, false);
+    public <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria) {
+        Preconditions.checkArgument(criteria instanceof UpdateStructure, "不支持的查询结构类型.");
+        UpdateStructure structure = (UpdateStructure) criteria;
+        Map<String, Object> values = structure.getSetValues();
+        SqlAndParameterBind sqlAndParameterBind = updateValueBind(values);
+        SqlAndParameterBind whereBind = structureWhereBind(structure, sqlAndParameterBind.getParameterBind());
+        return update(values, sqlAndParameterBind.getSql(), whereBind.getSql(), sqlAndParameterBind.getParameterBind());
     }
 
-    @Override
-    public <T> SqlAndParameterBind updateNullable(T entity, EntityCriteriaQuery<T> criteria) {
-        return updateByCriteria(entity, criteria, true);
+    private <T> Map<String, Object> entityToUpdateValues(T entity, Set<String> includeColumns, boolean nullable) {
+        Map<String, Object> columnValues = getEntityColumnValues(entity, nullable);
+        if (includeColumns != null) {
+            columnValues.entrySet().removeIf(entry -> !includeColumns.contains(entry.getKey()));
+        }
+        return columnValues;
     }
 
-    private <T> SqlAndParameterBind updateByCriteria(T entity, EntityCriteriaQuery<T> criteria, boolean nullable) {
-        SqlAndParameterBind sqlAndParameterBind = updateValue(entity, entityMetadata.getRelationalEntity().getProperties(), nullable);
-        String updateCriteriaWhere = entityCriteriaQueryBind(criteria, sqlAndParameterBind.getParameterBind()).getSql();
-        return update(entity, sqlAndParameterBind.getSql(), updateCriteriaWhere, sqlAndParameterBind.getParameterBind());
-    }
-
-    private <T> SqlAndParameterBind updateValue(T entity, List<RelationalProperty> relationalProperties, boolean nullable) {
+    private SqlAndParameterBind updateValueBind(Map<String, Object> setValues) {
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind();
-        Map<String, Object> columnValues = getEntityColumnValues(entity);
         StringJoinerBuilder columnValueJoin = StringJoinerBuilder.createSpaceJoin();
-        for (RelationalProperty property : relationalProperties) {
+        for (Map.Entry<String, Object> entry : setValues.entrySet()) {
+            RelationalProperty property = entityMetadata.getPropertyByColumnName(entry.getKey());
             if (!property.getValue().isUpdateable()) {
                 continue;
             }
-            Object value = columnValues.get(property.getColumn());
-            if (value == null && nullable) {
-                continue;
-            }
-            sqlAndParameterBind.bind(value, property.getColumn(), entityMetadata.getEntityClass()).canHandle();
+            sqlAndParameterBind.bind(entry.getValue(), property.getColumn(), entityMetadata.getEntityClass()).canHandle();
             columnValueJoin.withElements(property.getColumn(), EQUALS_TO, "?", ",");
         }
         sqlAndParameterBind.setSql(columnValueJoin.build());
         return sqlAndParameterBind;
     }
 
-    private <T> SqlAndParameterBind update(T entity, String updateValue, String where, ParameterBind parameterBind) {
-        SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(parameterBind);
+    private SqlAndParameterBind update(Map<String, Object> setValues, String updateValue, String where, ParameterBind parameterBind) {
         if (entityMetadata.getSupports().isSupportVersion()) {
-            Object version = entityMetadata.getVersionProperty().getValue(entity);
+            Object version = setValues.get(entityMetadata.getVersionProperty().getColumn());
             if (version != null) {
-                String versionWhere = buildVersionBind(version, sqlAndParameterBind.getParameterBind());
+                String versionWhere = buildVersionBind(version, parameterBind);
                 where = where + SPACE + versionWhere;
             }
         }
@@ -295,6 +312,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
         sql = sqlRender.renderWithTableAlias(sql, false);
+        SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(parameterBind);
         sqlAndParameterBind.setSql(sql);
         return sqlAndParameterBind;
     }
@@ -310,21 +328,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind delete(EntityCriteriaQuery<T> criteria) {
-        SqlAndParameterBind sqlAndParameterBind = entityCriteriaQueryBind(criteria, null);
-        sqlAndParameterBind.setSql(getDeleteSql(sqlAndParameterBind.getSql()));
-        return sqlAndParameterBind;
-    }
-
-    private String getDeleteSql(String where) {
-        String sql = StringJoinerBuilder.createSpaceJoin()
-                .withElements(DELETE)
-                .withElements(FROM_TABLE_P)
-                .withElements(WHERE)
-                .withElements(StringUtils.trim(where, AND, null))
-                .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
-        return sql;
+    public <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria) {
+        return delete(criteria, this::getDeleteSql);
     }
 
     @Override
@@ -338,10 +343,27 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind logicDelete(EntityCriteriaQuery<T> criteria) {
-        SqlAndParameterBind sqlAndParameterBind = entityCriteriaQueryBind(criteria, null);
-        sqlAndParameterBind.setSql(getLogicDeleteSql(sqlAndParameterBind.getSql()));
+    public <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria) {
+        return delete(criteria, this::getLogicDeleteSql);
+    }
+
+    private <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria, Function<String, String> deleteSqlHandler) {
+        Preconditions.checkArgument(criteria instanceof WhereStructure, "不支持的查询结构类型.");
+        WhereStructure structure = (WhereStructure) criteria;
+        SqlAndParameterBind sqlAndParameterBind = structureWhereBind(structure, null);
+        sqlAndParameterBind.setSql(deleteSqlHandler.apply(sqlAndParameterBind.getSql()));
         return sqlAndParameterBind;
+    }
+
+    private String getDeleteSql(String where) {
+        String sql = StringJoinerBuilder.createSpaceJoin()
+                .withElements(DELETE)
+                .withElements(FROM_TABLE_P)
+                .withElements(WHERE)
+                .withElements(StringUtils.trim(where, AND, null))
+                .build();
+        sql = sqlRender.renderWithTableAlias(sql, false);
+        return sql;
     }
 
     private String getLogicDeleteSql(String where) {
@@ -415,8 +437,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     private <ID> SqlAndParameterBind byIdsBind(Collection<ID> ids, Function<String, String> sqlHandle) {
-        ColumnCriterion<ID> criterion = new In<>(entityMetadata.getPrimaryKeyProperty().getColumn(), ids);
-        SqlAndParameterBind sqlAndParameterBind = new PreparedVisitor(entityMetadata.getEntityClass()).visit(criterion);
+        ColumnCriterion<Collection<ID>> criterion = new In<>(entityMetadata.getPrimaryKeyProperty().getColumn(), ids);
+        SqlAndParameterBind sqlAndParameterBind = criterion.accept(new PreparedSQLVisitor(entityMetadata.getEntityClass()));
         String sql = sqlHandle.apply(buildWhereSql(sqlAndParameterBind.getSql()));
         sqlAndParameterBind.setSql(sql);
         return sqlAndParameterBind;
@@ -424,7 +446,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
 
     private <ID> SqlAndParameterBind getByIdBind(ID id) {
         String idColumn = entityMetadata.getPrimaryKeyProperty().getColumn();
-        ColumnCriterion<ID> criterion = new Equal<>(idColumn, id);
+        ColumnCriterion<ID> criterion = new EqualTo<>(idColumn, id);
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(criterion.getSql());
         sqlAndParameterBind.bind(id, idColumn, entityMetadata.getEntityClass());
         sqlAndParameterBind.setParameterHandle((idValue, parameterColumnBinds, boundSql) -> {
@@ -441,57 +463,48 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     private <Version> String buildVersionBind(Version version, ParameterBind parameterBind) {
-        RelationalProperty versionProperty = entityMetadata.getVersionProperty();
-        return buildEqualBind(version, versionProperty.getColumn(), parameterBind);
+        return buildEqualBind(version, entityMetadata.getVersionProperty().getColumn(), parameterBind);
     }
 
     private String buildEqualBind(Object value, String column, ParameterBind parameterBind) {
-        ColumnCriterion<?> criterion = new Equal<>(column, value);
+        ColumnCriterion<?> criterion = new EqualTo<>(column, value);
         parameterBind.bindValue(value, column, entityMetadata.getEntityClass());
         return criterion.getSql();
     }
 
     private String buildWhereSql(String where) {
-        return entityMetadata.getSupports().isSupportLogicDelete() ? where + SPACE + entitySqlPart.selectParameterLogicDelete : where;
+        return entityMetadata.getSupports().isSupportLogicDelete()
+                ? where + SPACE + AND + SPACE + entitySqlPart.selectParameterLogicDelete : where;
     }
 
-    private <T> SqlAndParameterBind entityCriteriaQueryBind(EntityCriteriaQuery<T> criteria, ParameterBind parameterBind) {
+    private SqlAndParameterBind structureWhereBind(WhereStructure structure, ParameterBind parameterBind) {
         parameterBind = parameterBind == null ? new ParameterBind() : parameterBind;
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(parameterBind);
-        PreparedVisitor visitor = new PreparedVisitor(entityMetadata.getEntityClass(), parameterBind);
         String whereSql = EMPTY;
-        if (criteria.getEntity() != null) {
-            Map<String, Object> columnValues = getEntityColumnValues(criteria.getEntity());
-            List<ColumnCriterion<?>> columnCriteria = new ArrayList<>(columnValues.size());
-            for (Map.Entry<String, Object> entry : columnValues.entrySet()) {
-                if (entry.getValue() != null) {
-                    ColumnCriterion<?> criterion = new Equal<>(entry.getKey(), entry.getValue());
-                    columnCriteria.add(criterion);
-                }
-            }
-            whereSql = CriterionSqlUtils.<SqlAndParameterBind>criterionsToSqlFunction()
-                    .apply(columnCriteria, visitor, SqlAndParameterBind::getSql);
-        }
-        if (criteria instanceof QueryStructure) {
-            QueryStructure<?> queryStructure = (QueryStructure<?>) criteria;
-            CriteriaQuerySQLRender render = queryStructure.getRender(sqlRender);
-            boolean hasCriterion = queryStructure.hasCriterion();
-            if (hasCriterion) {
-                whereSql = whereSql + SPACE + render.renderWhere(parameterBind);
+        if (structure instanceof QueryStructure) {
+            QueryStructure<?> queryStructure = (QueryStructure<?>) structure;
+            QuerySQLRender render = queryStructure.getRender(sqlRender);
+            if (queryStructure.getCriterion().map(GroupCriterion::hasCriterion).orElse(false)) {
+                whereSql = render.renderWhere(parameterBind);
             }
             if (queryStructure.getJoinCriteria().isPresent()) {
-                whereSql = whereSql + SPACE + render.renderJoinWhere(parameterBind);
+                whereSql = SQLPart.merge(whereSql, render.renderJoinWhere(parameterBind));
             }
+        } else {
+            WhereSQLRender render = new WhereSQLRender(structure);
+            whereSql = render.renderWhere(parameterBind);
         }
         sqlAndParameterBind.setSql(whereSql);
         return sqlAndParameterBind;
     }
 
-
-    private <T> Map<String, Object> getEntityColumnValues(T entity) {
+    private <T> Map<String, Object> getEntityColumnValues(T entity, boolean nullable) {
         Map<String, Object> columnValues = new LinkedHashMap<>(entityMetadata.getRelationalEntity().getProperties().size());
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
-            columnValues.put(property.getColumn(), property.getValue(entity));
+            Object value = property.getValue(entity);
+            if (value != null || nullable) {
+                columnValues.put(property.getColumn(), value);
+            }
         }
         return columnValues;
     }

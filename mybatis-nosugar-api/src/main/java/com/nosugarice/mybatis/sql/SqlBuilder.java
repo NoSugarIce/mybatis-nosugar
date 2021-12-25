@@ -16,9 +16,10 @@
 
 package com.nosugarice.mybatis.sql;
 
-import com.nosugarice.mybatis.domain.Page;
+import com.nosugarice.mybatis.criteria.CriteriaDelete;
+import com.nosugarice.mybatis.criteria.CriteriaQuery;
+import com.nosugarice.mybatis.criteria.CriteriaUpdate;
 import com.nosugarice.mybatis.mapper.function.FunS;
-import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -52,14 +53,8 @@ public @interface SqlBuilder {
         },
         SELECT_LIST() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaQuery<T, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::selectList;
-            }
-        },
-        SELECT_LIST_LIMIT() {
-            @Override
-            public <T, ID> FunS.Param3<ProviderTempLate, EntityCriteriaQuery<T>, Page<T>, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::selectListLimit;
             }
         },
         INSERT() {
@@ -94,14 +89,8 @@ public @interface SqlBuilder {
         },
         UPDATE() {
             @Override
-            public <T, ID> FunS.Param3<ProviderTempLate, T, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaUpdate<T, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::update;
-            }
-        },
-        UPDATE_NULLABLE() {
-            @Override
-            public <T, ID> FunS.Param3<ProviderTempLate, T, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::updateNullable;
             }
         },
         DELETE_BY_ID() {
@@ -118,7 +107,7 @@ public @interface SqlBuilder {
         },
         DELETE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::delete;
             }
         },
@@ -136,7 +125,7 @@ public @interface SqlBuilder {
         },
         LOGIC_DELETE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, EntityCriteriaQuery<T>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::logicDelete;
             }
         },

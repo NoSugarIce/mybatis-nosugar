@@ -31,7 +31,7 @@ public interface Page<T> extends Serializable {
      * @return
      */
     default int getOffset() {
-        return (getPageNumber() - 1) * getPageSize();
+        return (getNumber() - 1) * getSize();
     }
 
     /**
@@ -40,7 +40,7 @@ public interface Page<T> extends Serializable {
      * @return
      */
     default int getLimit() {
-        return getPageSize();
+        return getSize();
     }
 
     /**
@@ -48,14 +48,14 @@ public interface Page<T> extends Serializable {
      *
      * @return
      */
-    int getPageNumber();
+    int getNumber();
 
     /**
      * 获取页大小
      *
      * @return
      */
-    int getPageSize();
+    int getSize();
 
     /**
      * 获取页总数

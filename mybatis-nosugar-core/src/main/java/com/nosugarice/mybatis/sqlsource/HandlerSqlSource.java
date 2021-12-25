@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.handler.ParameterValueHandler;
 import com.nosugarice.mybatis.handler.ValueHandler;

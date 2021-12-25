@@ -51,11 +51,11 @@ public class PostgreSqlDialect implements Dialect {
 
 
     @Override
-    public Limit getLimitHandler() {
-        return LimitImpl.INSTANCE;
+    public Limitable getLimitHandler() {
+        return LimitableImpl.INSTANCE;
     }
 
-    private enum LimitImpl implements Limit {
+    private enum LimitableImpl implements Limitable {
 
         INSTANCE;
 

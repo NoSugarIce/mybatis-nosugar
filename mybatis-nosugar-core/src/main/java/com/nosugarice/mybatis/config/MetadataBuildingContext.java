@@ -16,10 +16,8 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
-import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
-import com.nosugarice.mybatis.builder.relational.EntityBuilder;
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
+import com.nosugarice.mybatis.builder.MapperBuilder;
+import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
@@ -49,23 +47,22 @@ public class MetadataBuildingContext {
 
     private final Configuration configuration;
     private final MapperBuilderConfig config;
-    private final NoSugarMapperBuilder mapperBuilder;
+    private final MapperBuilder mapperBuilder;
     private final Dialect dialect;
     private final BeanRegistry<IdGenerator<?>> idGeneratorRegistry;
     private final BeanRegistry<ValueHandler<?>> valueHandlerRegistry;
     private final Map<Class<?>, Class<?>> mapperEntityClassMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, EntityMetadata> entityMetadataMap = new ConcurrentHashMap<>();
-    private final Map<Class<?>, SqlScriptBuilder> entitySqlScriptBuilderMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, SqlSourceScriptBuilder> entitySqlScriptBuilderMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, MapperBuilderAssistant> mapperBuilderAssistantMap = new ConcurrentHashMap<>();
 
     public MetadataBuildingContext(Configuration configuration, MapperBuilderConfig config) {
         this.configuration = configuration;
         this.config = config;
-        this.mapperBuilder = new NoSugarMapperBuilder(this);
+        this.mapperBuilder = new MapperBuilder(this);
+        this.dialect = config.getSqlBuildConfig().getDialect() != null ? config.getSqlBuildConfig().getDialect() : getDialect(configuration);
         this.idGeneratorRegistry = new IdGeneratorRegistry();
         this.valueHandlerRegistry = new BeanRegistry<>();
-        this.dialect = config.getSqlBuildConfig().getDialect() != null
-                ? config.getSqlBuildConfig().getDialect() : getDialect(configuration);
         registryBean(config.getRelationalConfig());
     }
 
@@ -91,21 +88,21 @@ public class MetadataBuildingContext {
                     .withValueHandlerRegistry(valueHandlerRegistry)
                     .build();
             EntityMetadata entityMetadata = new EntityMetadata(relationalEntity, config);
-            EntityMetadataRegistry metadataRegistry = EntityMetadataRegistry.Holder.getInstance();
+            EntityMetadataRegistry metadataRegistry = EntityMetadataRegistry.getInstance();
             metadataRegistry.register(entityClass, entityMetadata);
             return entityMetadata;
         });
     }
 
-    public SqlScriptBuilder getSqlScriptBuilderByMapper(Class<?> mapperClass) {
+    public SqlSourceScriptBuilder getSqlScriptBuilderByMapper(Class<?> mapperClass) {
         return getSqlScriptBuilder(getEntityClass(mapperClass));
     }
 
-    public SqlScriptBuilder getSqlScriptBuilder(Class<?> entityClass) {
+    public SqlSourceScriptBuilder getSqlScriptBuilder(Class<?> entityClass) {
         return entitySqlScriptBuilderMap.computeIfAbsent(entityClass
                 , clazz -> {
                     EntityMetadata entityMetadata = getEntityMetadata(clazz);
-                    return new SqlScriptBuilder(entityMetadata, this);
+                    return new SqlSourceScriptBuilder(entityMetadata, this);
                 });
     }
 
@@ -155,7 +152,7 @@ public class MetadataBuildingContext {
         return config;
     }
 
-    public NoSugarMapperBuilder getMapperBuilder() {
+    public MapperBuilder getMapperBuilder() {
         return mapperBuilder;
     }
 

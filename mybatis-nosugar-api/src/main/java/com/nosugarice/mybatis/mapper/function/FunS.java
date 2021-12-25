@@ -32,10 +32,6 @@ public interface FunS<R> extends Serializable {
     }
 
     @FunctionalInterface
-    interface Getter<T, R> extends Function<T, R>, FunS<T> {
-    }
-
-    @FunctionalInterface
     interface Param0<R> extends FunS<R> {
 
         R apply();

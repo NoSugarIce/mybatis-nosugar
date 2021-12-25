@@ -8,21 +8,23 @@ import java.util.List;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/9/26
+ * @date 2021/9/24
  */
 public class SqlAndParameterBind {
 
     private String sql;
 
-    private ParameterBind parameterBind;
+    private final ParameterBind parameterBind;
 
     private FunS.Param3<Object, List<ParameterColumnBind>, BoundSql, Void> parameterHandle;
 
     public SqlAndParameterBind() {
+        parameterBind = new ParameterBind();
     }
 
     public SqlAndParameterBind(String sql) {
         this.sql = sql;
+        parameterBind = new ParameterBind();
     }
 
     public SqlAndParameterBind(ParameterBind parameterBind) {
@@ -35,10 +37,7 @@ public class SqlAndParameterBind {
     }
 
     public ParameterColumnBind bind(Object value, String column, Class<?> entityClass) {
-        if (parameterBind == null) {
-            this.parameterBind = new ParameterBind();
-        }
-        return this.parameterBind.bindValue(value, column, entityClass);
+        return parameterBind.bindValue(value, column, entityClass);
     }
 
     public String getSql() {
@@ -51,10 +50,6 @@ public class SqlAndParameterBind {
 
     public ParameterBind getParameterBind() {
         return parameterBind;
-    }
-
-    public void setParameterBind(ParameterBind parameterBind) {
-        this.parameterBind = parameterBind;
     }
 
     public FunS.Param3<Object, List<ParameterColumnBind>, BoundSql, Void> getParameterHandle() {

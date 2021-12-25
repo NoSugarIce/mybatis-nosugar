@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
-import com.nosugarice.mybatis.builder.sql.SqlScriptBuilder;
+import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
@@ -36,20 +36,20 @@ public class DynamicHandlerSqlSource extends HandlerSqlSource {
 
     private final FunS<SqlAndParameterBind> providerFun;
 
-    private final SqlScriptBuilder sqlScriptBuilder;
+    private final SqlSourceScriptBuilder sqlSourceScriptBuilder;
 
     public DynamicHandlerSqlSource(SqlCommandType sqlCommandType, MetadataBuildingContext buildingContext, String[] parameterNames
-            , FunS<SqlAndParameterBind> providerFun, SqlScriptBuilder sqlScriptBuilder) {
+            , FunS<SqlAndParameterBind> providerFun, SqlSourceScriptBuilder sqlSourceScriptBuilder) {
         super(sqlCommandType, buildingContext, null);
         this.parameterNames = parameterNames;
         this.providerFun = providerFun;
-        this.sqlScriptBuilder = sqlScriptBuilder;
+        this.sqlSourceScriptBuilder = sqlSourceScriptBuilder;
     }
 
     @Override
     public BoundSql getBoundSql(Object parameterObject) {
         Object[] params = getOriginalParameters(parameterObject, parameterNames);
-        SqlAndParameterBind sqlAndParameterBind = sqlScriptBuilder.build(providerFun, params);
+        SqlAndParameterBind sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFun, params);
         List<ParameterMapping> parameterMappings = getParameterMappings(sqlAndParameterBind);
         BoundSql boundSql = new BoundSql(buildingContext.getConfiguration(), sqlHandler(sqlAndParameterBind.getSql())
                 , parameterMappings, parameterObject);

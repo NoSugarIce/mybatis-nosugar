@@ -17,7 +17,7 @@
 package com.nosugarice.mybatis.spring;
 
 import com.nosugarice.mybatis.annotation.SpeedBatch;
-import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
+import com.nosugarice.mybatis.builder.MapperBuilder;
 import com.nosugarice.mybatis.config.MapperBuilderConfig;
 import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
@@ -89,7 +89,7 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
                     , getSqlSession().getConfiguration().getVariables()).build();
             return new MetadataBuildingContext(getSqlSession().getConfiguration(), mapperBuilderConfig);
         });
-        NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
+        MapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
         if (!metadataBuildingContext.getConfig().getSwitchConfig().isLazyBuilder()) {
             mapperBuilder.process(getMapperInterface());
         }
@@ -100,7 +100,7 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
         if (!Mapper.class.isAssignableFrom(getMapperInterface())) {
             return super.getObject();
         }
-        NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
+        MapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
         //可以延迟加载,当使用的时候再进行构建
         if (!mapperBuilder.isLoaded(getMapperInterface())) {
             mapperBuilder.process(getMapperInterface());

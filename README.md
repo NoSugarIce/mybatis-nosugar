@@ -1,16 +1,22 @@
- ![](https://gitee.com/NoSugarIce/document-gallery/raw/master/mybatis-nosugar/NoSugar-log.svg)
- 
-## NoSugar简介
+![](https://gitee.com/NoSugarIce/document-gallery/raw/master/mybatis-nosugar/NoSugar-log.svg)
 
-旨在为开发者提供简单易用功能完善的Api.NoSugar目前仅支持单表,希望单表的简单操作不需要开发人员去进行一些额外的开发就可以直接使用.NoSugar只做Mybatis增强这一件事.部分项目使用的是Jpa(Hibernate),Hibernate是个很牛X的框架,但是使用的过程中还是有些众口难调的地方.所以NoSugar会带有在Jpa使用遗憾上的改进.NoSugar并没有实现Jpa,时间精力有限,只实现了Jpa根据方法名查询的功能.当前项目只是预览阶段,有很多Bug还待完善,基础代码已经完成,但还没有全功能测试.
+## 为何是NoSugar?
 
+无糖版可乐很好的契合了作者日益发福的身体和兼顾了喝可乐这件快乐的事情.
+
+当年刚出道的时候写的Mybatis模板Xml已然跟不上时代.其他工具又不顺手.
+
+天下武功,无坚不破,唯快不破.开发此项目的原因之一就是Jpa启动相对慢一点,公司老廉颇一重启就是一分钟.
+
+希望为开发者提供简单易用功能完善的Api.NoSugar只做Mybatis增强这一件事.NoSugar并没有实现Jpa,时间精力有限,只实现了Jpa根据方法名查询的功能.
 
 ## 功能概览
 
+- 无糖配方
+- 性能非常丝滑,大部分部分功能超越Mybatis Xml动态标签.
 - 使用简单,不影响原有项目,无需修改原Mybatis类声明,没有重构任何Mybatis基础配置类,只需增加一行配置即可开启
 - 无缝增强现有Mybatis项目 (+功能),即使现在的项目在使用其他Mybatis框架依旧可增强
 - 部分功能如分页,count查询,Jpa方式的根据方法名查询,可以单独选用(实现方式并非Mybatis插件接口)
-- 性能非常丝滑,部分功能超越Mybatis XML动态标签.
 - 基础的增删改查
 - 查询条件构造
 - 插入时主键策略
@@ -225,9 +231,7 @@ public interface StudentMapper extends BaseMapper<Student, String> {
 
 ## 计划或非计划
 
-- 全功能测试预计夏季结束时同步完成
-- 多对一,一对多关联查询(不一定实现)
-- join连表查询(不一定实现)
+- 全功能测试
 
 ## 常见问题
 
@@ -237,8 +241,9 @@ public interface StudentMapper extends BaseMapper<Student, String> {
 
 如果有类名或方法名等命名闹笑话的请勿介意,作者英语不及格
 
-...
+编码五分钟,命名两小时...部分类名就直接复用JPA中的类名.
 
+...
 
 ## 相关参考资料
 

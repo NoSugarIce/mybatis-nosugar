@@ -16,8 +16,9 @@
 
 package com.nosugarice.mybatis.sql;
 
-import com.nosugarice.mybatis.domain.Page;
-import com.nosugarice.mybatis.query.criteria.EntityCriteriaQuery;
+import com.nosugarice.mybatis.criteria.CriteriaDelete;
+import com.nosugarice.mybatis.criteria.CriteriaQuery;
+import com.nosugarice.mybatis.criteria.CriteriaUpdate;
 
 import java.util.Collection;
 import java.util.Set;
@@ -32,9 +33,7 @@ public interface ProviderTempLate {
 
     <ID> SqlAndParameterBind selectByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind selectList(EntityCriteriaQuery<T> criteria);
-
-    <T> SqlAndParameterBind selectListLimit(EntityCriteriaQuery<T> criteria, Page<T> page);
+    <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?> criteria);
 
     <T> SqlAndParameterBind insert(T entity);
 
@@ -46,21 +45,19 @@ public interface ProviderTempLate {
 
     <T> SqlAndParameterBind updateByIdNullable(T entity);
 
-    <T> SqlAndParameterBind update(T entity, EntityCriteriaQuery<T> criteria);
-
-    <T> SqlAndParameterBind updateNullable(T entity, EntityCriteriaQuery<T> criteria);
+    <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria);
 
     <ID> SqlAndParameterBind deleteById(ID id);
 
     <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind delete(EntityCriteriaQuery<T> criteria);
+    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria);
 
     <ID> SqlAndParameterBind logicDeleteById(ID id);
 
     <ID> SqlAndParameterBind logicDeleteByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind logicDelete(EntityCriteriaQuery<T> criteria);
+    <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria);
 
     //--------------jpa------------------------
 

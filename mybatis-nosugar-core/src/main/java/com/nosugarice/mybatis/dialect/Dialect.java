@@ -44,7 +44,7 @@ public interface Dialect {
      *
      * @return
      */
-    Limit getLimitHandler();
+    Limitable getLimitHandler();
 
     /**
      * 获取字面值处理器

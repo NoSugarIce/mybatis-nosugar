@@ -16,13 +16,11 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.AbstractMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.AbstractMapperBuilder;
 import com.nosugarice.mybatis.util.Preconditions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -31,10 +29,7 @@ import java.util.stream.Collectors;
 public class SwitchConfig {
 
     /** 开启的功能 */
-    private final List<Class<? extends AbstractMapperBuilder<?>>> includeMapperBuilders = new ArrayList<>();
-
-    /** 排除的功能 */
-    private List<Class<?>> excludeMapperBuilders;
+    private final Set<Class<? extends AbstractMapperBuilder<?>>> mapperBuilders = new HashSet<>();
 
     /** 逻辑删除开关 */
     private boolean logicDelete = true;
@@ -48,24 +43,19 @@ public class SwitchConfig {
     /** 批量增强 */
     private boolean speedBatch = true;
 
-    public Set<Class<? extends AbstractMapperBuilder<?>>> getMapperBuilders() {
-        return includeMapperBuilders.stream()
-                .filter(clazz -> excludeMapperBuilders == null || !excludeMapperBuilders.contains(clazz))
-                .collect(Collectors.toSet());
-    }
-
     @SuppressWarnings("unchecked")
-    public void addIncludeMapperBuilder(Class<?> mapperBuilderClass) {
+    public void includeMapperBuilder(Class<?> mapperBuilderClass) {
         Preconditions.checkArgument(AbstractMapperBuilder.class.isAssignableFrom(mapperBuilderClass)
                 , mapperBuilderClass.getName() + "类型不正确!");
-        includeMapperBuilders.add((Class<? extends AbstractMapperBuilder<?>>) mapperBuilderClass);
+        mapperBuilders.add((Class<? extends AbstractMapperBuilder<?>>) mapperBuilderClass);
     }
 
-    public void addExcludeMapperBuilder(Class<?> mapperBuilderClass) {
-        if (excludeMapperBuilders == null) {
-            excludeMapperBuilders = new ArrayList<>();
-        }
-        excludeMapperBuilders.add(mapperBuilderClass);
+    public void excludeMapperBuilder(Class<?> mapperBuilderClass) {
+        mapperBuilders.remove(mapperBuilderClass);
+    }
+
+    public Set<Class<? extends AbstractMapperBuilder<?>>> getMapperBuilders() {
+        return mapperBuilders;
     }
 
     public boolean isLogicDelete() {
