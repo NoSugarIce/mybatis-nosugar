@@ -20,8 +20,8 @@ package com.nosugarice.mybatis.entity;
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
  */
-public interface Entity<ID> {
+public interface Entity {
 
-    ID getId();
+    <ID> ID getId();
 
 }

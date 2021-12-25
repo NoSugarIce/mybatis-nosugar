@@ -16,22 +16,20 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.AbstractMapperBuilder;
-import com.nosugarice.mybatis.builder.MapperEntityStatementBuilder;
-import com.nosugarice.mybatis.builder.MapperMethodNameBuilder;
-import com.nosugarice.mybatis.builder.MutativeSqlBuilder;
-import com.nosugarice.mybatis.builder.relational.DefaultEntityBuilder;
-import com.nosugarice.mybatis.builder.relational.EntityBuilder;
+import com.nosugarice.mybatis.builder.mapper.AbstractMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.BasicMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.JpaMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.MutativeMapperBuilder;
+import com.nosugarice.mybatis.config.internal.DefaultEntityBuilder;
+import com.nosugarice.mybatis.config.internal.DefaultMapperStrategy;
+import com.nosugarice.mybatis.config.internal.NameStrategyType;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.id.IdGenerator;
 import com.nosugarice.mybatis.registry.ConfigRegistry;
-import com.nosugarice.mybatis.support.DefaultMapperStrategy;
 import com.nosugarice.mybatis.support.EntityPropertyNameStrategy;
-import com.nosugarice.mybatis.support.MapperStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
-import com.nosugarice.mybatis.support.NameStrategyType;
 import com.nosugarice.mybatis.util.CollectionUtils;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.ReflectionUtils;
@@ -107,13 +105,13 @@ public class MapperBuilderConfigBuilder {
         SqlBuildConfig sqlBuildConfig = config.getSqlBuildConfig();
 
         setClassesValue(SWITCH_CONFIG_INCLUDE_MAPPER_BUILDERS
-                , AbstractMapperBuilder.class, () -> Stream.of(MapperEntityStatementBuilder.class
-                                , MapperMethodNameBuilder.class
-                                , MutativeSqlBuilder.class)
+                , AbstractMapperBuilder.class, () -> Stream.of(BasicMapperBuilder.class
+                                , JpaMapperBuilder.class
+                                , MutativeMapperBuilder.class)
                         .collect(Collectors.toList())
-                , classes -> classes.forEach(switchConfig::addIncludeMapperBuilder));
+                , classes -> classes.forEach(switchConfig::includeMapperBuilder));
         setClassesValue(SWITCH_CONFIG_EXCLUDE_MAPPER_BUILDERS, AbstractMapperBuilder.class, () -> null
-                , classes -> classes.forEach(switchConfig::addExcludeMapperBuilder));
+                , classes -> classes.forEach(switchConfig::excludeMapperBuilder));
         setPrimitiveValue(SWITCH_CONFIG_LOGIC_DELETE, Boolean::parseBoolean, () -> true, switchConfig::setLogicDelete);
         setPrimitiveValue(SWITCH_CONFIG_VERSION, Boolean::parseBoolean, () -> true, switchConfig::setVersion);
         setPrimitiveValue(SWITCH_CONFIG_LAZY_BUILDER, Boolean::parseBoolean, () -> true, switchConfig::setLazyBuilder);

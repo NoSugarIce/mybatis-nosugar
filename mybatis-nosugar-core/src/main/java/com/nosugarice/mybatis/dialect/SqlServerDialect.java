@@ -57,15 +57,15 @@ public class SqlServerDialect implements Dialect {
     }
 
     @Override
-    public Limit getLimitHandler() {
-        return LimitHolder.LIMIT_INSTANCE;
+    public Limitable getLimitHandler() {
+        return LimitHolder.LIMITABLE_INSTANCE;
     }
 
     private static class LimitHolder {
-        private static final Limit LIMIT_INSTANCE = new SqlServerLimit();
+        private static final Limitable LIMITABLE_INSTANCE = new SqlServerLimitable();
     }
 
-    public static class SqlServerLimit implements Limit {
+    public static class SqlServerLimitable implements Limitable {
 
         private static final String ORDER_BY = "ORDER BY";
 

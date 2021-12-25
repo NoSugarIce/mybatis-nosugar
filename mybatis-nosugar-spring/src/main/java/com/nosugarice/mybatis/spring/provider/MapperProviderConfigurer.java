@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.spring.provider;
 
-import com.nosugarice.mybatis.builder.NoSugarMapperBuilder;
+import com.nosugarice.mybatis.builder.MapperBuilder;
 import com.nosugarice.mybatis.config.MapperBuilderConfig;
 import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
@@ -101,7 +101,7 @@ public class MapperProviderConfigurer implements ApplicationListener<ContextRefr
         MapperBuilderConfig config = new MapperBuilderConfigBuilder(configRegistry, configuration.getVariables()).build();
         MetadataBuildingContext metadataBuildingContext = new MetadataBuildingContext(configuration, config);
         for (Class<?> providerClass : providerClasses) {
-            NoSugarMapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
+            MapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
             mapperBuilder.process(providerClass);
         }
     }

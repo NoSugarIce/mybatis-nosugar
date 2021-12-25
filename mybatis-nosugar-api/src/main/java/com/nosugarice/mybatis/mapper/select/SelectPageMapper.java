@@ -18,6 +18,7 @@ package com.nosugarice.mybatis.mapper.select;
 
 import com.nosugarice.mybatis.annotation.Provider.Adapter;
 import com.nosugarice.mybatis.domain.Page;
+import com.nosugarice.mybatis.mapper.function.AdapterMapper;
 import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.utils.Assert;
 
@@ -29,7 +30,7 @@ import java.util.List;
  * @author dingjingyang@foxmail.com
  * @date 2017/8/30
  */
-public interface SelectPageMapper<T> extends SelectMapper {
+public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
 
     /**
      * 分页查询
@@ -142,7 +143,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
     default Page<T> selectPage(Page<T> page, FunS<List<T>> selectFunction, Object... params) {
         Assert.notNull(page, "Page不能为空.");
         long count = page.getTotal() > 0 ? page.getTotal() : selectCount(selectFunction, params);
-        if (count > 0 && (long) (page.getPageNumber() - 1) * page.getPageSize() < count) {
+        if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
             try {
                 PageStorage.setPage(page);
                 List<T> list = selectFunction.invoke(params);

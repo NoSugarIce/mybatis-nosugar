@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.util;
 
+import com.nosugarice.mybatis.criteria.Getter;
 import com.nosugarice.mybatis.exception.NoSugarException;
-import com.nosugarice.mybatis.mapper.function.FunS;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
  */
 public class LambdaUtils {
 
-    public static String getFunctionalName(FunS.Getter<?, ?> getter) {
+    public static String getFunctionalName(Getter<?, ?> getter) {
         return getFunctionalName((Serializable) getter);
     }
 

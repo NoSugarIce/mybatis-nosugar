@@ -27,15 +27,15 @@ import com.nosugarice.mybatis.util.StringFormatter;
 public class SqlServer2012Dialect extends SqlServerDialect {
 
     @Override
-    public Limit getLimitHandler() {
-        return LimitHolder.LIMIT_INSTANCE;
+    public Limitable getLimitHandler() {
+        return LimitHolder.LIMITABLE_INSTANCE;
     }
 
     private static class LimitHolder {
-        private static final Limit LIMIT_INSTANCE = new SqlServer2012Limit();
+        private static final Limitable LIMITABLE_INSTANCE = new SqlServer2012Limitable();
     }
 
-    public static class SqlServer2012Limit extends SqlServerDialect.SqlServerLimit {
+    public static class SqlServer2012Limitable extends SqlServerLimitable {
 
         private static final String ORDER_BY_SQL_TEMP_LATE = "{} OFFSET {} ROWS FETCH NEXT {} ROWS ONLY";
 

@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.support;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.OrderComparator;
 import com.nosugarice.mybatis.entity.Entity;
 import com.nosugarice.mybatis.entity.EntityData;
@@ -27,6 +27,8 @@ import com.nosugarice.mybatis.util.Preconditions;
 import java.util.Optional;
 
 /**
+ * p
+ *
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
  */
@@ -36,9 +38,9 @@ public class EntityDataImpl implements EntityData, OrderComparator {
     @Override
     public <T, ID> ID getId(T entity) {
         if (entity instanceof Entity) {
-            return ((Entity<ID>) entity).getId();
+            return ((Entity) entity).getId();
         }
-        RelationalProperty pkProperty = Optional.of(EntityMetadataRegistry.Holder.getInstance())
+        RelationalProperty pkProperty = Optional.of(EntityMetadataRegistry.getInstance())
                 .map(entityMetadataRegistry -> entityMetadataRegistry.getEntityMetadata(entity.getClass()))
                 .map(EntityMetadata::getPrimaryKeyProperty)
                 .orElse(null);

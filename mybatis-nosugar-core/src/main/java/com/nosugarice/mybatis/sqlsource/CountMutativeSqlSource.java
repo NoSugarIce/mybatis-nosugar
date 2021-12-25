@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
+import com.nosugarice.mybatis.config.internal.NameStrategyType;
 import com.nosugarice.mybatis.sql.SQLConstants;
-import com.nosugarice.mybatis.support.NameStrategyType;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 

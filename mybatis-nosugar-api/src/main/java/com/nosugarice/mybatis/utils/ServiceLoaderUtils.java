@@ -30,7 +30,7 @@ public class ServiceLoaderUtils {
     public static <T> T loadSingleInstance(Class<T> clazz) {
         List<T> instances = loadInstances(clazz);
         if (instances.isEmpty()) {
-            throw new IllegalArgumentException("当前接口没有SPI实现!");
+            throw new IllegalArgumentException("当前接口没有SPI实现.");
         }
         return instances.get(0);
     }

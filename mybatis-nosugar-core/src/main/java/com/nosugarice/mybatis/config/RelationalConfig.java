@@ -16,10 +16,8 @@
 
 package com.nosugarice.mybatis.config;
 
-import com.nosugarice.mybatis.builder.relational.EntityBuilder;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.id.IdGenerator;
-import com.nosugarice.mybatis.support.MapperStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
 
 import javax.persistence.AccessType;

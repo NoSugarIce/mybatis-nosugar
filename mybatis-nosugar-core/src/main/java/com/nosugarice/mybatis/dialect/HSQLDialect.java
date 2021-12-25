@@ -20,7 +20,7 @@ import com.nosugarice.mybatis.util.StringFormatter;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/7/18
+ * @date 2020/11/15
  */
 public class HSQLDialect implements Dialect {
 
@@ -51,11 +51,11 @@ public class HSQLDialect implements Dialect {
 
 
     @Override
-    public Limit getLimitHandler() {
-        return LimitImpl.INSTANCE;
+    public Limitable getLimitHandler() {
+        return LimitableImpl.INSTANCE;
     }
 
-    private enum LimitImpl implements Limit {
+    private enum LimitableImpl implements Limitable {
 
         INSTANCE;
 

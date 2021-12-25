@@ -1,6 +1,6 @@
 package com.nosugarice.mybatis.registry;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.OrderComparator;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.util.Preconditions;

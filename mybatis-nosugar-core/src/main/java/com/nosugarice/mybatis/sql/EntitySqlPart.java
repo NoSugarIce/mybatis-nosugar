@@ -16,14 +16,13 @@
 
 package com.nosugarice.mybatis.sql;
 
-import com.nosugarice.mybatis.builder.EntityMetadata;
+import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.util.StringJoinerBuilder;
 
 import java.io.Serializable;
 
-import static com.nosugarice.mybatis.sql.SQLConstants.AND;
 import static com.nosugarice.mybatis.sql.SQLConstants.AS_;
 import static com.nosugarice.mybatis.sql.SQLConstants.EQUALS_TO;
 import static com.nosugarice.mybatis.sql.SQLConstants.IS_NULL;
@@ -33,7 +32,7 @@ import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
  * @author dingjingyang@foxmail.com
  * @date 2021/1/1
  */
-public class EntitySqlPart implements SqlPart {
+public class EntitySQLPart {
 
     private final EntityMetadata entityMetadata;
     private final Dialect dialect;
@@ -42,7 +41,7 @@ public class EntitySqlPart implements SqlPart {
     public String selectParameterLogicDelete;
     public String logicDeleteColumnValue;
 
-    public EntitySqlPart(EntityMetadata entityMetadata, Dialect dialect) {
+    public EntitySQLPart(EntityMetadata entityMetadata, Dialect dialect) {
         this.entityMetadata = entityMetadata;
         this.dialect = dialect;
         this.selectResult = selectResult();
@@ -53,7 +52,7 @@ public class EntitySqlPart implements SqlPart {
     private String selectResult() {
         StringBuilder sqlBuilder = new StringBuilder();
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
-            String safeColumn = SqlPart.safeColumnName(property.getColumn(), dialect);
+            String safeColumn = SQLPart.safeColumnName(property.getColumn(), dialect);
             sqlBuilder.append(Placeholder.columnAliasState(safeColumn)).append(AS_)
                     .append("\"").append(property.getName()).append("\"").append(",").append(SPACE);
         }
@@ -64,7 +63,7 @@ public class EntitySqlPart implements SqlPart {
         if (entityMetadata.getSupports().isSupportLogicDelete()) {
             RelationalProperty logicDeleteProperty = entityMetadata.getLogicDeleteProperty();
             StringJoinerBuilder joinerBuilder = StringJoinerBuilder.createSpaceJoin()
-                    .withElements(AND, Placeholder.columnAliasState(SqlPart.safeColumnName(logicDeleteProperty.getColumn(), dialect)));
+                    .withElements(Placeholder.columnAliasState(SQLPart.safeColumnName(logicDeleteProperty.getColumn(), dialect)));
             Serializable defaultValue = logicDeleteProperty.getValue().getDefaultValue();
             if (defaultValue == null) {
                 joinerBuilder.withElements(IS_NULL);

@@ -16,9 +16,9 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
+import com.nosugarice.mybatis.config.internal.NameStrategyType;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.sql.SQLConstants;
-import com.nosugarice.mybatis.support.NameStrategyType;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/9/19
+ * @date 2021/09/19
  */
 public class ExistsMutativeSqlSource extends MutativeSqlSource {
 

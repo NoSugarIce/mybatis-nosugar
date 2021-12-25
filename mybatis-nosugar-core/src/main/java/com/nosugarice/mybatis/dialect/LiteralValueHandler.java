@@ -17,8 +17,6 @@
 package com.nosugarice.mybatis.dialect;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,20 +31,12 @@ import static com.nosugarice.mybatis.sql.SQLConstants.NULL;
  * @author dingjingyang@foxmail.com
  * @date 2021/6/27
  */
-public abstract class LiteralValueHandler {
+public class LiteralValueHandler {
 
     private final Map<Class<? extends Serializable>, Function<Serializable, String>> handlerRegistry = new HashMap<>();
 
     protected LiteralValueHandler() {
-        register(String.class, this::defaultConvert);
-        register(Byte.class, this::originalConvert);
-        register(Short.class, this::originalConvert);
-        register(Integer.class, this::originalConvert);
-        register(Long.class, this::originalConvert);
-        register(Float.class, this::originalConvert);
-        register(Double.class, this::originalConvert);
-        register(BigInteger.class, this::originalConvert);
-        register(BigDecimal.class, this::originalConvert);
+        register(String.class, this::stringConvert);
         register(LocalDateTime.class, this::localDateTimeConvert);
         register(Date.class, this::dateConvert);
         register(Boolean.class, this::booleanConvert);
@@ -66,11 +56,11 @@ public abstract class LiteralValueHandler {
         if (value == null) {
             return NULL;
         }
-        Function<Serializable, String> function = handlerRegistry.getOrDefault(value.getClass(), this::defaultConvert);
+        Function<Serializable, String> function = handlerRegistry.getOrDefault(value.getClass(), this::originalConvert);
         return function.apply(value);
     }
 
-    private String defaultConvert(Serializable value) {
+    private String stringConvert(Serializable value) {
         return "'" + value + "'";
     }
 
@@ -80,12 +70,12 @@ public abstract class LiteralValueHandler {
 
     private String localDateTimeConvert(Serializable value) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return defaultConvert(dateTimeFormatter.format((LocalDateTime) value));
+        return stringConvert(dateTimeFormatter.format((LocalDateTime) value));
     }
 
     private String dateConvert(Serializable value) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return defaultConvert(dateFormat.format((Date) value));
+        return stringConvert(dateFormat.format((Date) value));
     }
 
     private String booleanConvert(Serializable value) {
@@ -97,8 +87,7 @@ public abstract class LiteralValueHandler {
     }
 
     private static class Holder {
-        private static final LiteralValueHandler INSTANCE = new LiteralValueHandler() {
-        };
+        private static final LiteralValueHandler INSTANCE = new LiteralValueHandler();
     }
 
 }

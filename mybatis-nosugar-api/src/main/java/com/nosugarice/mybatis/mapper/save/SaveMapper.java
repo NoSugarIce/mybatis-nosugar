@@ -18,8 +18,8 @@ package com.nosugarice.mybatis.mapper.save;
 
 import com.nosugarice.mybatis.entity.EntityData;
 import com.nosugarice.mybatis.mapper.insert.InsertMapper;
-import com.nosugarice.mybatis.mapper.select.SelectByPrimaryKeyMapper;
-import com.nosugarice.mybatis.mapper.update.UpdateByPrimaryKeyMapper;
+import com.nosugarice.mybatis.mapper.select.SelectPrimaryKeyMapper;
+import com.nosugarice.mybatis.mapper.update.UpdatePrimaryKeyMapper;
 
 import java.util.Optional;
 
@@ -27,7 +27,7 @@ import java.util.Optional;
  * @author dingjingyang@foxmail.com
  * @date 2017/8/30
  */
-public interface SaveMapper<T, ID> extends SelectByPrimaryKeyMapper<T, ID>, UpdateByPrimaryKeyMapper<T>, InsertMapper<T> {
+public interface SaveMapper<T, ID> extends SelectPrimaryKeyMapper<T, ID>, UpdatePrimaryKeyMapper<T>, InsertMapper<T> {
 
     /**
      * 保存数据,当主键为空时插入,当主键有值时更新,不会忽略NULL值
@@ -41,7 +41,7 @@ public interface SaveMapper<T, ID> extends SelectByPrimaryKeyMapper<T, ID>, Upda
         boolean present = Optional.ofNullable(id)
                 .map(this::selectById)
                 .isPresent();
-        int i = present ? updateByIdNullable(entity) : insert(entity);
+        int i = present ? updateById(entity) : insert(entity);
         return entity;
     }
 

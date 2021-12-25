@@ -16,13 +16,16 @@
 
 package com.nosugarice.mybatis.mapper;
 
-import com.nosugarice.mybatis.mapper.base.BaseDeleteMapper;
-import com.nosugarice.mybatis.mapper.base.BaseInsertMapper;
-import com.nosugarice.mybatis.mapper.base.BaseLogicDeleteMapper;
-import com.nosugarice.mybatis.mapper.base.BaseSelectMapper;
-import com.nosugarice.mybatis.mapper.base.BaseUpdateMapper;
-import com.nosugarice.mybatis.mapper.function.MethodNameMapper;
+import com.nosugarice.mybatis.mapper.delete.DeleteCriteriaMapper;
+import com.nosugarice.mybatis.mapper.delete.DeletePrimaryKeyMapper;
+import com.nosugarice.mybatis.mapper.function.JpaMapper;
+import com.nosugarice.mybatis.mapper.insert.InsertMapper;
 import com.nosugarice.mybatis.mapper.save.SaveMapper;
+import com.nosugarice.mybatis.mapper.select.SelectCriteriaMapper;
+import com.nosugarice.mybatis.mapper.select.SelectPageMapper;
+import com.nosugarice.mybatis.mapper.select.SelectPrimaryKeyMapper;
+import com.nosugarice.mybatis.mapper.update.UpdateCriteriaMapper;
+import com.nosugarice.mybatis.mapper.update.UpdatePrimaryKeyMapper;
 
 import java.io.Serializable;
 
@@ -30,7 +33,12 @@ import java.io.Serializable;
  * @author dingjingyang@foxmail.com
  * @date 2017/8/29
  */
-public interface BaseMapper<T, ID extends Serializable> extends BaseSelectMapper<T, ID>, BaseInsertMapper<T>
-        , BaseUpdateMapper<T>, SaveMapper<T, ID>, BaseDeleteMapper<T, ID>, BaseLogicDeleteMapper<T, ID>, MethodNameMapper<T> {
+public interface BaseMapper<T, ID extends Serializable> extends
+        SelectPrimaryKeyMapper<T, ID>, SelectCriteriaMapper<T>, SelectPageMapper<T>
+        , InsertMapper<T>
+        , UpdatePrimaryKeyMapper<T>, UpdateCriteriaMapper<T>
+        , SaveMapper<T, ID>
+        , DeletePrimaryKeyMapper<ID>, DeleteCriteriaMapper<T>
+        , JpaMapper<T> {
 }
 

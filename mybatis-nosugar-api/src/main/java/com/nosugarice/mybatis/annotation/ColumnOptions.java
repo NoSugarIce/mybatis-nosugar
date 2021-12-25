@@ -20,6 +20,7 @@ import com.nosugarice.mybatis.handler.ValueHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
+import java.io.Serializable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -44,13 +45,13 @@ public @interface ColumnOptions {
 
     Class<? extends TypeHandler<?>> typeHandler() default VoidHandler.class;
 
-    Class<? extends ValueHandler<?>> insertHandler() default VoidHandler.class;
+    Class<? extends ValueHandler<? extends Serializable>> insertHandler() default VoidHandler.class;
 
-    Class<? extends ValueHandler<?>> updateHandler() default VoidHandler.class;
+    Class<? extends ValueHandler<? extends Serializable>> updateHandler() default VoidHandler.class;
 
-    Class<? extends ValueHandler<?>> resultHandler() default VoidHandler.class;
+    Class<? extends ValueHandler<? extends Serializable>> resultHandler() default VoidHandler.class;
 
-    class VoidHandler implements TypeHandler<Void>, ValueHandler<Void> {
+    class VoidHandler implements TypeHandler<Void>, ValueHandler<VoidHandler.VoidS> {
 
         @Override
         public void setParameter(PreparedStatement ps, int i, Void parameter, JdbcType jdbcType) {
@@ -72,8 +73,12 @@ public @interface ColumnOptions {
         }
 
         @Override
-        public Void setValue(Void value) {
+        public VoidS setValue(VoidS value) {
             return null;
+        }
+
+        public static class VoidS implements Serializable {
+            private static final long serialVersionUID = -7262888801476099994L;
         }
     }
 
