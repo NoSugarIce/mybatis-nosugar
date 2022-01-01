@@ -32,23 +32,14 @@ import java.lang.annotation.Target;
 public @interface Provider {
 
     enum Type {
-        CRUD,
         COUNT,
-        EXISTS,
-        PAGE,
-        BY_NAME,
-        NONE
+        EXISTS
     }
 
-    enum Adapter {
-        COUNT,
-        NONE
-    }
+    Type value();
 
-    Type value() default Type.NONE;
+    String originalMethod() default "";
 
     boolean isProvider() default true;
-
-    Adapter adapter() default Adapter.NONE;
 
 }

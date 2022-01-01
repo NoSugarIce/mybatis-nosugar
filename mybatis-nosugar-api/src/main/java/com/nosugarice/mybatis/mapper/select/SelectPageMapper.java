@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.mapper.select;
 
-import com.nosugarice.mybatis.annotation.Provider.Adapter;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.mapper.function.AdapterMapper;
 import com.nosugarice.mybatis.mapper.function.FunS;
@@ -142,11 +141,11 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      */
     default Page<T> selectPage(Page<T> page, FunS<List<T>> selectFunction, Object... params) {
         Assert.notNull(page, "Page不能为空.");
-        long count = page.getTotal() > 0 ? page.getTotal() : selectCount(selectFunction, params);
+        long count = page.getTotal() > 0 ? page.getTotal() : adapterCount(selectFunction, params);
         if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
             try {
                 PageStorage.setPage(page);
-                List<T> list = selectFunction.invoke(params);
+                List<T> list = adapterPage(selectFunction, params);
                 page.setContent(list);
                 page.setTotal(count);
             } finally {
@@ -154,17 +153,6 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
             }
         }
         return page;
-    }
-
-    /**
-     * 查询行数
-     *
-     * @param funS   查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
-     * @param params 参数列表
-     * @return 行数
-     */
-    default long selectCount(FunS<?> funS, Object... params) {
-        return selectAdapter(Adapter.COUNT, funS, params);
     }
 
     class PageStorage {

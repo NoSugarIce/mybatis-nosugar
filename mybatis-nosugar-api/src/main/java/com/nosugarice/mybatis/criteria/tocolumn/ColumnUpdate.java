@@ -14,28 +14,13 @@
  *    limitations under the License.
  */
 
-package com.nosugarice.mybatis.annotation;
+package com.nosugarice.mybatis.criteria.tocolumn;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.nosugarice.mybatis.criteria.CriteriaUpdate;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/6/27
+ * @date 2021/12/26
  */
-@Documented
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ProviderAdapter {
-
-    enum Type {
-        COUNT,
-        PAGE
-    }
-
-    Type value();
-
+public interface ColumnUpdate<T> extends CriteriaUpdate<T, String> {
 }

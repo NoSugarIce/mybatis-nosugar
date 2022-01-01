@@ -1,9 +1,10 @@
 package com.nosugarice.mybatis.mapper.function;
 
-import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.annotation.ProviderAdapter;
 import com.nosugarice.mybatis.mapper.MapperParam;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -12,15 +13,24 @@ import org.apache.ibatis.annotations.Param;
 public interface AdapterMapper {
 
     /**
-     * 桥接方法
+     * 桥接count 查询
      *
-     * @param adapter 桥接类型
-     * @param funS    桥接方法lambda引用
-     * @param params  参数列表
-     * @param <R>     返回类型
-     * @return 返回数据
+     * @param funS
+     * @param params
+     * @return
      */
-    @ProviderAdapter
-    <R> R selectAdapter(Provider.Adapter adapter, @Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+    @ProviderAdapter(value = ProviderAdapter.Type.COUNT)
+    long adapterCount(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+
+    /**
+     * 桥接count 查询
+     *
+     * @param funS
+     * @param params
+     * @param <T>
+     * @return
+     */
+    @ProviderAdapter(value = ProviderAdapter.Type.PAGE)
+    <T> List<T> adapterPage(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
 
 }

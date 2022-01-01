@@ -97,22 +97,18 @@ public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
     }
 
     @Override
-    public boolean isMapper() {
-        return JpaMapper.class.isAssignableFrom(mapperClass);
+    public boolean isMatchMapper(Class<?> mapperType) {
+        return JpaMapper.class.isAssignableFrom(mapperType);
     }
 
     @Override
-    public boolean isCrudMethod(Method method) {
+    public boolean isMatch(Method method) {
         return notHasStatement(method) && PartTree.PREFIX_TEMPLATE.matcher(method.getName()).find()
                 && !method.isAnnotationPresent(SqlBuilder.class);
     }
 
     @Override
-    public void checkBeforeProcessMethod(Method method) {
-    }
-
-    @Override
-    public void processMethod(Method method) {
+    public void process(Method method) {
         String methodName = method.getName();
         Matcher matcher = PartTree.PREFIX_TEMPLATE.matcher(methodName);
         if (matcher.find()) {

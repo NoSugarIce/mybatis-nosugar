@@ -42,8 +42,6 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
     protected Class<?> mapperClass;
     protected EntityMetadata entityMetadata;
 
-    private boolean isMapper;
-
     private static final Map<Class<?>, List<Method>> MAPPER_METHOD_CACHE = new WeakHashMap<>();
 
     public T withBuildingContext(MetadataBuildingContext buildingContext) {
@@ -64,30 +62,23 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
     public T build() {
         Preconditions.checkNotNull(buildingContext, "缺少MetadataBuildingContext!");
         Preconditions.checkNotNull(mapperClass, "缺少MapperInterface!");
-
-        this.isMapper = isMapper();
-        if (this.isMapper) {
-            this.configuration = buildingContext.getConfiguration();
-            this.entityMetadata = buildingContext.getEntityMetadataByMapper(mapperClass);
-        }
+        this.configuration = buildingContext.getConfiguration();
+        this.entityMetadata = buildingContext.getEntityMetadataByMapper(mapperClass);
         return getThis();
     }
 
     public void parse() {
-        if (!isMapper) {
-            return;
-        }
         List<Method> needAchieveMapperMethods = needParseMethods();
-        needAchieveMapperMethods.forEach(this::checkBeforeProcessMethod);
-        needAchieveMapperMethods.forEach(this::processMethod);
+        needAchieveMapperMethods.forEach(this::process);
     }
 
     /**
      * 是否合规Mapper接口
      *
+     * @param mapperType
      * @return
      */
-    public abstract boolean isMapper();
+    public abstract boolean isMatchMapper(Class<?> mapperType);
 
     /**
      * 是否需要构建
@@ -95,7 +86,7 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
      * @param method
      * @return
      */
-    public abstract boolean isCrudMethod(Method method);
+    public abstract boolean isMatch(Method method);
 
     /**
      * 获取需要实现的方法
@@ -105,24 +96,17 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
     public List<Method> needParseMethods() {
         return getMapperMethod(mapperClass)
                 .stream()
-                .filter(this::isCrudMethod)
+                .filter(this::isMatch)
                 .filter(this::isRepository)
                 .collect(Collectors.toList());
     }
-
-    /**
-     * 处理方法前检查
-     *
-     * @param method
-     */
-    public abstract void checkBeforeProcessMethod(Method method);
 
     /**
      * 处理方法
      *
      * @param method
      */
-    public abstract void processMethod(Method method);
+    public abstract void process(Method method);
 
     public boolean notHasStatement(Method method) {
         return !configuration.hasStatement(getMethodMappedStatementId(method));
@@ -140,7 +124,7 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
         return mapperClass.getName() + "." + method.getName();
     }
 
-    public List<Method> getMapperMethod(Class<?> mapperClass) {
+    private List<Method> getMapperMethod(Class<?> mapperClass) {
         return MAPPER_METHOD_CACHE.computeIfAbsent(mapperClass, clazz -> Arrays.stream(clazz.getMethods())
                 .filter(method -> method.getDeclaringClass().isInterface())
                 .filter(method -> Modifier.isAbstract(method.getModifiers()))

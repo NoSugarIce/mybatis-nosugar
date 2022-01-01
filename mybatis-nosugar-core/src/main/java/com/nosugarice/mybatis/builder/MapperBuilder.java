@@ -46,6 +46,7 @@ public class MapperBuilder {
             buildingContext.getConfig().getSwitchConfig().getMapperBuilders().stream()
                     .map(ReflectionUtils::newInstance)
                     .sorted(OrderComparator::compareTo)
+                    .filter(mapperBuilder -> mapperBuilder.isMatchMapper(mapperType))
                     .forEach(mapperBuilder -> mapperBuilder
                             .withBuildingContext(buildingContext)
                             .withMapper(mapperType)

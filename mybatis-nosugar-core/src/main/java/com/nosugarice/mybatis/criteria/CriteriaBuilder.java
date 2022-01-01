@@ -19,18 +19,31 @@ package com.nosugarice.mybatis.criteria;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.criteria.delete.CriteriaDeleteImpl;
 import com.nosugarice.mybatis.criteria.select.CriteriaQueryImpl;
+import com.nosugarice.mybatis.criteria.select.QueryStructure;
+import com.nosugarice.mybatis.criteria.tocolumn.ColumnDelete;
+import com.nosugarice.mybatis.criteria.tocolumn.ColumnQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.ColumnToColumn;
+import com.nosugarice.mybatis.criteria.tocolumn.ColumnUpdate;
+import com.nosugarice.mybatis.criteria.tocolumn.LambdaDelete;
+import com.nosugarice.mybatis.criteria.tocolumn.LambdaQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaToColumn;
+import com.nosugarice.mybatis.criteria.tocolumn.LambdaUpdate;
+import com.nosugarice.mybatis.criteria.tocolumn.PropertyDelete;
+import com.nosugarice.mybatis.criteria.tocolumn.PropertyQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.PropertyToColumn;
+import com.nosugarice.mybatis.criteria.tocolumn.PropertyUpdate;
 import com.nosugarice.mybatis.criteria.update.CriteriaUpdateImpl;
+import com.nosugarice.mybatis.criteria.update.UpdateStructure;
 import com.nosugarice.mybatis.criteria.where.Criterion;
 import com.nosugarice.mybatis.criteria.where.Where;
+import com.nosugarice.mybatis.criteria.where.WhereStructure;
 import com.nosugarice.mybatis.criteria.where.criterion.EqualTo;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.TypeToken;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,97 +55,102 @@ public class CriteriaBuilder {
 
     //---------------------------lambda---------------------------------------
 
-    public static <T> CriteriaQuery<T, Getter<T, ?>> lambdaQuery(Class<T> entityClass) {
+    public static <T> CriteriaQuery<T, Getter<T, ?>> lambdaQuery1(Class<T> entityClass) {
         return lambdaCriteria(entityClass, new TypeToken<CriteriaQuery<T, Getter<T, ?>>>() {
         });
     }
 
-    public static <T> CriteriaQuery<T, Getter<T, ?>> lambdaQuery(T entity) {
-        return lambdaCriteria(entity, new TypeToken<CriteriaQuery<T, Getter<T, ?>>>() {
+    public static <T> LambdaQuery<T> lambdaQuery(Class<T> entityClass) {
+        return lambdaCriteria(entityClass, new TypeToken<LambdaQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, Getter<T, ?>> lambdaUpdate(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<CriteriaUpdate<T, Getter<T, ?>>>() {
+    public static <T> LambdaQuery<T> lambdaQuery(T entity) {
+        return lambdaCriteria(entity, new TypeToken<LambdaQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, Getter<T, ?>> lambdaUpdate(T entity) {
-        return lambdaCriteria(entity, new TypeToken<CriteriaUpdate<T, Getter<T, ?>>>() {
+    public static <T> LambdaUpdate<T> lambdaUpdate(Class<T> entityClass) {
+        return lambdaCriteria(entityClass, new TypeToken<LambdaUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, Getter<T, ?>> lambdaDelete(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<CriteriaDelete<T, Getter<T, ?>>>() {
+    public static <T> LambdaUpdate<T> lambdaUpdate(T entity) {
+        return lambdaCriteria(entity, new TypeToken<LambdaUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, Getter<T, ?>> lambdaDelete(T entity) {
-        return lambdaCriteria(entity, new TypeToken<CriteriaDelete<T, Getter<T, ?>>>() {
+    public static <T> LambdaDelete<T> lambdaDelete(Class<T> entityClass) {
+        return lambdaCriteria(entityClass, new TypeToken<LambdaDelete<T>>() {
+        });
+    }
+
+    public static <T> LambdaDelete<T> lambdaDelete(T entity) {
+        return lambdaCriteria(entity, new TypeToken<LambdaDelete<T>>() {
         });
     }
 
     //---------------------------property---------------------------------------
 
-    public static <T> CriteriaQuery<T, String> propertyQuery(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<CriteriaQuery<T, String>>() {
+    public static <T> PropertyQuery<T> propertyQuery(Class<T> entityClass) {
+        return propertyCriteria(entityClass, new TypeToken<PropertyQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaQuery<T, String> propertyQuery(T entity) {
-        return propertyCriteria(entity, new TypeToken<CriteriaQuery<T, String>>() {
+    public static <T> PropertyQuery<T> propertyQuery(T entity) {
+        return propertyCriteria(entity, new TypeToken<PropertyQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, String> propertyUpdate(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<CriteriaUpdate<T, String>>() {
+    public static <T> PropertyUpdate<T> propertyUpdate(Class<T> entityClass) {
+        return propertyCriteria(entityClass, new TypeToken<PropertyUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, String> propertyUpdate(T entity) {
-        return propertyCriteria(entity, new TypeToken<CriteriaUpdate<T, String>>() {
+    public static <T> PropertyUpdate<T> propertyUpdate(T entity) {
+        return propertyCriteria(entity, new TypeToken<PropertyUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, String> propertyDelete(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<CriteriaDelete<T, String>>() {
+    public static <T> PropertyDelete<T> propertyDelete(Class<T> entityClass) {
+        return propertyCriteria(entityClass, new TypeToken<PropertyDelete<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, String> propertyDelete(T entity) {
-        return propertyCriteria(entity, new TypeToken<CriteriaDelete<T, String>>() {
+    public static <T> PropertyDelete<T> propertyDelete(T entity) {
+        return propertyCriteria(entity, new TypeToken<PropertyDelete<T>>() {
         });
     }
 
     //---------------------------column---------------------------------------
 
-    public static <T> CriteriaQuery<T, String> columnQuery(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<CriteriaQuery<T, String>>() {
+    public static <T> ColumnQuery<T> columnQuery(Class<T> entityClass) {
+        return columnCriteria(entityClass, new TypeToken<ColumnQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaQuery<T, String> columnQuery(T entity) {
-        return columnCriteria(entity, new TypeToken<CriteriaQuery<T, String>>() {
+    public static <T> ColumnQuery<T> columnQuery(T entity) {
+        return columnCriteria(entity, new TypeToken<ColumnQuery<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, String> columnUpdate(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<CriteriaUpdate<T, String>>() {
+    public static <T> ColumnUpdate<T> columnUpdate(Class<T> entityClass) {
+        return columnCriteria(entityClass, new TypeToken<ColumnUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaUpdate<T, String> columnUpdate(T entity) {
-        return columnCriteria(entity, new TypeToken<CriteriaUpdate<T, String>>() {
+    public static <T> ColumnUpdate<T> columnUpdate(T entity) {
+        return columnCriteria(entity, new TypeToken<ColumnUpdate<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, String> columnDelete(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<CriteriaDelete<T, String>>() {
+    public static <T> ColumnDelete<T> columnDelete(Class<T> entityClass) {
+        return columnCriteria(entityClass, new TypeToken<ColumnDelete<T>>() {
         });
     }
 
-    public static <T> CriteriaDelete<T, String> columnDelete(T entity) {
-        return columnCriteria(entity, new TypeToken<CriteriaDelete<T, String>>() {
+    public static <T> ColumnDelete<T> columnDelete(T entity) {
+        return columnCriteria(entity, new TypeToken<ColumnDelete<T>>() {
         });
     }
 
@@ -263,22 +281,40 @@ public class CriteriaBuilder {
         private <X extends Criteria> X build(TypeToken<X> criteriaType) {
             Preconditions.checkNotNull(entityClass, "实体类型缺少参数.");
             X criteria;
-            switch (criteriaType.getRawType().getSimpleName()) {
-                case "CriteriaQuery":
-                    criteria = (X) new CriteriaQueryImpl<>(entityClass, toColumn);
-                    break;
-                case "CriteriaUpdate":
-                    criteria = (X) new CriteriaUpdateImpl<>(entityClass, toColumn);
-                    break;
-                case "CriteriaDelete":
-                    criteria = (X) new CriteriaDeleteImpl<>(entityClass, toColumn);
-                    break;
-                default:
-                    throw new IllegalArgumentException("未匹配CriteriaType类型.");
+            boolean isExtendsCriteria = false;
+            Class<?>[] interfaces = null;
+            Class<? super X> criteriaRawType = criteriaType.getRawType();
+            if (CriteriaQuery.class.isAssignableFrom(criteriaRawType)) {
+                criteria = (X) new CriteriaQueryImpl<>(entityClass, toColumn);
+                if (CriteriaQuery.class != criteriaRawType) {
+                    isExtendsCriteria = true;
+                    interfaces = new Class[]{criteriaRawType, QueryStructure.class};
+                }
+            } else if (CriteriaUpdate.class.isAssignableFrom(criteriaRawType)) {
+                criteria = (X) new CriteriaUpdateImpl<>(entityClass, toColumn);
+                if (CriteriaUpdate.class != criteriaRawType) {
+                    isExtendsCriteria = true;
+                    interfaces = new Class[]{criteriaRawType, UpdateStructure.class};
+                }
+            } else if (CriteriaDelete.class.isAssignableFrom(criteriaRawType)) {
+                criteria = (X) new CriteriaDeleteImpl<>(entityClass, toColumn);
+                if (CriteriaDelete.class != criteriaRawType) {
+                    isExtendsCriteria = true;
+                    interfaces = new Class[]{criteriaRawType, WhereStructure.class};
+                }
+            } else {
+                throw new IllegalArgumentException("不支持的类型:" + criteriaRawType);
             }
+
             if (entity != null) {
                 List<Criterion> criterionList = entityToCriterion(entity);
                 ((Where) criteria).addCriterion(criterionList.toArray(new Criterion[0]));
+            }
+
+            if (isExtendsCriteria) {
+                Criteria finalCriteria = criteria;
+                criteria = (X) Proxy.newProxyInstance(entityClass.getClassLoader(), interfaces
+                        , (proxy, method, args) -> method.invoke(finalCriteria, args));
             }
             return criteria;
         }
