@@ -17,9 +17,10 @@
 package com.nosugarice.mybatis.config;
 
 import com.nosugarice.mybatis.builder.mapper.AbstractMapperBuilder;
-import com.nosugarice.mybatis.builder.mapper.BasicMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.AdapterMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.CrudMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.JpaMapperBuilder;
-import com.nosugarice.mybatis.builder.mapper.MutativeMapperBuilder;
+import com.nosugarice.mybatis.builder.mapper.ProviderMapperBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultEntityBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultMapperStrategy;
 import com.nosugarice.mybatis.config.internal.NameStrategyType;
@@ -38,6 +39,7 @@ import com.nosugarice.mybatis.util.StringUtils;
 
 import javax.persistence.AccessType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +47,6 @@ import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 注册到Spring 环境中的配置优先于 Properties中配置
@@ -105,10 +105,11 @@ public class MapperBuilderConfigBuilder {
         SqlBuildConfig sqlBuildConfig = config.getSqlBuildConfig();
 
         setClassesValue(SWITCH_CONFIG_INCLUDE_MAPPER_BUILDERS
-                , AbstractMapperBuilder.class, () -> Stream.of(BasicMapperBuilder.class
-                                , JpaMapperBuilder.class
-                                , MutativeMapperBuilder.class)
-                        .collect(Collectors.toList())
+                , AbstractMapperBuilder.class, () -> Arrays.asList(
+                        CrudMapperBuilder.class
+                        , JpaMapperBuilder.class
+                        , ProviderMapperBuilder.class
+                        , AdapterMapperBuilder.class)
                 , classes -> classes.forEach(switchConfig::includeMapperBuilder));
         setClassesValue(SWITCH_CONFIG_EXCLUDE_MAPPER_BUILDERS, AbstractMapperBuilder.class, () -> null
                 , classes -> classes.forEach(switchConfig::excludeMapperBuilder));

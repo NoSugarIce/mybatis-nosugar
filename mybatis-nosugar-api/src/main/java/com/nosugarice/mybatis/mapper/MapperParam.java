@@ -23,6 +23,7 @@ package com.nosugarice.mybatis.mapper;
 public class MapperParam {
 
     public static final String PARAMS = "params";
+    public static final String ADAPTER = "adapter";
     public static final String MAPPER_FUNCTION = "mapperFunction";
     public static final String CRITERIA = "criteria";
     public static final String UPDATE_COLUMN = "updateColumn";

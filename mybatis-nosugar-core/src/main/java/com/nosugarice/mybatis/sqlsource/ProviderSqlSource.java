@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
+import com.nosugarice.mybatis.annotation.Provider;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -24,22 +25,23 @@ import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/9
  */
-public abstract class MutativeSqlSource implements SqlSource {
+public abstract class ProviderSqlSource implements SqlSource {
 
     protected final Configuration configuration;
     protected final Class<?> mapperInterface;
-    protected final String methodName;
+    protected final Method method;
     protected final MappedStatement defaultMappedStatement;
 
-    protected MutativeSqlSource(Configuration configuration, Class<?> mapperInterface, Method method) {
+    protected ProviderSqlSource(Configuration configuration, Class<?> mapperInterface, Method method) {
         this.configuration = configuration;
         this.mapperInterface = mapperInterface;
-        this.methodName = method.getName();
+        this.method = method;
         this.defaultMappedStatement = getDefaultSelectMappedStatement();
     }
 
@@ -48,7 +50,9 @@ public abstract class MutativeSqlSource implements SqlSource {
      *
      * @return
      */
-    public abstract String defaultQuoteMappedStatementId();
+    public String defaultQuoteMappedStatementId() {
+        return Optional.of(method).map(method1 -> method1.getAnnotation(Provider.class)).map(Provider::originalMethod).orElse("");
+    }
 
     /**
      * 获取默认引用查询方法
@@ -74,25 +78,7 @@ public abstract class MutativeSqlSource implements SqlSource {
         return mappedStatement;
     }
 
-    public MappedStatement copyMappedStatement(MappedStatement mappedStatement) {
-        return new MappedStatement.Builder(configuration, mappedStatement.getId() + "-original"
-                , mappedStatement.getSqlSource()
-                , mappedStatement.getSqlCommandType())
-                .resultMaps(mappedStatement.getResultMaps())
-                .resource(mappedStatement.getResource())
-                .fetchSize(mappedStatement.getFetchSize())
-                .statementType(mappedStatement.getStatementType())
-                .keyGenerator(mappedStatement.getKeyGenerator())
-                .timeout(mappedStatement.getTimeout())
-                .parameterMap(mappedStatement.getParameterMap())
-                .resultSetType(mappedStatement.getResultSetType())
-                .cache(mappedStatement.getCache())
-                .flushCacheRequired(mappedStatement.isFlushCacheRequired())
-                .useCache(mappedStatement.isUseCache())
-                .build();
-    }
-
-    public BoundSql createNewBoundSql(String sql, BoundSql originalBoundSql) {
+    public static BoundSql createNewBoundSql(Configuration configuration, String sql, BoundSql originalBoundSql) {
         BoundSql boundSql = new BoundSql(configuration, sql, originalBoundSql.getParameterMappings(), originalBoundSql.getParameterObject());
         for (ParameterMapping parameterMapping : originalBoundSql.getParameterMappings()) {
             Object parameter = originalBoundSql.getAdditionalParameter(parameterMapping.getProperty());

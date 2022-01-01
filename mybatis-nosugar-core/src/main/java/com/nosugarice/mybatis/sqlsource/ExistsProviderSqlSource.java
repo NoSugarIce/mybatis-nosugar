@@ -17,7 +17,9 @@
 package com.nosugarice.mybatis.sqlsource;
 
 import com.nosugarice.mybatis.config.internal.NameStrategyType;
+import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.sql.SQLConstants;
+import com.nosugarice.mybatis.util.StringUtils;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
@@ -25,31 +27,43 @@ import java.lang.reflect.Method;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2020/12/9
+ * @date 2021/09/19
  */
-public class CountMutativeSqlSource extends MutativeSqlSource {
+public class ExistsProviderSqlSource extends ProviderSqlSource {
 
-    public static final String DEFAULT_COUNT_METHOD = "count";
-    public static final String COUNT_METHOD_START = "countWith";
+    private static final String DEFAULT_EXISTS_METHOD = "exists";
+    private static final String EXISTS_METHOD_START = "existsWith";
 
-    public CountMutativeSqlSource(Configuration configuration, Class<?> mapperInterface, Method method) {
+    private final Dialect dialect;
+
+    public ExistsProviderSqlSource(Configuration configuration, Class<?> mapperInterface, Method method, Dialect dialect) {
         super(configuration, mapperInterface, method);
+        this.dialect = dialect;
     }
 
     @Override
     public String defaultQuoteMappedStatementId() {
-        if (DEFAULT_COUNT_METHOD.equalsIgnoreCase(methodName)) {
+        String mappedStatementId = super.defaultQuoteMappedStatementId();
+        if (StringUtils.isNotEmpty(mappedStatementId)) {
+            return mappedStatementId;
+        }
+        String methodName = method.getName();
+        if (DEFAULT_EXISTS_METHOD.equalsIgnoreCase(methodName)) {
             return "selectList";
         }
-        return NameStrategyType.LOWERCASE_FIRST.conversion(
-                methodName.substring(methodName.indexOf(COUNT_METHOD_START) + COUNT_METHOD_START.length()));
+        if (methodName.startsWith(EXISTS_METHOD_START)) {
+            return NameStrategyType.LOWERCASE_FIRST.conversion(
+                    methodName.substring(methodName.indexOf(EXISTS_METHOD_START) + EXISTS_METHOD_START.length()));
+        }
+        return methodName;
     }
 
     @Override
     public BoundSql getBoundSql(Object parameterObject) {
         BoundSql originalBoundSql = defaultMappedStatement.getBoundSql(parameterObject);
-        String countStr = "SELECT COUNT(*) " + optimizationCountSql(originalBoundSql.getSql());
-        return createNewBoundSql(countStr, originalBoundSql);
+        String existsStr = "SELECT 1 " + optimizationCountSql(originalBoundSql.getSql());
+        existsStr = dialect.getLimitHandler().processSql(existsStr, 0, 1);
+        return createNewBoundSql(configuration, existsStr, originalBoundSql);
     }
 
     /**

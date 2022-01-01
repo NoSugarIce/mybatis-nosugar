@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
  */
-public class BasicMapperBuilder extends AbstractMapperBuilder<BasicMapperBuilder> {
+public class CrudMapperBuilder extends AbstractMapperBuilder<CrudMapperBuilder> {
 
     private static final Set<Class<?>> DEFAULT_MAPPER_CLASSES = Stream.of(SelectMapper.class, InsertMapper.class
             , UpdateMapper.class, DeleteMapper.class, LogicDeleteMapper.class).collect(Collectors.toSet());
@@ -47,31 +47,27 @@ public class BasicMapperBuilder extends AbstractMapperBuilder<BasicMapperBuilder
     private SqlSourceScriptBuilder sqlSourceScriptBuilder;
 
     @Override
-    public BasicMapperBuilder build() {
+    public CrudMapperBuilder build() {
         super.build();
         this.sqlSourceScriptBuilder = buildingContext.getSqlScriptBuilderByMapper(mapperClass);
         return this;
     }
 
     @Override
-    public boolean isMapper() {
-        return DEFAULT_MAPPER_CLASSES.stream().anyMatch(mapperClass -> mapperClass.isAssignableFrom(this.mapperClass));
+    public boolean isMatchMapper(Class<?> mapperType) {
+        return DEFAULT_MAPPER_CLASSES.stream().anyMatch(mapperClass -> mapperClass.isAssignableFrom(mapperType));
     }
 
     @Override
-    public boolean isCrudMethod(Method method) {
+    public boolean isMatch(Method method) {
         return notHasStatement(method) && method.isAnnotationPresent(SqlBuilder.class);
     }
 
     @Override
-    public void checkBeforeProcessMethod(Method method) {
-        Optional.ofNullable(method.getAnnotation(SqlBuilder.class))
+    public void process(Method method) {
+        Optional.of(method.getAnnotation(SqlBuilder.class))
                 .map(SqlBuilder::sqlFunction)
                 .ifPresent(sqlFunction -> sqlSourceScriptBuilder.bind(method, sqlFunction.providerFun()));
-    }
-
-    @Override
-    public void processMethod(Method method) {
         mapperStatementBuilderMap.computeIfAbsent(method.getDeclaringClass(), clazz -> StatementBuilder.of(clazz)
                         .withMapper(mapperClass).withBuildingContext(buildingContext)
                         .build())
