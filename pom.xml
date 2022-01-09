@@ -12,6 +12,7 @@
         <module>mybatis-nosugar-api</module>
         <module>mybatis-nosugar-core</module>
         <module>mybatis-nosugar-spring</module>
+        <module>mybatis-nosugar-test</module>
     </modules>
 
     <name>mybatis-nosugar</name>
