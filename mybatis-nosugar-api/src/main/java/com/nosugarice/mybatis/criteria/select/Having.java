@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion.Operator;
+import com.nosugarice.mybatis.criteria.where.Operator;
 
 /**
  * @author dingjingyang@foxmail.com

@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.mapper.logicdelete;
 
-import com.nosugarice.mybatis.sql.SqlBuilder;
+import com.nosugarice.mybatis.mapper.delete.DeletePrimaryKeyMapper;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +25,7 @@ import java.util.Collection;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/9
  */
-public interface LogicDeletePrimaryKeyMapper<ID> extends LogicDeleteMapper {
+public interface LogicDeletePrimaryKeyMapper<ID> extends DeletePrimaryKeyMapper<ID>, LogicDeleteMapper {
 
     /**
      * 根据id逻辑删除
@@ -33,8 +33,9 @@ public interface LogicDeletePrimaryKeyMapper<ID> extends LogicDeleteMapper {
      * @param id
      * @return
      */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE_BY_ID, fixedParameter = true)
-    int logicDeleteById(ID id);
+    default int logicDeleteById(ID id) {
+        return deleteById(id, true);
+    }
 
     /**
      * 根据id列表逻辑删除
@@ -42,8 +43,9 @@ public interface LogicDeletePrimaryKeyMapper<ID> extends LogicDeleteMapper {
      * @param ids
      * @return
      */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE_BY_IDS)
-    int logicDeleteByIds(Collection<ID> ids);
+    default int logicDeleteByIds(Collection<ID> ids) {
+        return deleteByIds(ids, true);
+    }
 
     /**
      * 根据id列表逻辑删除

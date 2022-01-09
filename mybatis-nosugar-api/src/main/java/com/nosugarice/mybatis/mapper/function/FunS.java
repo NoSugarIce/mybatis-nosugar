@@ -17,8 +17,6 @@
 package com.nosugarice.mybatis.mapper.function;
 
 import java.io.Serializable;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -43,9 +41,8 @@ public interface FunS<R> extends Serializable {
     }
 
     @FunctionalInterface
-    interface Param1<T1, R> extends Function<T1, R>, FunS<R> {
+    interface Param1<T1, R> extends FunS<R> {
 
-        @Override
         R apply(T1 t1);
 
         @Override
@@ -55,9 +52,8 @@ public interface FunS<R> extends Serializable {
     }
 
     @FunctionalInterface
-    interface Param2<T1, T2, R> extends BiFunction<T1, T2, R>, FunS<R> {
+    interface Param2<T1, T2, R> extends FunS<R> {
 
-        @Override
         R apply(T1 t1, T2 t2);
 
         @Override

@@ -16,6 +16,8 @@
 
 package com.nosugarice.mybatis.dialect;
 
+import com.nosugarice.mybatis.sql.SQLConstants;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
@@ -45,6 +47,55 @@ public interface Dialect {
      * @return
      */
     Limitable getLimitHandler();
+
+    /**
+     * 优化 Count 语句
+     * TODO 先简单粗暴
+     *
+     * @param sql 原sql
+     * @return
+     */
+    default String optimizationCountSql(String sql) {
+        String upperCaseSql = sql.toUpperCase();
+        if (upperCaseSql.contains(SQLConstants.DISTINCT)) {
+            return "SELECT COUNT(*) FROM ( " + sql + " )";
+        } else {
+            sql = sql.substring(upperCaseSql.indexOf(SQLConstants.FROM));
+            return "SELECT COUNT(*) " + interceptOrderBy(sql);
+        }
+    }
+
+    /**
+     * 优化 exists 语句
+     * TODO 先简单粗暴
+     *
+     * @param sql 原sql
+     * @return
+     */
+    default String optimizationExistsSql(String sql) {
+        String upperCaseSql = sql.toUpperCase();
+        sql = sql.substring(upperCaseSql.indexOf(SQLConstants.FROM));
+        return getLimitHandler().processSql("SELECT 1 " + interceptOrderBy(sql), 0, 1);
+    }
+
+    /**
+     * 截取条件
+     * TODO 先简单粗暴
+     *
+     * @param sql 原sql
+     * @return
+     */
+    default String interceptOrderBy(String sql) {
+        String upperCaseSql = sql.toUpperCase();
+        int orderByIndex = upperCaseSql.lastIndexOf(SQLConstants.ORDER_BY);
+        if (orderByIndex > 1) {
+            String orderByAfter = sql.substring(orderByIndex);
+            if (!orderByAfter.contains(")")) {
+                sql = sql.substring(0, orderByIndex);
+            }
+        }
+        return sql;
+    }
 
     /**
      * 获取字面值处理器

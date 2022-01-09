@@ -24,19 +24,19 @@ import java.util.Collection;
  */
 public interface CriterionBuilder<C> {
 
-    ColumnCriterion<Object> buildNull(C column);
+    ColumnCriterion<Object> buildIsNull(C column);
 
-    ColumnCriterion<String> buildEmpty(C column);
+    ColumnCriterion<String> buildIsEmpty(C column);
 
     <V> ColumnCriterion<V> buildEqualTo(C column, V value);
 
     <V> ColumnCriterion<V> buildGreaterThan(C column, V value);
 
-    <V> ColumnCriterion<V> buildGreaterThanOrEqualTo(C column, V value);
+    <V> ColumnCriterion<V> buildGreaterThanOrEqual(C column, V value);
 
     <V> ColumnCriterion<V> buildLessThan(C column, V value);
 
-    <V> ColumnCriterion<V> buildLessThanOrEqualTo(C column, V value);
+    <V> ColumnCriterion<V> buildLessThanOrEqual(C column, V value);
 
     <V> ColumnCriterion<V> buildBetween(C column, V value, V value1);
 
@@ -46,10 +46,10 @@ public interface CriterionBuilder<C> {
 
     ColumnCriterion<String> buildLike(C column, String value);
 
-    ColumnCriterion<String> buildLikeBefore(C column, String value);
+    ColumnCriterion<String> buildStartsWith(C column, String value);
 
-    ColumnCriterion<String> buildLikeAfter(C column, String value);
+    ColumnCriterion<String> buildEndsWith(C column, String value);
 
-    ColumnCriterion<String> buildLikeAny(C column, String value);
+    ColumnCriterion<String> buildContains(C column, String value);
 
 }

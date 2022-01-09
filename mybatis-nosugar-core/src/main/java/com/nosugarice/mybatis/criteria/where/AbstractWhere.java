@@ -37,7 +37,7 @@ import java.util.Optional;
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
  */
-public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C, X>, WhereStructure {
+public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C, X>, CriterionBuilder<C>, WhereStructure {
 
     private final Class<?> entityClass;
     private final ToColumn<C> toColumn;
@@ -59,6 +59,11 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
         return toColumn.toColumn(column, entityClass);
     }
 
+    @Override
+    public Class<?> getType() {
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public X addCriterion(boolean condition, Criterion... criterions) {
@@ -70,16 +75,16 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
 
     @Override
     public X or(Criterion... criterions) {
-        return addCriterion(new GroupCriterionImpl(criterions));
+        return addCriterion(new GroupCriterionImpl(criterions).byOr());
     }
 
     @Override
-    public IsNull buildNull(C column) {
+    public IsNull buildIsNull(C column) {
         return new IsNull(toColumn(column));
     }
 
     @Override
-    public Empty buildEmpty(C column) {
+    public Empty buildIsEmpty(C column) {
         return new Empty(toColumn(column));
     }
 
@@ -94,7 +99,7 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     }
 
     @Override
-    public <V> GreaterThanOrEqual<V> buildGreaterThanOrEqualTo(C column, V value) {
+    public <V> GreaterThanOrEqual<V> buildGreaterThanOrEqual(C column, V value) {
         return new GreaterThanOrEqual<>(toColumn(column), value);
     }
 
@@ -104,7 +109,7 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     }
 
     @Override
-    public <V> LessThanOrEqual<V> buildLessThanOrEqualTo(C column, V value) {
+    public <V> LessThanOrEqual<V> buildLessThanOrEqual(C column, V value) {
         return new LessThanOrEqual<>(toColumn(column), value);
     }
 
@@ -129,17 +134,17 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     }
 
     @Override
-    public Like buildLikeBefore(C column, String value) {
+    public Like buildStartsWith(C column, String value) {
         return new Like.StartLike(toColumn(column), value);
     }
 
     @Override
-    public Like buildLikeAfter(C column, String value) {
+    public Like buildEndsWith(C column, String value) {
         return new Like.EndLike(toColumn(column), value);
     }
 
     @Override
-    public Like buildLikeAny(C column, String value) {
+    public Like buildContains(C column, String value) {
         return new Like.AnyLike(toColumn(column), value);
     }
 

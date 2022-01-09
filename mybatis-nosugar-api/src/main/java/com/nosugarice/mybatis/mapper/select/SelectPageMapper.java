@@ -17,25 +17,24 @@
 package com.nosugarice.mybatis.mapper.select;
 
 import com.nosugarice.mybatis.domain.Page;
-import com.nosugarice.mybatis.mapper.function.AdapterMapper;
 import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.utils.Assert;
 
 import java.util.List;
 
 /**
- * 只支持被@Provider(adapter = Provider.Type.COUNT)桥接的方法
+ * 分页查询
  *
  * @author dingjingyang@foxmail.com
  * @date 2017/8/30
  */
-public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
+public interface SelectPageMapper<T> extends SelectMapper {
 
     /**
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @return 分页数据
      */
     default Page<T> selectPageP0(Page<T> page, FunS.Param0<List<T>> selectFunction) {
@@ -46,7 +45,7 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params         参数1
      * @param <X1>           参数1 类型
      * @return 分页数据
@@ -59,7 +58,7 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params1        参数1
      * @param params2        参数2
      * @param <X1>           参数1 类型
@@ -74,7 +73,7 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params1        参数1
      * @param params2        参数2
      * @param params3        参数3
@@ -92,7 +91,7 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params1        参数1
      * @param params2        参数2
      * @param params3        参数3
@@ -112,7 +111,7 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 分页查询
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params1        参数1
      * @param params2        参数2
      * @param params3        参数3
@@ -135,19 +134,19 @@ public interface SelectPageMapper<T> extends AdapterMapper, SelectMapper {
      * 假装 private
      *
      * @param page           分页参数
-     * @param selectFunction 查询方法(方法需要@Provider(adapter = Provider.Type.COUNT))
+     * @param selectFunction 查询方法
      * @param params         参数列表
      * @return 分页数据
      */
     default Page<T> selectPage(Page<T> page, FunS<List<T>> selectFunction, Object... params) {
         Assert.notNull(page, "Page不能为空.");
         long count = page.getTotal() > 0 ? page.getTotal() : adapterCount(selectFunction, params);
+        page.setTotal(count);
         if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
             try {
                 PageStorage.setPage(page);
                 List<T> list = adapterPage(selectFunction, params);
                 page.setContent(list);
-                page.setTotal(count);
             } finally {
                 PageStorage.clean();
             }

@@ -39,29 +39,21 @@ public interface ProviderTempLate {
 
     <T> SqlAndParameterBind insertNullable(T entity);
 
-    <T> SqlAndParameterBind updateById(T entity);
+    <T> SqlAndParameterBind updateById(T entity, boolean nullable);
 
     <T> SqlAndParameterBind updateByIdChoseProperty(T entity, Set<String> choseProperties);
 
-    <T> SqlAndParameterBind updateByIdNullable(T entity);
-
     <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria);
 
-    <ID> SqlAndParameterBind deleteById(ID id);
+    <ID> SqlAndParameterBind deleteById(ID id, boolean logicDelete);
 
-    <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids);
+    <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids, boolean logicDelete);
 
-    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria);
-
-    <ID> SqlAndParameterBind logicDeleteById(ID id);
-
-    <ID> SqlAndParameterBind logicDeleteByIds(Collection<ID> ids);
-
-    <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria);
+    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria, boolean logicDelete);
 
     //--------------jpa------------------------
 
-    SqlAndParameterBind provideJpaFind(String whereSql, String orderBy, Integer limit);
+    SqlAndParameterBind provideJpaFind(boolean distinct, String whereSql, String orderBy, Integer limit);
 
     SqlAndParameterBind provideJpaCount(String whereSql);
 

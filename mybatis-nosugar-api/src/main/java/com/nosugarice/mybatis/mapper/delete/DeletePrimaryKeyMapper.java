@@ -30,11 +30,32 @@ public interface DeletePrimaryKeyMapper<ID> extends DeleteMapper {
     /**
      * 根据id删除
      *
+     * @param id          id
+     * @param logicDelete 是否软删除
+     * @return
+     */
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_ID)
+    int deleteById(ID id, boolean logicDelete);
+
+    /**
+     * 根据id删除
+     *
      * @param id
      * @return
      */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_ID, fixedParameter = true)
-    int deleteById(ID id);
+    default int deleteById(ID id) {
+        return deleteById(id, false);
+    }
+
+    /**
+     * 根据id列表删除
+     *
+     * @param ids
+     * @param logicDelete 是否软删除
+     * @return
+     */
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_IDS)
+    int deleteByIds(Collection<ID> ids, boolean logicDelete);
 
     /**
      * 根据id列表删除
@@ -42,8 +63,9 @@ public interface DeletePrimaryKeyMapper<ID> extends DeleteMapper {
      * @param ids
      * @return
      */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE_BY_IDS)
-    int deleteByIds(Collection<ID> ids);
+    default int deleteByIds(Collection<ID> ids) {
+        return deleteByIds(ids, false);
+    }
 
     /**
      * 根据id列表删除

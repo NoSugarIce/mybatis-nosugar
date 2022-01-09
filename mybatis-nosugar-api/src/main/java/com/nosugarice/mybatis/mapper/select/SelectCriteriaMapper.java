@@ -16,11 +16,11 @@
 
 package com.nosugarice.mybatis.mapper.select;
 
-import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.criteria.CriteriaQuery;
 import com.nosugarice.mybatis.criteria.EntityToCriterion;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.mapper.MapperParam;
+import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.exceptions.TooManyResultsException;
@@ -46,13 +46,13 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
     <C> List<T> selectList(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C> criteria);
 
     /**
-     * 查询符合条件的记录数
+     * 查询所有记录
      *
-     * @param criteria 查询条件封装
-     * @return
+     * @return 所有记录
      */
-    @Provider(Provider.Type.COUNT)
-    <C> long count(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C> criteria);
+    default <C> List<T> selectAll() {
+        return selectList((CriteriaQuery<T, C>) null);
+    }
 
     /**
      * 判断是否存在
@@ -60,16 +60,18 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param criteria 查询条件封装
      * @return 是否存在包装
      */
-    @Provider(Provider.Type.EXISTS)
-    <C> Optional<Integer> exists(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C> criteria);
+    default <C> Optional<Integer> exists(CriteriaQuery<T, C> criteria) {
+        return adapterExists((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria);
+    }
 
     /**
-     * 查询所有记录
+     * 查询符合条件的记录数
      *
-     * @return 所有记录
+     * @param criteria 查询条件封装
+     * @return
      */
-    default <C> List<T> selectAll() {
-        return selectList((CriteriaQuery<T, C>) null);
+    default <C> long count(CriteriaQuery<T, C> criteria) {
+        return adapterCount((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria);
     }
 
 
@@ -101,7 +103,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 唯一实体结果
      */
     default T selectOne(T entity) {
-        List<T> list = selectListLimit(entity, 2);
+        List<T> list = selectListLimit(entity, 1);
         if (list.size() == 1) {
             return list.get(0);
         } else if (list.size() > 1) {
@@ -205,6 +207,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
 
     /**
      * 分页查询
+     * 假装 private,拿捏不了的不要直接调用
      *
      * @param x              未确定类型参数
      * @param page           分页参数
@@ -215,10 +218,10 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      */
     default <X> Page<T> selectPageX(X x, Page<T> page, Function<X, Long> countFunction, BiFunction<X, Page<T>, List<T>> selectFunction) {
         long count = page.getTotal() > 0 ? page.getTotal() : countFunction.apply(x);
+        page.setTotal(count);
         if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
             List<T> list = selectFunction.apply(x, page);
             page.setContent(list);
-            page.setTotal(count);
         }
         return page;
     }

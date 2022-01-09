@@ -33,6 +33,7 @@ public @interface ProviderAdapter {
 
     enum Type {
         COUNT,
+        EXISTS,
         PAGE
     }
 

@@ -134,7 +134,7 @@ public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
 
             List<PartTree.OrPart> nodes = predicate.getNodes();
             List<GroupCriterion> groupCriteria = createGroupCriteria(nodes);
-            String whereSql = getWhereSql(method, new GroupCriterionImpl().append(groupCriteria));
+            String whereSql = getWhereSql(method, new GroupCriterionImpl().appendAll(groupCriteria));
 
             SqlSourceScriptBuilder sqlSourceScriptBuilder = statementBuilder.getSqlScriptBuilder();
             Subject subject = partTree.getSubject();
@@ -149,10 +149,10 @@ public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
             } else if (subject.isExists()) {
                 providerFun = ProviderTempLate::provideJpaExists;
             } else {
-                FunS.Param4<ProviderTempLate, String, String, Integer, SqlAndParameterBind> providerFunParam4 = ProviderTempLate::provideJpaFind;
+                FunS.Param5<ProviderTempLate, Boolean, String, String, Integer, SqlAndParameterBind> providerFunParam5 = ProviderTempLate::provideJpaFind;
                 Integer limit = subject.isLimiting() ? subject.getMaxResults() : 0;
                 String orderBy = predicate.getOrderBySource().map(OrderBySource::getOrderByCriterion).map(OrderByCriterion::getSql).orElse(EMPTY);
-                sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFunParam4, whereSql, orderBy, limit);
+                sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFunParam5, subject.isDistinct(), whereSql, orderBy, limit);
             }
             if (sqlAndParameterBind == null) {
                 Preconditions.checkNotNull(providerFun, "未设置构建SQL方法.");

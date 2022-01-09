@@ -20,7 +20,7 @@ import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.criteria.ToColumn;
 import com.nosugarice.mybatis.criteria.select.JoinCriterion.JoinType;
 import com.nosugarice.mybatis.criteria.where.AbstractWhere;
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion.Operator;
+import com.nosugarice.mybatis.criteria.where.Operator;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
@@ -106,31 +106,27 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
         return distinct;
     }
 
-    @SafeVarargs
-    @SuppressWarnings("varargs")
     @Override
-    public final X select(C... columns) {
-        if (columns == null || columns.length == 0) {
+    public X select(Collection<C> columns) {
+        if (CollectionUtils.isEmpty(columns)) {
             return getThis();
         }
         if (this.includeColumns == null) {
             this.includeColumns = new LinkedHashSet<>();
         }
-        this.includeColumns.addAll(Arrays.asList(columns));
+        this.includeColumns.addAll(columns);
         return getThis();
     }
 
-    @SafeVarargs
-    @SuppressWarnings("varargs")
     @Override
-    public final X exclude(C... columns) {
-        if (columns == null || columns.length == 0) {
+    public X exclude(Collection<C> columns) {
+        if (CollectionUtils.isEmpty(columns)) {
             return getThis();
         }
         if (this.excludeColumns == null) {
             this.excludeColumns = new LinkedHashSet<>();
         }
-        this.excludeColumns.addAll(Arrays.asList(columns));
+        this.excludeColumns.addAll(columns);
         return getThis();
     }
 
@@ -143,13 +139,12 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
         return getThis();
     }
 
-    @SuppressWarnings("varargs")
     @Override
-    public X groupBy(C... columns) {
-        if (columns == null || columns.length == 0) {
+    public X groupBy(Collection<C> columns) {
+        if (CollectionUtils.isEmpty(columns)) {
             return getThis();
         }
-        this.groupByCriterion = new GroupByCriterion(conversionColumn(Arrays.asList(columns)));
+        this.groupByCriterion = new GroupByCriterion(conversionColumn(columns));
         return getThis();
     }
 

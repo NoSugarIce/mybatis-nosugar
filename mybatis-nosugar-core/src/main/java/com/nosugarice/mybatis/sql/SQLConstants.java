@@ -61,10 +61,11 @@ public final class SQLConstants {
     public static final String IS_NOT_NULL = "IS NOT NULL";
 
     public static final String LIKE = "LIKE";
-    public static final String NOT_LIKE = "LIKE";
+    public static final String NOT_LIKE = "NOT LIKE";
     public static final String BETWEEN = "BETWEEN";
-    public static final String NOT_BETWEEN = "BETWEEN";
+    public static final String NOT_BETWEEN = "NOT BETWEEN";
     public static final String IN = "IN";
+    public static final String NOT_IN = "NOT IN";
     public static final String VALUES = "VALUES";
     public static final String EXIT = "EXIT";
 

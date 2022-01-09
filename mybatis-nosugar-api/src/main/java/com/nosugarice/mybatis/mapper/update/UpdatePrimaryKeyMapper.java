@@ -35,11 +35,32 @@ public interface UpdatePrimaryKeyMapper<T> extends BatchMapper, UpdateMapper {
     /**
      * 根据主键更新
      *
-     * @param entity
+     * @param entity   实体
+     * @param nullable 属性为空的时候是否忽略,true:忽略,false:不忽略
      * @return
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_BY_ID)
-    int updateById(@Param(MapperParam.UPDATE_COLUMN) T entity);
+    int updateById(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param("nullable") boolean nullable);
+
+    /**
+     * 根据主键更新,属性值为空的也写入
+     *
+     * @param entity
+     * @return
+     */
+    default int updateById(T entity) {
+        return updateById(entity, false);
+    }
+
+    /**
+     * 根据主键更新,属性值为空的忽略
+     *
+     * @param entity
+     * @return
+     */
+    default int updateByIdNullable(T entity) {
+        return updateById(entity, true);
+    }
 
     /**
      * 根据主键更新,选择的属性强制更新
@@ -50,15 +71,6 @@ public interface UpdatePrimaryKeyMapper<T> extends BatchMapper, UpdateMapper {
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_BY_ID_CHOSE_PROPERTY)
     int updateByIdChoseKey(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param("choseProperties") Set<String> choseProperties);
-
-    /**
-     * 根据主键更新,值为空的忽略
-     *
-     * @param entity
-     * @return
-     */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_NULLABLE_BY_ID)
-    int updateByIdNullable(@Param(MapperParam.UPDATE_COLUMN) T entity);
 
     /**
      * 根据主键更新选定

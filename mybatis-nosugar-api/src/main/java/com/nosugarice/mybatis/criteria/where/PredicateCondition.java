@@ -44,19 +44,19 @@ public interface PredicateCondition<C, X extends PredicateCondition<C, X>> exten
     }
 
     default X isNull(C column) {
-        return addCriterion(true, buildNull(column));
+        return addCriterion(true, buildIsNull(column));
     }
 
-    default X notNull(C column) {
-        return addCriterion(true, buildNull(column).not());
+    default X isNotNull(C column) {
+        return addCriterion(true, buildIsNull(column).not());
     }
 
-    default X empty(C column) {
-        return addCriterion(true, buildEmpty(column));
+    default X isEmpty(C column) {
+        return addCriterion(true, buildIsEmpty(column));
     }
 
-    default X notEmpty(C column) {
-        return addCriterion(true, buildEmpty(column).not());
+    default X isNotEmpty(C column) {
+        return addCriterion(true, buildIsEmpty(column).not());
     }
 
     default <V> X equalTo(C column, V value) {
@@ -75,12 +75,12 @@ public interface PredicateCondition<C, X extends PredicateCondition<C, X>> exten
         return addCriterion(true, buildGreaterThan(column, value).not());
     }
 
-    default <V> X greaterThanOrEqualTo(C column, V value) {
-        return addCriterion(true, buildGreaterThanOrEqualTo(column, value));
+    default <V> X greaterThanOrEqual(C column, V value) {
+        return addCriterion(true, buildGreaterThanOrEqual(column, value));
     }
 
-    default <V> X notGreaterThanOrEqualTo(C column, V value) {
-        return addCriterion(true, buildGreaterThan(column, value).not());
+    default <V> X notGreaterThanOrEqual(C column, V value) {
+        return addCriterion(true, buildGreaterThanOrEqual(column, value).not());
     }
 
     default <V> X lessThan(C column, V value) {
@@ -91,12 +91,12 @@ public interface PredicateCondition<C, X extends PredicateCondition<C, X>> exten
         return addCriterion(true, buildLessThan(column, value).not());
     }
 
-    default <V> X lessThanOrEqualTo(C column, V value) {
-        return addCriterion(true, buildLessThanOrEqualTo(column, value));
+    default <V> X lessThanOrEqual(C column, V value) {
+        return addCriterion(true, buildLessThanOrEqual(column, value));
     }
 
-    default <V> X notLessThanOrEqualTo(C column, V value) {
-        return addCriterion(true, buildLessThanOrEqualTo(column, value).not());
+    default <V> X notLessThanOrEqual(C column, V value) {
+        return addCriterion(true, buildLessThanOrEqual(column, value).not());
     }
 
     default <V> X between(C column, V value, V value1) {
@@ -131,28 +131,28 @@ public interface PredicateCondition<C, X extends PredicateCondition<C, X>> exten
         return addCriterion(true, buildLike(column, value).not());
     }
 
-    default X likeBefore(C column, String value) {
-        return addCriterion(true, buildLikeBefore(column, value));
+    default X startsWith(C column, String value) {
+        return addCriterion(true, buildStartsWith(column, value));
     }
 
-    default X notLikeBefore(C column, String value) {
-        return addCriterion(true, buildLikeBefore(column, value).not());
+    default X notStartsWith(C column, String value) {
+        return addCriterion(true, buildStartsWith(column, value).not());
     }
 
-    default X likeAfter(C column, String value) {
-        return addCriterion(true, buildLikeAfter(column, value));
+    default X endsWith(C column, String value) {
+        return addCriterion(true, buildEndsWith(column, value));
     }
 
-    default X notLikeAfter(C column, String value) {
-        return addCriterion(true, buildLikeAfter(column, value).not());
+    default X notEndsWith(C column, String value) {
+        return addCriterion(true, buildEndsWith(column, value).not());
     }
 
-    default X likeAny(C column, String value) {
-        return addCriterion(true, buildLikeAny(column, value));
+    default X contains(C column, String value) {
+        return addCriterion(true, buildContains(column, value));
     }
 
-    default X notLikeAny(C column, String value) {
-        return addCriterion(true, buildLikeAny(column, value).not());
+    default X notContains(C column, String value) {
+        return addCriterion(true, buildContains(column, value).not());
     }
 
 }
