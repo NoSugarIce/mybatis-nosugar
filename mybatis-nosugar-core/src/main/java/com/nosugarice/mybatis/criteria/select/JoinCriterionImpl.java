@@ -17,10 +17,12 @@
 package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.criteria.ToColumn;
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion.Operator;
+import com.nosugarice.mybatis.criteria.where.Operator;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.Preconditions;
+
+import java.util.Collection;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -62,9 +64,8 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
         throw new UnsupportedOperationException();
     }
 
-    @SafeVarargs
     @Override
-    public final JoinCriterionImpl<T1, C1, C> groupBy(C1... columns) {
+    public JoinCriterionImpl<T1, C1, C> groupBy(Collection<C1> columns) {
         throw new UnsupportedOperationException();
     }
 

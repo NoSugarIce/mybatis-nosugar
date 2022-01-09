@@ -16,11 +16,51 @@
 
 package com.nosugarice.mybatis.mapper.select;
 
+import com.nosugarice.mybatis.annotation.ProviderAdapter;
+import com.nosugarice.mybatis.mapper.MapperParam;
+import com.nosugarice.mybatis.mapper.function.AdapterMapper;
+import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.mapper.function.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2019/1/7
  */
-public interface SelectMapper extends Mapper {
+public interface SelectMapper extends AdapterMapper, Mapper {
+
+    /**
+     * 桥接 COUNT 查询
+     *
+     * @param funS
+     * @param params
+     * @return
+     */
+    @ProviderAdapter(value = ProviderAdapter.Type.COUNT)
+    long adapterCount(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+
+    /**
+     * 桥接 EXISTS 查询
+     *
+     * @param funS
+     * @param params
+     * @return
+     */
+    @ProviderAdapter(value = ProviderAdapter.Type.EXISTS)
+    Optional<Integer> adapterExists(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+
+    /**
+     * 桥接count 查询
+     *
+     * @param funS
+     * @param params
+     * @param <T>
+     * @return
+     */
+    @ProviderAdapter(value = ProviderAdapter.Type.PAGE)
+    <T> List<T> adapterPage(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+
 }

@@ -124,6 +124,25 @@ public class StringUtils {
         return str;
     }
 
+    public static String trimParenthesis(String str) {
+        if (isBlank(str)) {
+            return str;
+        }
+        str = str.trim();
+        if (str.startsWith("(") && str.endsWith(")")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        return str;
+    }
+
+    public static boolean isWrapParenthesis(String str) {
+        if (isBlank(str)) {
+            return false;
+        }
+        str = str.trim();
+        return str.startsWith("(") && str.endsWith(")");
+    }
+
     /**
      * org.springframework.util.StringUtils#hasText(java.lang.String)
      *

@@ -17,6 +17,8 @@
 package com.nosugarice.mybatis.criteria.select;
 
 
+import java.util.Collection;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -31,23 +33,23 @@ public interface Select<C, X extends Select<C, X>> {
     X distinct();
 
     /**
-     * 查询字段
+     * 查询特定字段
      *
      * @param columns 一组列
      * @return X
      */
-    X select(C... columns);
+    X select(Collection<C> columns);
 
     /**
-     * 排除字段
+     * 查询结果排除特定字段
      *
      * @param columns 一组列
      * @return X
      */
-    X exclude(C... columns);
+    X exclude(Collection<C> columns);
 
     /**
-     * 聚合字段lll
+     * 聚合字段
      *
      * @param sqlFunction 函数
      * @param column      列

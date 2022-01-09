@@ -71,7 +71,7 @@ public @interface SqlBuilder {
         },
         UPDATE_BY_ID() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param3<ProviderTempLate, T, Boolean, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::updateById;
             }
         },
@@ -79,12 +79,6 @@ public @interface SqlBuilder {
             @Override
             public <T, ID> FunS.Param3<ProviderTempLate, T, Set<String>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::updateByIdChoseProperty;
-            }
-        },
-        UPDATE_NULLABLE_BY_ID() {
-            @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::updateByIdNullable;
             }
         },
         UPDATE() {
@@ -95,38 +89,20 @@ public @interface SqlBuilder {
         },
         DELETE_BY_ID() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, ID, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param3<ProviderTempLate, ID, Boolean, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::deleteById;
             }
         },
         DELETE_BY_IDS() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, Collection<ID>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param3<ProviderTempLate, Collection<ID>, Boolean, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::deleteByIds;
             }
         },
         DELETE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param3<ProviderTempLate, CriteriaDelete<T, ?>, Boolean, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::delete;
-            }
-        },
-        LOGIC_DELETE_BY_ID() {
-            @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, ID, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::logicDeleteById;
-            }
-        },
-        LOGIC_DELETE_BY_IDS() {
-            @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, Collection<ID>, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::logicDeleteByIds;
-            }
-        },
-        LOGIC_DELETE() {
-            @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::logicDelete;
             }
         },
         ;

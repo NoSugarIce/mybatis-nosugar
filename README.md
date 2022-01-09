@@ -2,8 +2,6 @@
 
 ## 为何是NoSugar?
 
-无糖版可乐很好的契合了作者日益发福的身体和兼顾了喝可乐这件快乐的事情.
-
 当年刚出道的时候写的Mybatis模板Xml已然跟不上时代.其他工具又不顺手.
 
 天下武功,无坚不破,唯快不破.开发此项目的原因之一就是Jpa启动相对慢一点,公司老廉颇一重启就是一分钟.
@@ -33,7 +31,6 @@
 
 ```java
 //Mapper中的一个普通查询方法(根据方法名查询,自动构建)
-@Provider(value = Provider.Type.PAGE, adapter = Provider.Adapter.COUNT)
 List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
 //全新的通用分页方式(非插件实现)

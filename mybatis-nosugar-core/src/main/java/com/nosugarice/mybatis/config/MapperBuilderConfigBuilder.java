@@ -20,7 +20,6 @@ import com.nosugarice.mybatis.builder.mapper.AbstractMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.AdapterMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.CrudMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.JpaMapperBuilder;
-import com.nosugarice.mybatis.builder.mapper.ProviderMapperBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultEntityBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultMapperStrategy;
 import com.nosugarice.mybatis.config.internal.NameStrategyType;
@@ -108,7 +107,6 @@ public class MapperBuilderConfigBuilder {
                 , AbstractMapperBuilder.class, () -> Arrays.asList(
                         CrudMapperBuilder.class
                         , JpaMapperBuilder.class
-                        , ProviderMapperBuilder.class
                         , AdapterMapperBuilder.class)
                 , classes -> classes.forEach(switchConfig::includeMapperBuilder));
         setClassesValue(SWITCH_CONFIG_EXCLUDE_MAPPER_BUILDERS, AbstractMapperBuilder.class, () -> null

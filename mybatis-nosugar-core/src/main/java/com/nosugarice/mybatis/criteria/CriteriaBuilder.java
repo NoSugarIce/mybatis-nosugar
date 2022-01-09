@@ -55,11 +55,6 @@ public class CriteriaBuilder {
 
     //---------------------------lambda---------------------------------------
 
-    public static <T> CriteriaQuery<T, Getter<T, ?>> lambdaQuery1(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<CriteriaQuery<T, Getter<T, ?>>>() {
-        });
-    }
-
     public static <T> LambdaQuery<T> lambdaQuery(Class<T> entityClass) {
         return lambdaCriteria(entityClass, new TypeToken<LambdaQuery<T>>() {
         });

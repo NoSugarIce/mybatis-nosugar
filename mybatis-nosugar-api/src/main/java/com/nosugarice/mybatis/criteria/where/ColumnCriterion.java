@@ -91,24 +91,4 @@ public interface ColumnCriterion<T> extends Criterion {
      */
     String patternSql(String value);
 
-    /**
-     * 用于值操作
-     */
-    interface Operator {
-
-        /**
-         * 否定的类型
-         *
-         * @return
-         */
-        Operator negated();
-
-        /**
-         * 操作符
-         *
-         * @return
-         */
-        String operator();
-    }
-
 }

@@ -50,13 +50,13 @@ public class GroupCriterionImpl extends AbstractCriterion<GroupCriterionImpl> im
     }
 
     @Override
-    public GroupCriterion append(Collection<? extends Criterion> criterions) {
-        this.criterionList.addAll(criterions);
+    public GroupCriterion append(Criterion criterion) {
+        this.criterionList.add(criterion);
         return this;
     }
 
     @Override
-    public GroupCriterion appendToHead(Collection<? extends Criterion> criterions) {
+    public GroupCriterion appendAllToHead(Collection<? extends Criterion> criterions) {
         this.criterionList.addAll(0, criterions);
         return this;
     }
@@ -82,7 +82,9 @@ public class GroupCriterionImpl extends AbstractCriterion<GroupCriterionImpl> im
                 .collect(Collectors.joining());
 
         if (connectorType == ConnectorType.OR || criterionSql.indexOf(OR) > 0) {
-            return SQLPart.merge(getConnector(), "(", StringUtils.trim(criterionSql, Arrays.asList(AND, OR), null), ")");
+            String sql = StringUtils.trim(criterionSql, Arrays.asList(AND, OR), null);
+            return StringUtils.isWrapParenthesis(sql)
+                    ? SQLPart.merge(getConnector(), sql) : SQLPart.merge(getConnector(), "(", sql, ")");
         } else {
             return criterionSql;
         }

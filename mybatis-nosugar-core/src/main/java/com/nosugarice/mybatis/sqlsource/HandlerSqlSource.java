@@ -121,6 +121,8 @@ public abstract class HandlerSqlSource implements SqlSource {
                 }
                 return params;
             }
+        } else if (parameterObject instanceof Object[]) {
+            return (Object[]) parameterObject;
         }
         return new Object[]{parameterObject};
     }

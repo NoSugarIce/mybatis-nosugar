@@ -21,7 +21,9 @@ import com.nosugarice.mybatis.mapper.delete.DeletePrimaryKeyMapper;
 import com.nosugarice.mybatis.mapper.function.JpaMapper;
 import com.nosugarice.mybatis.mapper.insert.InsertMapper;
 import com.nosugarice.mybatis.mapper.save.SaveMapper;
+import com.nosugarice.mybatis.mapper.select.SelectCountMapper;
 import com.nosugarice.mybatis.mapper.select.SelectCriteriaMapper;
+import com.nosugarice.mybatis.mapper.select.SelectExistsMapper;
 import com.nosugarice.mybatis.mapper.select.SelectPageMapper;
 import com.nosugarice.mybatis.mapper.select.SelectPrimaryKeyMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateCriteriaMapper;
@@ -34,7 +36,7 @@ import java.io.Serializable;
  * @date 2017/8/29
  */
 public interface BaseMapper<T, ID extends Serializable> extends
-        SelectPrimaryKeyMapper<T, ID>, SelectCriteriaMapper<T>, SelectPageMapper<T>
+        SelectPrimaryKeyMapper<T, ID>, SelectCriteriaMapper<T>, SelectPageMapper<T>, SelectCountMapper<T>, SelectExistsMapper<T>
         , InsertMapper<T>
         , UpdatePrimaryKeyMapper<T>, UpdateCriteriaMapper<T>
         , SaveMapper<T, ID>

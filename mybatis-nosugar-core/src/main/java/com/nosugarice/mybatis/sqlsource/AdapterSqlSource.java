@@ -26,6 +26,7 @@ import com.nosugarice.mybatis.util.LambdaUtils;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.reflection.ParamNameResolver;
@@ -74,16 +75,19 @@ public class AdapterSqlSource implements SqlSource {
         BoundSql originalBoundSql = sqlSource.getBoundSql(params);
 
         if (adapterType == ProviderAdapter.Type.COUNT) {
-            String countStr = CountProviderSqlSource.optimizationCountSql(originalBoundSql.getSql());
-            boundSql = ProviderSqlSource.createNewBoundSql(configuration, countStr, originalBoundSql);
+            String countStr = dialect.optimizationCountSql(originalBoundSql.getSql());
+            boundSql = createNewBoundSql(configuration, countStr, originalBoundSql);
         } else if (adapterType == ProviderAdapter.Type.PAGE) {
             Page<?> page = SelectPageMapper.PageStorage.getPage();
             if (page == null) {
                 boundSql = originalBoundSql;
             } else {
                 String pageSql = dialect.getLimitHandler().processSql(originalBoundSql.getSql(), page.getOffset(), page.getLimit());
-                boundSql = ProviderSqlSource.createNewBoundSql(configuration, pageSql, originalBoundSql);
+                boundSql = createNewBoundSql(configuration, pageSql, originalBoundSql);
             }
+        } else if (adapterType == ProviderAdapter.Type.EXISTS) {
+            String existsStr = dialect.optimizationExistsSql(originalBoundSql.getSql());
+            boundSql = createNewBoundSql(configuration, existsStr, originalBoundSql);
         }
         Preconditions.checkNotNull(boundSql, "未找到桥接BoundSql!");
         String[] methodParamNames = methodParamNameMap.computeIfAbsent(functionalName, this::getMethodParamNames);
@@ -108,6 +112,18 @@ public class AdapterSqlSource implements SqlSource {
             }
         }
         throw new NoSugarException(functionalName + "方法未找到");
+    }
+
+    public static BoundSql createNewBoundSql(Configuration configuration, String sql, BoundSql originalBoundSql) {
+        BoundSql boundSql = new BoundSql(configuration, sql, originalBoundSql.getParameterMappings(), originalBoundSql.getParameterObject());
+        for (ParameterMapping parameterMapping : originalBoundSql.getParameterMappings()) {
+            Object parameter = originalBoundSql.getAdditionalParameter(parameterMapping.getProperty());
+            if (parameter == null && !boundSql.hasAdditionalParameter(parameterMapping.getProperty())) {
+                continue;
+            }
+            boundSql.setAdditionalParameter(parameterMapping.getProperty(), parameter);
+        }
+        return boundSql;
     }
 
 }

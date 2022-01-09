@@ -16,6 +16,9 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
@@ -25,9 +28,19 @@ public interface GroupBy<C, X extends GroupBy<C, X>> {
     /**
      * 分组
      *
-     * @param columns 列
+     * @param columns 一组列
      * @return
      */
-    X groupBy(C... columns);
+    X groupBy(Collection<C> columns);
+
+    /**
+     * 分组
+     *
+     * @param column
+     * @return
+     */
+    default X groupBy(C column) {
+        return groupBy(Collections.singletonList(column));
+    }
 
 }

@@ -17,10 +17,10 @@
 package com.nosugarice.mybatis.criteria.where;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * 组查询条件
@@ -39,10 +39,10 @@ public interface GroupCriterion extends Criterion {
     /**
      * 添加属性条件
      *
-     * @param criterions
+     * @param criterion
      * @return
      */
-    GroupCriterion append(Collection<? extends Criterion> criterions);
+    GroupCriterion append(Criterion criterion);
 
     /**
      * 添加条件到哦头部
@@ -50,7 +50,7 @@ public interface GroupCriterion extends Criterion {
      * @param criterions
      * @return
      */
-    GroupCriterion appendToHead(Collection<? extends Criterion> criterions);
+    GroupCriterion appendAllToHead(Collection<? extends Criterion> criterions);
 
     /**
      * 添加属性条件
@@ -59,7 +59,22 @@ public interface GroupCriterion extends Criterion {
      * @return
      */
     default GroupCriterion append(Criterion... criterions) {
-        append(Arrays.asList(criterions));
+        if (criterions != null) {
+            Stream.of(criterions).forEach(this::append);
+        }
+        return this;
+    }
+
+    /**
+     * 添加一组属性条件
+     *
+     * @param criterions
+     * @return
+     */
+    default GroupCriterion appendAll(Collection<? extends Criterion> criterions) {
+        if (criterions != null) {
+            criterions.forEach(this::append);
+        }
         return this;
     }
 
