@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.sql;
 
+import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.criteria.CriteriaDelete;
 import com.nosugarice.mybatis.criteria.CriteriaQuery;
@@ -178,13 +179,25 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         StringJoinerBuilder valueJoin = StringJoinerBuilder.createSpaceJoin().withDelimiter(", ").withPrefix("(").withSuffix(")");
 
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind();
-        for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
-            if (!property.getValue().isInsertable()) {
-                continue;
+        if (entity == SqlSourceScriptBuilder.PLACEHOLDER_OBJECT) {
+            for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
+                if (!property.getValue().isInsertable()) {
+                    continue;
+                }
+                sqlAndParameterBind.bind(null, property.getColumn(), entityMetadata.getEntityClass()).canHandle();
+                columnJoin.withElements(property.getColumn());
+                valueJoin.withElements("?");
             }
-            sqlAndParameterBind.bind(null, property.getColumn(), entityMetadata.getEntityClass()).canHandle();
-            columnJoin.withElements(property.getColumn());
-            valueJoin.withElements("?");
+        } else {
+            Map<String, Object> columnValues = getEntityColumnValues(entity, true);
+            for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
+                if (!property.getValue().isInsertable()) {
+                    continue;
+                }
+                sqlAndParameterBind.bind(columnValues.get(property.getColumn()), property.getColumn(), entityMetadata.getEntityClass()).canHandle();
+                columnJoin.withElements(property.getColumn());
+                valueJoin.withElements("?");
+            }
         }
         String sql = StringJoinerBuilder.createSpaceJoin()
                 .withElements(INSERT, INTO)
@@ -195,13 +208,15 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .build();
         sql = sqlRender.renderWithTableAlias(sql, false);
         sqlAndParameterBind.setSql(sql);
-        sqlAndParameterBind.setParameterHandle((t, parameterColumnBinds, boundSql) -> {
-            Map<String, Object> columnValues = getEntityColumnValues(t, true);
-            for (ParameterColumnBind parameterColumnBind : parameterColumnBinds) {
-                boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), columnValues.get(parameterColumnBind.getColumn()));
-            }
-            return null;
-        });
+        if (entity == SqlSourceScriptBuilder.PLACEHOLDER_OBJECT) {
+            sqlAndParameterBind.setParameterHandle((t, parameterColumnBinds, boundSql) -> {
+                Map<String, Object> columnValues = getEntityColumnValues(t, true);
+                for (ParameterColumnBind parameterColumnBind : parameterColumnBinds) {
+                    boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), columnValues.get(parameterColumnBind.getColumn()));
+                }
+                return null;
+            });
+        }
         return sqlAndParameterBind;
     }
 
@@ -437,10 +452,12 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         ColumnCriterion<ID> criterion = new EqualTo<>(idColumn, id);
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(criterion.getSql());
         sqlAndParameterBind.bind(id, idColumn, entityMetadata.getEntityClass());
-        sqlAndParameterBind.setParameterHandle((idValue, parameterColumnBinds, boundSql) -> {
-            parameterColumnBinds.forEach(parameterColumnBind -> boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), idValue));
-            return null;
-        });
+        if (id == SqlSourceScriptBuilder.PLACEHOLDER_OBJECT) {
+            sqlAndParameterBind.setParameterHandle((idValue, parameterColumnBinds, boundSql) -> {
+                parameterColumnBinds.forEach(parameterColumnBind -> boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), idValue));
+                return null;
+            });
+        }
         return sqlAndParameterBind;
     }
 

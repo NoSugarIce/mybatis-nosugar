@@ -19,15 +19,12 @@ package com.nosugarice.mybatis.builder;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.mapper.function.FunS;
-import com.nosugarice.mybatis.sql.ParameterBind.ParameterColumnBind;
 import com.nosugarice.mybatis.sql.Placeholder;
 import com.nosugarice.mybatis.sql.ProviderTempLate;
 import com.nosugarice.mybatis.sql.ProviderTempLateImpl;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 import com.nosugarice.mybatis.sqlsource.DynamicHandlerSqlSource;
-import com.nosugarice.mybatis.sqlsource.FixedParameterHandlerSqlSource;
-import com.nosugarice.mybatis.sqlsource.HandlerSqlSource;
 import com.nosugarice.mybatis.support.DynamicTableNameMapping;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.StringFormatter;
@@ -38,7 +35,6 @@ import org.apache.ibatis.reflection.ParamNameResolver;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -54,9 +50,7 @@ public class SqlSourceScriptBuilder {
     private final EntityMetadata entityMetadata;
     private final ProviderTempLate providerTempLate;
 
-    private static final Object PLACEHOLDER_OBJECT = new Object();
-
-    private static final Map<ParameterColumnBind, ParameterColumnBind> PARAMETER_COLUMN_BIND_CACHE = new HashMap<>();
+    public static final Object PLACEHOLDER_OBJECT = new Object();
 
     public SqlSourceScriptBuilder(EntityMetadata entityMetadata, MetadataBuildingContext buildingContext) {
         this.buildingContext = buildingContext;
@@ -90,28 +84,14 @@ public class SqlSourceScriptBuilder {
         SqlBuilder sqlBuilder = method.getAnnotation(SqlBuilder.class);
         if (sqlBuilder != null) {
             String[] parameterNames = new ParamNameResolver(buildingContext.getConfiguration(), method).getNames();
-            if (sqlBuilder.fixedParameter()) {
-                SqlAndParameterBind sqlAndParameterBind = build(method, PLACEHOLDER_OBJECT);
-                List<ParameterColumnBind> parameterColumnBinds = sqlAndParameterBind.getParameterBind().getParameterColumnBinds();
-                for (int i = 0; i < parameterColumnBinds.size(); i++) {
-                    ParameterColumnBind parameterColumnBind = parameterColumnBinds.get(i);
-                    if (PARAMETER_COLUMN_BIND_CACHE.containsKey(parameterColumnBind)) {
-                        parameterColumnBinds.set(i, PARAMETER_COLUMN_BIND_CACHE.get(parameterColumnBind));
-                    } else {
-                        PARAMETER_COLUMN_BIND_CACHE.put(parameterColumnBind, parameterColumnBind);
-                    }
-                }
-                sqlSource = new FixedParameterHandlerSqlSource(sqlCommandType, buildingContext, sqlAndParameterBind);
-            } else {
-                sqlSource = new DynamicHandlerSqlSource(sqlCommandType, buildingContext, parameterNames
-                        , sqlBuilder.sqlFunction().providerFun(), this);
-            }
+            sqlSource = new DynamicHandlerSqlSource(sqlCommandType, buildingContext, parameterNames
+                    , sqlBuilder.sqlFunction().providerFun(), this, sqlBuilder.fixedParameter());
         } else {
             String script = build(method).getSql();
             sqlSource = new StaticSqlSource(buildingContext.getConfiguration(), script);
         }
-        if (entityMetadata.getSupports().isSupportDynamicTableName() && sqlSource instanceof HandlerSqlSource) {
-            ((HandlerSqlSource) sqlSource).addSqlHandler(sql -> {
+        if (entityMetadata.getSupports().isSupportDynamicTableName() && sqlSource instanceof DynamicHandlerSqlSource) {
+            ((DynamicHandlerSqlSource) sqlSource).addSqlHandler(sql -> {
                 String runTimeTableName = DynamicTableNameMapping.getName(entityMetadata.getRelationalEntity().getTable().getName());
                 Map<String, String> data = new HashMap<>(1, 1);
                 data.put(Placeholder.TABLE_P, runTimeTableName);

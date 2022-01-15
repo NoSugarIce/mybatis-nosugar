@@ -29,7 +29,6 @@ import com.nosugarice.mybatis.mapper.logicdelete.LogicDeleteMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateMapper;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
-import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.ResultType;
 import org.apache.ibatis.binding.MapperMethod;
@@ -100,19 +99,9 @@ public class StatementBuilder {
         return statementBuilder;
     }
 
-    public StatementBuilder withMapper(Class<?> mapperInterface) {
-        this.mapperClass = mapperInterface;
-        return this;
-    }
-
-    public StatementBuilder withBuildingContext(MetadataBuildingContext buildingContext) {
+    public StatementBuilder withBuilding(MetadataBuildingContext buildingContext, Class<?> mapperInterface) {
         this.buildingContext = buildingContext;
-        return this;
-    }
-
-    public StatementBuilder build() {
-        Preconditions.checkNotNull(mapperClass, "缺少Mapper类型.");
-        Preconditions.checkNotNull(buildingContext, "缺少MetadataBuildingContext.");
+        this.mapperClass = mapperInterface;
         this.configuration = buildingContext.getConfiguration();
         this.entityMetadata = buildingContext.getEntityMetadataByMapper(mapperClass);
         this.sqlSourceScriptBuilder = buildingContext.getSqlScriptBuilderByMapper(mapperClass);

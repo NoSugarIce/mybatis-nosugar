@@ -55,6 +55,7 @@ public class MetadataBuildingContext {
     private final Map<Class<?>, EntityMetadata> entityMetadataMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, SqlSourceScriptBuilder> entitySqlScriptBuilderMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, MapperBuilderAssistant> mapperBuilderAssistantMap = new ConcurrentHashMap<>();
+    private final Map<Object, Object> cache = new ConcurrentHashMap<>();
 
     public MetadataBuildingContext(Configuration configuration, MapperBuilderConfig config) {
         this.configuration = configuration;
@@ -131,6 +132,24 @@ public class MetadataBuildingContext {
         }
         //TODO 可能会有问题,没有一一验证
         return new DialectRegistry().getObject(databaseName);
+    }
+
+    public boolean hasCache(Object key) {
+        return cache.containsKey(key);
+    }
+
+    public void cacheObject(Object key, Object value) {
+        cache.put(key, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getByCache(Object key) {
+        return (T) cache.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T removeCache(Object key) {
+        return (T) cache.remove(key);
     }
 
     private void registryBean(RelationalConfig relationalConfig) {

@@ -182,7 +182,7 @@ public class MapperBuilderConfigBuilder {
         List<Class<?>> clazzs = null;
         if (StringUtils.isNotBlank(value)) {
             try {
-                value = value.replaceAll(",", ";");
+                value = value.replace(",", ";");
                 String[] classNames = value.split(";");
                 clazzs = new ArrayList<>(classNames.length);
                 for (String className : classNames) {
@@ -208,7 +208,7 @@ public class MapperBuilderConfigBuilder {
         List<Object> instances = null;
         if (StringUtils.isNotBlank(value)) {
             try {
-                value = value.replaceAll(",", ";");
+                value = value.replace(",", ";");
                 String[] classNames = value.split(";");
                 instances = new ArrayList<>(classNames.length);
                 for (String className : classNames) {

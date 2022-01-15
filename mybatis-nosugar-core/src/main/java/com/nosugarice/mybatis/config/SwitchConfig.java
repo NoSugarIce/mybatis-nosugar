@@ -29,7 +29,7 @@ import java.util.Set;
 public class SwitchConfig {
 
     /** 开启的功能 */
-    private final Set<Class<? extends AbstractMapperBuilder<?>>> mapperBuilders = new HashSet<>();
+    private final Set<Class<? extends AbstractMapperBuilder>> mapperBuilders = new HashSet<>();
 
     /** 逻辑删除开关 */
     private boolean logicDelete = true;
@@ -47,14 +47,14 @@ public class SwitchConfig {
     public void includeMapperBuilder(Class<?> mapperBuilderClass) {
         Preconditions.checkArgument(AbstractMapperBuilder.class.isAssignableFrom(mapperBuilderClass)
                 , mapperBuilderClass.getName() + "类型不正确!");
-        mapperBuilders.add((Class<? extends AbstractMapperBuilder<?>>) mapperBuilderClass);
+        mapperBuilders.add((Class<? extends AbstractMapperBuilder>) mapperBuilderClass);
     }
 
     public void excludeMapperBuilder(Class<?> mapperBuilderClass) {
         mapperBuilders.remove(mapperBuilderClass);
     }
 
-    public Set<Class<? extends AbstractMapperBuilder<?>>> getMapperBuilders() {
+    public Set<Class<? extends AbstractMapperBuilder>> getMapperBuilders() {
         return mapperBuilders;
     }
 

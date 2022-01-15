@@ -16,9 +16,11 @@
 
 package com.nosugarice.mybatis.mapper.function;
 
+import org.springframework.data.repository.Repository;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/9
  */
-public interface JpaMapper<T> {
+public interface JpaMapper<T, ID> extends Repository<T, ID> {
 }

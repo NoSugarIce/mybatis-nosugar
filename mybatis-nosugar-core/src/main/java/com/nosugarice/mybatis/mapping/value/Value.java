@@ -28,6 +28,8 @@ public interface Value {
 
     Value SIMPLE_VALUE = new SimpleValue();
 
+    Value SIMPLE_KEY_VALUE = new KeyValue();
+
     /**
      * 值类型
      *

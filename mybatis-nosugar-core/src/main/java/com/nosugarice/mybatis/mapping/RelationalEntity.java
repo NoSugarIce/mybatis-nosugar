@@ -50,7 +50,12 @@ public class RelationalEntity {
     }
 
     public synchronized void addProperty(RelationalProperty property) {
-        properties.add(property);
+        if (property.isPrimaryKey()) {
+            properties.add(0, property);
+        } else {
+            properties.add(property);
+        }
+
         if (property.isPrimaryKey()) {
             primaryKeyProperties.add(property);
             if (property.getValue() instanceof KeyValue) {
