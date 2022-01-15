@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.builder.mapper;
 
-import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.builder.statement.StatementBuilder;
 import com.nosugarice.mybatis.mapper.delete.DeleteMapper;
 import com.nosugarice.mybatis.mapper.insert.InsertMapper;
@@ -37,29 +36,20 @@ import java.util.stream.Stream;
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
  */
-public class CrudMapperBuilder extends AbstractMapperBuilder<CrudMapperBuilder> {
+public class CrudMapperBuilder extends AbstractMapperBuilder {
 
     private static final Set<Class<?>> DEFAULT_MAPPER_CLASSES = Stream.of(SelectMapper.class, InsertMapper.class
             , UpdateMapper.class, DeleteMapper.class, LogicDeleteMapper.class).collect(Collectors.toSet());
 
     private final Map<Class<?>, StatementBuilder> mapperStatementBuilderMap = new ConcurrentHashMap<>();
 
-    private SqlSourceScriptBuilder sqlSourceScriptBuilder;
-
     @Override
-    public CrudMapperBuilder build() {
-        super.build();
-        this.sqlSourceScriptBuilder = buildingContext.getSqlScriptBuilderByMapper(mapperClass);
-        return this;
-    }
-
-    @Override
-    public boolean isMatchMapper(Class<?> mapperType) {
+    public boolean supportMapper(Class<?> mapperType) {
         return DEFAULT_MAPPER_CLASSES.stream().anyMatch(mapperClass -> mapperClass.isAssignableFrom(mapperType));
     }
 
     @Override
-    public boolean isMatch(Method method) {
+    public boolean supportMethod(Method method) {
         return notHasStatement(method) && method.isAnnotationPresent(SqlBuilder.class);
     }
 
@@ -67,10 +57,9 @@ public class CrudMapperBuilder extends AbstractMapperBuilder<CrudMapperBuilder> 
     public void process(Method method) {
         Optional.of(method.getAnnotation(SqlBuilder.class))
                 .map(SqlBuilder::sqlFunction)
-                .ifPresent(sqlFunction -> sqlSourceScriptBuilder.bind(method, sqlFunction.providerFun()));
-        mapperStatementBuilderMap.computeIfAbsent(method.getDeclaringClass(), clazz -> StatementBuilder.of(clazz)
-                        .withMapper(mapperClass).withBuildingContext(buildingContext)
-                        .build())
+                .ifPresent(sqlFunction -> buildingContext.getSqlScriptBuilderByMapper(mapperClass).bind(method, sqlFunction.providerFun()));
+        mapperStatementBuilderMap.computeIfAbsent(method.getDeclaringClass()
+                        , clazz -> StatementBuilder.of(clazz).withBuilding(buildingContext, mapperClass))
                 .addMappedStatement(method, null);
     }
 

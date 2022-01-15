@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
  * @author dingjingyang@foxmail.com
  * @date 2021/7/17
  */
-class InsertMapperTest extends BaseMapperTest {
+class InsertIdentityMapperTest extends BaseMapperTest {
 
     @Test
     public void insert() {

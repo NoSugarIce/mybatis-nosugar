@@ -16,11 +16,9 @@
 
 package com.nosugarice.mybatis.builder.mapper;
 
-import com.nosugarice.mybatis.annotation.Provider;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.config.OrderComparator;
-import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
@@ -28,48 +26,32 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> implements OrderComparator {
+public abstract class AbstractMapperBuilder implements OrderComparator {
 
     protected MetadataBuildingContext buildingContext;
     protected Configuration configuration;
     protected Class<?> mapperClass;
     protected EntityMetadata entityMetadata;
 
-    private static final Map<Class<?>, List<Method>> MAPPER_METHOD_CACHE = new WeakHashMap<>();
+    private static final Map<Class<?>, List<Method>> MAPPER_METHOD_CACHE = new ConcurrentHashMap<>();
 
-    public T withBuildingContext(MetadataBuildingContext buildingContext) {
+    public AbstractMapperBuilder withBuilding(MetadataBuildingContext buildingContext, Class<?> mapperClass) {
         this.buildingContext = buildingContext;
-        return getThis();
-    }
-
-    public T withMapper(Class<?> mapperClass) {
         this.mapperClass = mapperClass;
-        return getThis();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected T getThis() {
-        return (T) this;
-    }
-
-    public T build() {
-        Preconditions.checkNotNull(buildingContext, "缺少MetadataBuildingContext!");
-        Preconditions.checkNotNull(mapperClass, "缺少MapperInterface!");
         this.configuration = buildingContext.getConfiguration();
         this.entityMetadata = buildingContext.getEntityMetadataByMapper(mapperClass);
-        return getThis();
+        return this;
     }
 
     public void parse() {
-        List<Method> needAchieveMapperMethods = needParseMethods();
-        needAchieveMapperMethods.forEach(this::process);
+        getMapperMethod(mapperClass).stream().filter(this::supportMethod).forEach(this::process);
     }
 
     /**
@@ -78,7 +60,7 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
      * @param mapperType
      * @return
      */
-    public abstract boolean isMatchMapper(Class<?> mapperType);
+    public abstract boolean supportMapper(Class<?> mapperType);
 
     /**
      * 是否需要构建
@@ -86,20 +68,7 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
      * @param method
      * @return
      */
-    public abstract boolean isMatch(Method method);
-
-    /**
-     * 获取需要实现的方法
-     *
-     * @return
-     */
-    public List<Method> needParseMethods() {
-        return getMapperMethod(mapperClass)
-                .stream()
-                .filter(this::isMatch)
-                .filter(this::isRepository)
-                .collect(Collectors.toList());
-    }
+    public abstract boolean supportMethod(Method method);
 
     /**
      * 处理方法
@@ -108,25 +77,16 @@ public abstract class AbstractMapperBuilder<T extends AbstractMapperBuilder<T>> 
      */
     public abstract void process(Method method);
 
-    public boolean notHasStatement(Method method) {
-        return !configuration.hasStatement(getMethodMappedStatementId(method));
-    }
-
-    private boolean isRepository(Method method) {
-        Provider annotation = method.getAnnotation(Provider.class);
-        if (annotation != null) {
-            return annotation.isProvider();
-        }
-        return true;
-    }
-
-    public String getMethodMappedStatementId(Method method) {
+    protected String getMethodMappedStatementId(Method method) {
         return mapperClass.getName() + "." + method.getName();
+    }
+
+    protected boolean notHasStatement(Method method) {
+        return !configuration.hasStatement(getMethodMappedStatementId(method));
     }
 
     private List<Method> getMapperMethod(Class<?> mapperClass) {
         return MAPPER_METHOD_CACHE.computeIfAbsent(mapperClass, clazz -> Arrays.stream(clazz.getMethods())
-                .filter(method -> method.getDeclaringClass().isInterface())
                 .filter(method -> Modifier.isAbstract(method.getModifiers()))
                 .filter(method -> !method.isBridge())
                 .collect(Collectors.toList()));

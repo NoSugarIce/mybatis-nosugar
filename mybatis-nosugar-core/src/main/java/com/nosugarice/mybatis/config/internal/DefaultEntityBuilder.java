@@ -35,8 +35,15 @@ import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.ReflectionUtils;
 import com.nosugarice.mybatis.util.StringUtils;
 
+import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OrderBy;
+import javax.persistence.Transient;
+import javax.persistence.Version;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -55,16 +62,16 @@ public class DefaultEntityBuilder extends EntityBuilder {
         RelationalEntity relationalEntity = new RelationalEntity(entityClass);
         relationalEntity.setTable(bindTable());
 
-        javax.persistence.AccessType accessType = config.getAccessType();
-        if (entityClass.isAnnotationPresent(javax.persistence.Access.class)) {
-            javax.persistence.Access access = entityClass.getAnnotation(javax.persistence.Access.class);
+        AccessType accessType = config.getAccessType();
+        if (entityClass.isAnnotationPresent(Access.class)) {
+            Access access = entityClass.getAnnotation(Access.class);
             accessType = access.value();
         }
 
         List<? extends Member> members = accessType == AccessType.FIELD ? ReflectionUtils.getAllField(entityClass)
                 : ReflectionUtils.getAllGetMethod(entityClass);
         members.stream()
-                .filter(member -> !((AnnotatedElement) member).isAnnotationPresent(javax.persistence.Transient.class))
+                .filter(member -> !((AnnotatedElement) member).isAnnotationPresent(Transient.class))
                 .map(member -> new PropertyBuilder(member).build())
                 .forEach(relationalEntity::addProperty);
 
@@ -101,12 +108,13 @@ public class DefaultEntityBuilder extends EntityBuilder {
         public RelationalProperty build() {
             RelationalProperty relationalProperty = new RelationalProperty(member);
             relationalProperty.setName(ReflectionUtils.getPropertyName(member));
-            if (isAnnotationPresent(javax.persistence.Id.class)) {
-                relationalProperty.setPrimaryKey(true);
-            }
             Class<?> type = ReflectionUtils.getPropertyType(member);
             relationalProperty.setJavaType(type);
             relationalProperty.setValue(Value.SIMPLE_VALUE);
+            if (isAnnotationPresent(Id.class)) {
+                relationalProperty.setPrimaryKey(true);
+                relationalProperty.setValue(Value.SIMPLE_KEY_VALUE);
+            }
             if (isAnnotationPresent(ColumnOptions.class)) {
                 ColumnOptions columnOptions = getAnnotation(ColumnOptions.class);
                 if (StringUtils.isChar(type)) {
@@ -139,10 +147,10 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 }
             }
 
-            if (isAnnotationPresent(javax.persistence.GeneratedValue.class)) {
+            if (isAnnotationPresent(GeneratedValue.class)) {
                 Preconditions.checkArgument(relationalProperty.isPrimaryKey()
                         , "[" + member.getName() + "]" + "@GeneratedValue 设置错误!");
-                javax.persistence.GeneratedValue generatedValue = getAnnotation(javax.persistence.GeneratedValue.class);
+                GeneratedValue generatedValue = getAnnotation(GeneratedValue.class);
                 Preconditions.checkArgument(generatedValue.strategy() == GenerationType.AUTO
                                 || generatedValue.strategy() == GenerationType.IDENTITY
                         , "主键生成仅支持[AUTO],[IDENTITY]");
@@ -157,7 +165,7 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 }
                 relationalProperty.setValue(value);
             }
-            if (isAnnotationPresent(javax.persistence.Version.class)) {
+            if (isAnnotationPresent(Version.class)) {
                 Preconditions.checkArgument(!relationalProperty.isPrimaryKey() && !relationalProperty.isLogicDelete()
                         , "[" + member.getName() + "]" + "@Version 设置错误!");
                 relationalProperty.setVersion(true);
@@ -175,16 +183,16 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 Value value = new LogicDeleteValue(type, logicDelete.defaultValue(), logicDelete.deleteValue());
                 relationalProperty.setValue(value);
             }
-            if (isAnnotationPresent(javax.persistence.OrderBy.class)) {
-                javax.persistence.OrderBy orderByAnn = getAnnotation(javax.persistence.OrderBy.class);
+            if (isAnnotationPresent(OrderBy.class)) {
+                OrderBy orderByAnn = getAnnotation(OrderBy.class);
                 relationalProperty.setOrderBy("ASC");
                 if (StringUtils.isNotBlank(orderByAnn.value())) {
                     relationalProperty.setOrderBy(orderByAnn.value());
                 }
             }
             String column = null;
-            if (isAnnotationPresent(javax.persistence.Column.class)) {
-                javax.persistence.Column columnAnn = getAnnotation(javax.persistence.Column.class);
+            if (isAnnotationPresent(Column.class)) {
+                Column columnAnn = getAnnotation(Column.class);
                 column = StringUtils.isNotEmpty(columnAnn.name()) ? columnAnn.name() : "";
                 relationalProperty.setLength(columnAnn.length());
                 relationalProperty.setPrecision(columnAnn.precision());

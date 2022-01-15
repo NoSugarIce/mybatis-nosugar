@@ -112,13 +112,15 @@ public class ParameterBind implements Cloneable {
                 return false;
             }
             ParameterColumnBind that = (ParameterColumnBind) o;
-            return Objects.equals(parameter, that.parameter) && Objects.equals(column, that.column)
-                    && Objects.equals(value, that.value) && Objects.equals(entityClass, that.entityClass);
+            return canHandle == that.canHandle
+                    && Objects.equals(parameter, that.parameter)
+                    && Objects.equals(column, that.column) && Objects.equals(value, that.value)
+                    && Objects.equals(entityClass, that.entityClass);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(parameter, column, value, entityClass);
+            return Objects.hash(parameter, column, value, entityClass, canHandle);
         }
     }
 

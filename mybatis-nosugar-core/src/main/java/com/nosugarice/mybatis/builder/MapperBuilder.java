@@ -46,13 +46,8 @@ public class MapperBuilder {
             buildingContext.getConfig().getSwitchConfig().getMapperBuilders().stream()
                     .map(ReflectionUtils::newInstance)
                     .sorted(OrderComparator::compareTo)
-                    .filter(mapperBuilder -> mapperBuilder.isMatchMapper(mapperType))
-                    .forEach(mapperBuilder -> mapperBuilder
-                            .withBuildingContext(buildingContext)
-                            .withMapper(mapperType)
-                            .build()
-                            .parse()
-                    );
+                    .filter(mapperBuilder -> mapperBuilder.supportMapper(mapperType))
+                    .forEach(mapperBuilder -> mapperBuilder.withBuilding(buildingContext, mapperType).parse());
             loadCompleted = true;
         } finally {
             if (loadCompleted) {

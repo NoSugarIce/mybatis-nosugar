@@ -40,7 +40,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * 查询符合条件的记录
      *
      * @param criteria 查询条件封装
-     * @return
+     * @return 符合条件的记录
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_LIST)
     <C> List<T> selectList(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C> criteria);
@@ -68,7 +68,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * 查询符合条件的记录数
      *
      * @param criteria 查询条件封装
-     * @return
+     * @return 符合条件的记录数
      */
     default <C> long count(CriteriaQuery<T, C> criteria) {
         return adapterCount((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria);
@@ -103,7 +103,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 唯一实体结果
      */
     default T selectOne(T entity) {
-        List<T> list = selectListLimit(entity, 1);
+        List<T> list = selectList(entity, 1);
         if (list.size() == 1) {
             return list.get(0);
         } else if (list.size() > 1) {
@@ -130,30 +130,8 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param limit  指定数量
      * @return 指定数量条记录
      */
-    default List<T> selectListLimit(T entity, int limit) {
+    default List<T> selectList(T entity, int limit) {
         return selectList(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity).limit(limit));
-    }
-
-    /**
-     * 分页查询
-     *
-     * @param entity 实体参数
-     * @param page   行选择参数
-     * @return 所有符合的记录
-     */
-    default List<T> selectListLimit(T entity, Page<T> page) {
-        return selectList(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity).limit(page));
-    }
-
-    /**
-     * 分页查询
-     *
-     * @param criteria 查询条件封装
-     * @param page     分页参数
-     * @return 所有符合的记录
-     */
-    default <C> List<T> selectListLimit(CriteriaQuery<T, C> criteria, Page<T> page) {
-        return selectList(criteria.limit(page));
     }
 
     /**
@@ -164,7 +142,8 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 分页数据
      */
     default Page<T> selectPage(T entity, Page<T> page) {
-        return selectPage(entity, page, this::count, this::selectListLimit);
+        return selectPageX(entity, page, this::count
+                , (tEntity, tPage) -> selectList(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(tEntity).limit(tPage)));
     }
 
     /**
@@ -175,34 +154,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 分页数据
      */
     default <C> Page<T> selectPage(CriteriaQuery<T, C> criteria, Page<T> page) {
-        return selectPage(criteria, page, this::count, this::selectListLimit);
-    }
-
-    /**
-     * 分页查询
-     *
-     * @param entity         实体参数
-     * @param page           分页参数
-     * @param countFunction  查询总行数方法
-     * @param selectFunction 查询方法
-     * @return 分页数据
-     */
-    default Page<T> selectPage(T entity, Page<T> page, Function<T, Long> countFunction, BiFunction<T, Page<T>, List<T>> selectFunction) {
-        return selectPageX(entity, page, countFunction, selectFunction);
-    }
-
-    /**
-     * 分页查询
-     *
-     * @param criteria       查询参数
-     * @param page           分页参数
-     * @param countFunction  查询总行数方法
-     * @param selectFunction 查询方法
-     * @return 分页数据
-     */
-    default <C> Page<T> selectPage(CriteriaQuery<T, C> criteria, Page<T> page, Function<CriteriaQuery<T, C>, Long> countFunction
-            , BiFunction<CriteriaQuery<T, C>, Page<T>, List<T>> selectFunction) {
-        return selectPageX(criteria, page, countFunction, selectFunction);
+        return selectPageX(criteria, page, this::count, (tCriteriaQuery, tPage) -> selectList(tCriteriaQuery.limit(tPage)));
     }
 
     /**

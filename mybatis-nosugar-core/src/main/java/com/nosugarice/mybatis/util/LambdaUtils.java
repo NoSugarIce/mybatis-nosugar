@@ -22,6 +22,7 @@ import com.nosugarice.mybatis.exception.NoSugarException;
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -29,18 +30,74 @@ import java.lang.reflect.Method;
  */
 public class LambdaUtils {
 
-    public static String getFunctionalName(Getter<?, ?> getter) {
+    public static <T> String getFunctionalName(Getter<T, ?> getter) {
         return getFunctionalName((Serializable) getter);
     }
 
     public static String getFunctionalName(Serializable lambdaSerializable) {
+        return getLambdaInfo(lambdaSerializable).getMethodName();
+    }
+
+    public static LambdaInfo getLambdaInfo(Serializable lambdaSerializable) {
         try {
             Method method = lambdaSerializable.getClass().getDeclaredMethod("writeReplace");
             method.setAccessible(true);
             SerializedLambda serializedLambda = (SerializedLambda) method.invoke(lambdaSerializable);
-            return serializedLambda.getImplMethodName();
+            return new LambdaInfo(serializedLambda);
         } catch (ReflectiveOperationException ex) {
             throw new NoSugarException(ex);
+        }
+    }
+
+    public static <T> LambdaInfo getLambdaInfo(Getter<T, ?> getter) {
+        return getLambdaInfo((Serializable) getter);
+    }
+
+    public static class LambdaInfo {
+
+        private final String className;
+        private final String methodName;
+        private final String methodSignature;
+
+        public LambdaInfo(SerializedLambda serializedLambda) {
+            this.className = serializedLambda.getImplClass().replace("/", ".");
+            this.methodName = serializedLambda.getImplMethodName();
+            this.methodSignature = serializedLambda.getImplMethodSignature();
+
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public Class<?> getType() {
+            try {
+                return Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new NoSugarException(e);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            LambdaInfo that = (LambdaInfo) o;
+            return Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName)
+                    && Objects.equals(methodSignature, that.methodSignature);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(className, methodName, methodSignature);
         }
     }
 

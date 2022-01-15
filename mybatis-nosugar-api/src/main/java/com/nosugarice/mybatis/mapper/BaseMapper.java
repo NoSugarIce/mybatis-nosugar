@@ -41,6 +41,6 @@ public interface BaseMapper<T, ID extends Serializable> extends
         , UpdatePrimaryKeyMapper<T>, UpdateCriteriaMapper<T>
         , SaveMapper<T, ID>
         , DeletePrimaryKeyMapper<ID>, DeleteCriteriaMapper<T>
-        , JpaMapper<T> {
+        , JpaMapper<T, ID> {
 }
 

@@ -25,34 +25,42 @@ import org.apache.ibatis.mapping.ParameterMap;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
+import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.mapping.StatementType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public class AdapterMapperBuilder extends AbstractMapperBuilder<AdapterMapperBuilder> {
+public class AdapterMapperBuilder extends AbstractMapperBuilder {
 
     @Override
-    public boolean isMatchMapper(Class<?> mapperType) {
+    public boolean supportMapper(Class<?> mapperType) {
         return AdapterMapper.class.isAssignableFrom(mapperType);
     }
 
     @Override
-    public boolean isMatch(Method method) {
+    public boolean supportMethod(Method method) {
         return method.isAnnotationPresent(ProviderAdapter.class);
     }
 
     @Override
     public void process(Method method) {
         ProviderAdapter providerAdapter = method.getAnnotation(ProviderAdapter.class);
-        String methodMappedStatementId = getMethodMappedStatementId(method);
-        AdapterSqlSource adapterSqlSource = new AdapterSqlSource(configuration, mapperClass, providerAdapter.value(), buildingContext.getDialect());
 
+        Integer cacheHash = Objects.hash(configuration, providerAdapter.value());
+        SqlSource sqlSource = buildingContext.getByCache(cacheHash);
+        if (sqlSource == null) {
+            sqlSource = new AdapterSqlSource(configuration, providerAdapter.value(), buildingContext.getDialect());
+            buildingContext.cacheObject(cacheHash, sqlSource);
+        }
+
+        String methodMappedStatementId = getMethodMappedStatementId(method);
         ResultMap.Builder resultMapBuilder = new ResultMap.Builder(configuration, methodMappedStatementId + "-Inline"
                 , Object.class, new ArrayList<>());
         List<ResultMap> resultMaps = new ArrayList<>();
@@ -64,7 +72,7 @@ public class AdapterMapperBuilder extends AbstractMapperBuilder<AdapterMapperBui
                 .build();
 
         MappedStatement newMappedStatement = new MappedStatement.Builder(configuration, methodMappedStatementId
-                , adapterSqlSource
+                , sqlSource
                 , SqlCommandType.SELECT)
                 .resultMaps(resultMaps)
                 .statementType(StatementType.PREPARED)

@@ -24,7 +24,6 @@ import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,12 +51,6 @@ public class GroupCriterionImpl extends AbstractCriterion<GroupCriterionImpl> im
     @Override
     public GroupCriterion append(Criterion criterion) {
         this.criterionList.add(criterion);
-        return this;
-    }
-
-    @Override
-    public GroupCriterion appendAllToHead(Collection<? extends Criterion> criterions) {
-        this.criterionList.addAll(0, criterions);
         return this;
     }
 

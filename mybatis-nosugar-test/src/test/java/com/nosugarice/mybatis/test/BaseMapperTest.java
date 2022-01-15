@@ -21,6 +21,7 @@ import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.LocalCacheScope;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import javax.sql.DataSource;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -43,6 +45,8 @@ public abstract class BaseMapperTest {
         Environment environment = new Environment("test", new JdbcTransactionFactory(), getDataSource());
         Configuration configuration = new Configuration(environment);
         configuration.setVariables(properties());
+        configuration.setCacheEnabled(false);
+        configuration.setLocalCacheScope(LocalCacheScope.STATEMENT);
 
         MapperBuilderConfigBuilder configBuilder = new MapperBuilderConfigBuilder(null, configuration.getVariables());
         MetadataBuildingContext metadataBuildingContext = new MetadataBuildingContext(configuration, configBuilder.build());
@@ -58,9 +62,16 @@ public abstract class BaseMapperTest {
         sqlSession.close();
     }
 
-    public Properties properties() {
+    public Map<String, String> getProperties() {
+        return null;
+    }
+
+    private Properties properties() {
         Properties properties = new Properties();
-        properties.setProperty("mybatis.configuration.cache-enabled", "false");
+        Map<String, String> propertyMap = getProperties();
+        if (propertyMap != null) {
+            properties.putAll(propertyMap);
+        }
         return properties;
     }
 

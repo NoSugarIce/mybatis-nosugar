@@ -104,7 +104,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      */
     default <X1, X2, X3, X4> Page<T> selectPageP4(Page<T> page, FunS.Param4<X1, X2, X3, X4, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4) {
-        return selectPage(page, selectFunction, params1, params2, params3);
+        return selectPage(page, selectFunction, params1, params2, params3, params4);
     }
 
     /**
@@ -126,7 +126,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      */
     default <X1, X2, X3, X4, X5> Page<T> selectPageP5(Page<T> page, FunS.Param5<X1, X2, X3, X4, X5, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4, X5 params5) {
-        return selectPage(page, selectFunction, params1, params2, params3);
+        return selectPage(page, selectFunction, params1, params2, params3, params4, params5);
     }
 
     /**

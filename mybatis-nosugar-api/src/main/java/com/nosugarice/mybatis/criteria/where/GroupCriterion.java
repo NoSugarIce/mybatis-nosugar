@@ -45,14 +45,6 @@ public interface GroupCriterion extends Criterion {
     GroupCriterion append(Criterion criterion);
 
     /**
-     * 添加条件到哦头部
-     *
-     * @param criterions
-     * @return
-     */
-    GroupCriterion appendAllToHead(Collection<? extends Criterion> criterions);
-
-    /**
      * 添加属性条件
      *
      * @param criterions

@@ -88,7 +88,7 @@ public enum ConditionType {
     public String getPropertyName(String property) {
         for (String keyword : keywords) {
             if (property.endsWith(keyword)) {
-                return property.replaceAll(keyword, "");
+                return property.replace(keyword, "");
             }
         }
         return property;

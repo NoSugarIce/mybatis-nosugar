@@ -23,6 +23,7 @@ import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.select.SelectPageMapper;
 import com.nosugarice.mybatis.util.LambdaUtils;
+import com.nosugarice.mybatis.util.LambdaUtils.LambdaInfo;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -44,15 +45,13 @@ import java.util.Map;
 public class AdapterSqlSource implements SqlSource {
 
     private final Configuration configuration;
-    private final Class<?> mapperInterface;
     private final ProviderAdapter.Type adapterType;
     private final Dialect dialect;
 
-    private final Map<String, String[]> methodParamNameMap = new HashMap<>();
+    private final Map<LambdaInfo, String[]> methodParamNameMap = new HashMap<>();
 
-    public AdapterSqlSource(Configuration configuration, Class<?> mapperInterface, ProviderAdapter.Type adapterType, Dialect dialect) {
+    public AdapterSqlSource(Configuration configuration, ProviderAdapter.Type adapterType, Dialect dialect) {
         this.configuration = configuration;
-        this.mapperInterface = mapperInterface;
         this.adapterType = adapterType;
         this.dialect = dialect;
     }
@@ -63,8 +62,12 @@ public class AdapterSqlSource implements SqlSource {
         Map<?, ?> parameterMap = ((Map<?, ?>) parameterObject);
 
         Object mapperFunction = parameterMap.get(MapperParam.MAPPER_FUNCTION);
-        String functionalName = LambdaUtils.getFunctionalName((Serializable) mapperFunction);
-        String statementId = mapperInterface.getName() + "." + functionalName;
+
+        LambdaInfo lambdaInfo = LambdaUtils.getLambdaInfo((Serializable) mapperFunction);
+        String functionalName = lambdaInfo.getMethodName();
+        String className = lambdaInfo.getClassName();
+
+        String statementId = className + "." + functionalName;
         Preconditions.checkArgument(configuration.hasStatement(statementId), functionalName + "没有构建Statement.");
         Preconditions.checkArgument(configuration.getMappedStatement(statementId, false)
                 .getSqlCommandType() == SqlCommandType.SELECT, functionalName + "不支持桥接方式.");
@@ -90,7 +93,7 @@ public class AdapterSqlSource implements SqlSource {
             boundSql = createNewBoundSql(configuration, existsStr, originalBoundSql);
         }
         Preconditions.checkNotNull(boundSql, "未找到桥接BoundSql!");
-        String[] methodParamNames = methodParamNameMap.computeIfAbsent(functionalName, this::getMethodParamNames);
+        String[] methodParamNames = methodParamNameMap.computeIfAbsent(lambdaInfo, this::getMethodParamNames);
 
         setBoundSqlParameter(boundSql, methodParamNames, params);
         return boundSql;
@@ -103,15 +106,15 @@ public class AdapterSqlSource implements SqlSource {
         }
     }
 
-    private String[] getMethodParamNames(String functionalName) {
-        Method[] methods = mapperInterface.getMethods();
+    private String[] getMethodParamNames(LambdaInfo lambdaInfo) {
+        Method[] methods = lambdaInfo.getType().getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(functionalName)) {
+            if (method.getName().equals(lambdaInfo.getMethodName())) {
                 ParamNameResolver paramNameResolver = new ParamNameResolver(configuration, method);
                 return paramNameResolver.getNames();
             }
         }
-        throw new NoSugarException(functionalName + "方法未找到");
+        throw new NoSugarException(lambdaInfo.getMethodName() + "方法未找到");
     }
 
     public static BoundSql createNewBoundSql(Configuration configuration, String sql, BoundSql originalBoundSql) {

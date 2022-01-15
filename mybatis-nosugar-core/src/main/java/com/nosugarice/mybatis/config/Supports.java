@@ -20,6 +20,7 @@ import com.nosugarice.mybatis.annotation.DynamicTableName;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.mapping.value.KeyValue;
+import com.nosugarice.mybatis.mapping.value.Value;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -75,6 +76,7 @@ public class Supports {
     private boolean supportIdGenerator(RelationalEntity relationalEntity) {
         return relationalEntity.getIdGeneratorProperty()
                 .map(RelationalProperty::getAsKeyValue)
+                .filter(keyValue -> keyValue != Value.SIMPLE_KEY_VALUE)
                 .map(KeyValue::isAutoIncrement)
                 .map(isAutoIncrement -> !isAutoIncrement)
                 .orElse(false);

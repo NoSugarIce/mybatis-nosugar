@@ -18,6 +18,7 @@ package com.nosugarice.mybatis.builder.mapper;
 
 import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.builder.statement.StatementBuilder;
+import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.criteria.select.OrderByCriterion;
 import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
 import com.nosugarice.mybatis.criteria.where.CriterionSQLVisitor;
@@ -73,9 +74,8 @@ import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
+public class JpaMapperBuilder extends AbstractMapperBuilder {
 
-    private RelationalEntity relationalEntity;
     private StatementBuilder statementBuilder;
 
     private static final Map<Class<? extends ColumnCriterion<?>>, Class<? extends TypeHandler<?>>> CRITERION_TYPE_HANDLER_MAP
@@ -88,21 +88,19 @@ public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
     }
 
     @Override
-    public JpaMapperBuilder build() {
-        super.build();
-        this.relationalEntity = entityMetadata.getRelationalEntity();
-        this.statementBuilder = StatementBuilder.of(JpaMapper.class)
-                .withMapper(mapperClass).withBuildingContext(buildingContext).build();
+    public AbstractMapperBuilder withBuilding(MetadataBuildingContext buildingContext, Class<?> mapperClass) {
+        super.withBuilding(buildingContext, mapperClass);
+        this.statementBuilder = StatementBuilder.of(JpaMapper.class).withBuilding(buildingContext, mapperClass);
         return this;
     }
 
     @Override
-    public boolean isMatchMapper(Class<?> mapperType) {
+    public boolean supportMapper(Class<?> mapperType) {
         return JpaMapper.class.isAssignableFrom(mapperType);
     }
 
     @Override
-    public boolean isMatch(Method method) {
+    public boolean supportMethod(Method method) {
         return notHasStatement(method) && PartTree.PREFIX_TEMPLATE.matcher(method.getName()).find()
                 && !method.isAnnotationPresent(SqlBuilder.class);
     }
@@ -112,13 +110,13 @@ public class JpaMapperBuilder extends AbstractMapperBuilder<JpaMapperBuilder> {
         String methodName = method.getName();
         Matcher matcher = PartTree.PREFIX_TEMPLATE.matcher(methodName);
         if (matcher.find()) {
+            RelationalEntity relationalEntity = entityMetadata.getRelationalEntity();
             PartTree partTree = new PartTree(methodName);
             Predicate predicate = partTree.getPredicate();
             List<Part> parts = new ArrayList<>();
             predicate.getNodes().forEach(orPart -> parts.addAll(orPart.getChildren()));
             parts.forEach(part -> Preconditions.checkArgument(entityMetadata.existProperty(part.getPropertyName())
-                    , String.format("No property %s found for type %s!", part.getPropertyName()
-                            , relationalEntity.getName())));
+                    , String.format("No property %s found for type %s!", part.getPropertyName(), relationalEntity.getName())));
             int totalNumberOfParameters = parts.stream().mapToInt(Part::getNumberOfArguments).sum();
             long parameterCount = Arrays.stream(method.getParameterTypes())
                     .filter(clazz -> !Page.class.isAssignableFrom(clazz))

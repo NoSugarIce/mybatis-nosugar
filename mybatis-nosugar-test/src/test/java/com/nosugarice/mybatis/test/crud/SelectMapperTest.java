@@ -143,7 +143,7 @@ class SelectMapperTest extends BaseMapperTest {
         Student student = new Student();
         student.setSex(1);
 
-        List<Student> students = mapper.selectListLimit(student, 2);
+        List<Student> students = mapper.selectList(student, 2);
         Assertions.assertEquals(2, students.size());
     }
 
@@ -154,7 +154,7 @@ class SelectMapperTest extends BaseMapperTest {
         Student student = new Student();
         student.setSex(1);
 
-        List<Student> students = mapper.selectListLimit(student, new PageImpl<>(2));
+        List<Student> students = mapper.selectList(student, 2);
         Assertions.assertEquals(2, students.size());
     }
 
@@ -166,7 +166,7 @@ class SelectMapperTest extends BaseMapperTest {
         query.between(Student::getAge, 10, 30)
                 .lessThan(Student::getCardBalance, new BigDecimal("200"));
 
-        List<Student> students = mapper.selectListLimit(query, new PageImpl<>(2));
+        List<Student> students = mapper.selectList(query.limit(new PageImpl<>(2)));
         Assertions.assertEquals(2, students.size());
     }
 
