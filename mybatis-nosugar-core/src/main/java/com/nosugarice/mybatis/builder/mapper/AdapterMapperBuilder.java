@@ -30,7 +30,9 @@ import org.apache.ibatis.mapping.StatementType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -38,6 +40,8 @@ import java.util.Objects;
  * @date 2020/12/5
  */
 public class AdapterMapperBuilder extends AbstractMapperBuilder {
+
+    private static final Map<Object, Object> CACHE = new HashMap<>();
 
     @Override
     public boolean supportMapper(Class<?> mapperType) {
@@ -52,12 +56,11 @@ public class AdapterMapperBuilder extends AbstractMapperBuilder {
     @Override
     public void process(Method method) {
         ProviderAdapter providerAdapter = method.getAnnotation(ProviderAdapter.class);
-
         Integer cacheHash = Objects.hash(configuration, providerAdapter.value());
-        SqlSource sqlSource = buildingContext.getByCache(cacheHash);
+        SqlSource sqlSource = (SqlSource) CACHE.get(cacheHash);
         if (sqlSource == null) {
             sqlSource = new AdapterSqlSource(configuration, providerAdapter.value(), buildingContext.getDialect());
-            buildingContext.cacheObject(cacheHash, sqlSource);
+            CACHE.put(cacheHash, sqlSource);
         }
 
         String methodMappedStatementId = getMethodMappedStatementId(method);

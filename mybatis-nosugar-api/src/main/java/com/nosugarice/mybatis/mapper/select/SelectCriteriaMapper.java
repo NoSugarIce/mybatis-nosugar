@@ -103,7 +103,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 唯一实体结果
      */
     default T selectOne(T entity) {
-        List<T> list = selectList(entity, 1);
+        List<T> list = selectList(entity, 2);
         if (list.size() == 1) {
             return list.get(0);
         } else if (list.size() > 1) {

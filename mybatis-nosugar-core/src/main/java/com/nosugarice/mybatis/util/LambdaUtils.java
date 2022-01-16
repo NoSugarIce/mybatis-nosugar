@@ -63,7 +63,6 @@ public class LambdaUtils {
             this.className = serializedLambda.getImplClass().replace("/", ".");
             this.methodName = serializedLambda.getImplMethodName();
             this.methodSignature = serializedLambda.getImplMethodSignature();
-
         }
 
         public String getClassName() {
