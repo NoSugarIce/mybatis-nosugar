@@ -25,7 +25,6 @@ import com.nosugarice.mybatis.config.internal.DefaultMapperStrategy;
 import com.nosugarice.mybatis.config.internal.NameStrategyType;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.exception.NoSugarException;
-import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.id.IdGenerator;
 import com.nosugarice.mybatis.registry.ConfigRegistry;
 import com.nosugarice.mybatis.support.EntityPropertyNameStrategy;
@@ -72,7 +71,6 @@ public class MapperBuilderConfigBuilder {
     private static final String RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY = RELATIONAL_CONFIG + "field-name-to-column-name-strategy";
     private static final String RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY_CLASS = RELATIONAL_CONFIG + "field-name-to-column-name-strategy-class";
     private static final String RELATIONAL_CONFIG_ID_GENERATOR_TYPES = RELATIONAL_CONFIG + "id-generator-types";
-    private static final String RELATIONAL_CONFIG_VALUE_HANDLER_TYPES = RELATIONAL_CONFIG + "value-handler-types";
 
     private static final String SQL_BUILD_CONFIG = "mybatis.no-sugar.sql-build.";
     private static final String SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR = SQL_BUILD_CONFIG + "ignore-empty-char";
@@ -124,7 +122,6 @@ public class MapperBuilderConfigBuilder {
         setPrimitiveValue(RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY, NameStrategyType::valueOf, () -> NameStrategyType.CAMEL_TO_UNDERSCORE, relationalConfig::setFieldNameToColumnNameStrategy);
         setBeanValue(RELATIONAL_CONFIG_FIELD_NAME_TO_COLUMN_NAME_STRATEGY_CLASS, EntityPropertyNameStrategy.class, () -> null, relationalConfig::setFieldNameToColumnNameStrategy);
         setIdGeneratorTypes(relationalConfig::setIdGenerators);
-        setClassInstanceValue(RELATIONAL_CONFIG_VALUE_HANDLER_TYPES, ValueHandler.class, relationalConfig::setValueHandlers);
 
         setPrimitiveValue(SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR, Boolean::parseBoolean, () -> false, sqlBuildConfig::setIgnoreEmptyChar);
         setBeanValue(SQL_BUILD_CONFIG_DIALECT_CLASS, Dialect.class, () -> null, sqlBuildConfig::setDialect);

@@ -1,128 +1,9 @@
-
-### 示例基础数据
-
-###### 表结构
-
-```sql
-CREATE TABLE `student`  (
-  `id` varchar(32) NOT NULL COMMENT '主键',
-  `name` varchar(20) NOT NULL COMMENT '姓名',
-  `age` int(3) NOT NULL COMMENT '年龄',
-  `sex` int(1) NOT NULL COMMENT '性别,0:男,1:女',
-  `sno` varchar(20) NOT NULL COMMENT '学号',
-  `phone` varchar(20) NULL DEFAULT NULL COMMENT '电话号码',
-  `address` varchar(100) NULL DEFAULT NULL COMMENT '住址',
-  `card_balance` decimal(6, 2) NULL DEFAULT NULL COMMENT '学生卡余额',
-  `status` int(1) NOT NULL DEFAULT 0 COMMENT '在学状态,0:在学,1退学',
-  `version` int(11) NULL DEFAULT NULL,
-  `created_at` datetime(0) NOT NULL COMMENT '创建时间',
-  `updated_at` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
-  `disabled_at` datetime(0) NULL DEFAULT NULL COMMENT '删除时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB;
-```
-
-###### 实体类
-
-```java
-import com.nosugarice.mybatis.annotation.ColumnOptions;
-import com.nosugarice.mybatis.annotation.LogicDelete;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Version;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-@Table(name = "student")
-public class Student implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    /** 主键 */
-    @Id
-    @Column(name = "id", nullable = false)
-    @GeneratedValue(generator = "uuid")
-    private String id;
-
-    /** 姓名 */
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    /** 年龄 */
-    @Column(name = "age", nullable = false)
-    private Integer age;
-
-    /** 性别,0:男,1:女 */
-    @Column(name = "sex", nullable = false)
-    private Integer sex;
-
-    /** 学号 */
-    @Column(name = "sno", nullable = false)
-    private Integer sno;
-
-    /** 电话号码 */
-    @Column(name = "phone")
-    private String phone;
-
-    /** 住址 */
-    @Column(name = "address")
-    private String address;
-
-    /** 学生卡余额 */
-    @Column(name = "card_balance")
-    private BigDecimal cardBalance;
-
-    /** 在学状态,0:在学,1退学 */
-    @ColumnOptions(typeHandler = StatusEnumTypeHandler.class)
-    @Column(name = "status", nullable = false)
-    private StatusEnum status;
-
-    /** 版本 */
-    @Version
-    @Column(name = "version", nullable = false)
-    private Integer version;
-
-    /** 创建时间 */
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新时间 */
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    /** 删除时间 */
-    @LogicDelete(deleteValue = "NOW")
-    @Column(name = "disabled_at")
-    private LocalDateTime disabledAt;
-
-    get...
-    set...
-}
-```
-
-Mapper接口
-
-```java
-import com.nosugarice.mybatis.annotation.SpeedBatch;
-import com.nosugarice.mybatis.mode.Student;
-
-@SpeedBatch
-public interface StudentMapper extends BaseMapper<Student, String> {
-}
-```
-
-
-
 ### 配置
 
-配置可以使用两种方式加载进NoSugar.
+配置可以使用两种方式加载进NoSugar
 
-- 使用Mybatis原生Properties配置.
-- Spring应用环境中声明相关配置类.
+- 使用Mybatis原生Properties配置
+- 把配置类对象加载到Spring环境
 
 
 ###### 注意:
@@ -135,22 +16,23 @@ NoSugar配置使用`mybatis.no-sugar`作为前缀.
 
 ##### 功能开关配置
 
-| 前缀:`switch`        | 说明                | 类型      | 默认    |
-| :------------------- | ------------------- | --------- | ------- |
-| `crud`               | 基础增删改查        | `boolean` | `true`  |
-| `find-by-methodName` | Jpa式根据方法名查询 | `boolean` | `true`  |
-| `mutative`           | 分页,count查询等    | `boolean` | `true`  |
-| `logic-delete`       | 开启软删除          | `boolean` | `true`  |
-| `version`            | 开启乐观锁功能      | `boolean` | `true`  |
-| `lazy-builder`       | 开启懒加载          | `boolean` | `false` |
-| `speed-batch`        | 开启批处理增强模式  | `boolean` | `true`  |
+| 前缀:`switch`             | 说明                                                         | 类型                | 默认    |
+| :------------------------ | ------------------------------------------------------------ | ------------------- | ------- |
+| `include-mapper-builders` | 把Mapper方法转换成SQL加载到MyBatis环境中的处理类,全限定类名,以逗号分隔,默认内置处理器,无特殊需求不用配置. | String[ClassName..] |         |
+| exclude-mapper-builders   | 排除部分处理类,全限定类名,以逗号分隔.无特殊需求不用配置.     | String[ClassName..] |         |
+| `logic-delete`            | 开启软删除                                                   | `boolean`           | `true`  |
+| `version`                 | 开启乐观锁功能                                               | `boolean`           | `true`  |
+| `lazy-builder`            | 开启懒加载                                                   | `boolean`           | `false` |
+| `speed-batch`             | 开启批处理增强模式                                           | `boolean`           | `true`  |
 
 ##### 实体类映射配置
 
 从实体类Class转换为数据库对应的表信息有默认的实现类,如果结构差异较大可以实现自己的从类结构解析到表结构方法.
 
+
 | 前缀:`relational`                          | 说明                                                         | 类型                            | 默认                  |
 | :----------------------------------------- | :----------------------------------------------------------- | :------------------------------ | :-------------------- |
+| `mapper-strategy` | 从Mapper接口Class文件解析到具体实体类 | Class<?> | `DefaultMapperStrategy.class` |
 | `entity-builder-class` | 实体类到表信息的解析类 | `Class<? extends AbstractEntityBuilder<?>>` | `DefaultEntityBuilder.class` |
 | `access-type`                              | 从类的属性或者方法映射到数据库表字段,`FIELD`:属性,`PROPERTY`:`get`方法 | `AccessType`          | `FIELD`               |
 | `class-name-to-table-name-strategy`        | 类名转换表名的处理方法                                       | `NameStrategyType`         | `CAMEL_TO_UNDERSCORE` |
@@ -160,14 +42,12 @@ NoSugar配置使用`mybatis.no-sugar`作为前缀.
 | `javax-validation-mapping-not-null`        | `javax.validation`接口的注解是否映射为非空,包含`NotNull` | `boolean`                       | `true`                |
 | `id-generator-types` | 主键填充类型,Map结构,名称为键,类型为值 | `Class<IdGenerator<?>>` |  |
 
+
 ##### 生成SQL配置
 
-| 前缀:`sql-build`             | 说明                   | 类型                       | 默认                   |
-| ---------------------------- | :--------------------- | -------------------------- | ---------------------- |
-| `sql-use-alias`              | 生成SQl是否使用别名    | `boolean`                  | `true`                 |
-| `ignore-result-logic-delete` | 查询结果忽略软删除字段 | `boolean`                  | `true`                 |
-| `ignore-empty-char`          | 忽略空字符             | `boolean`                  | `false`                |
-| `dialect-class`              | 数据库方言实现类       | `Class<? extends Dialect>` | 根据数据库连接自动判断 |
+| 前缀:`sql-build` | 说明             | 类型                       | 默认                   |
+| ---------------- | :--------------- | -------------------------- | ---------------------- |
+| `dialect-class`  | 数据库方言实现类 | `Class<? extends Dialect>` | 根据数据库连接自动判断 |
 
 注:
 
@@ -236,11 +116,9 @@ public SqlBuildConfig sqlBuildConfig() {
 | `@GeneratedValue`   | `javax.persistence.GeneratedValue`                           | 主键生成策略                         |
 | `@Column`           | `javax.persistence.Column`                                   | 类属性到表字段的映射               |
 | `@Version`          | `javax.persistence.Version`                                  | 乐观锁标识                         |
-| `@NotNull`          | `javax.validation.constraints.NotNull`                       | 字段映射为非空                     |
-| `@ColumnOptions`    | `ColumnOptions`   | 列其他选项,忽略空字符,列处理器等   |
+| `@ColumnOptions`    | `ColumnOptions`   | 列其他选项,忽略空字符,列对应值处理器等 |
 | `@DynamicTableName` | `DynamicTableName` | 是否开启动态表名                   |
 | `@LogicDelete`      | `LogicDelete`     | 软删除                             |
-| `@Provider`         | `Provider`        | Mapper方法增强                  |
 | `@SpeedBatch`       | `SpeedBatch`      | 批处理增强模式                       |
 
 
@@ -301,10 +179,7 @@ mybatis.configuration-properties.mybatis.no-sugar.relational.id-generator-types[
 private String id;
 ```
 
-
-
-### 基础的增删改查
-
+### 增删改查
 
 ### 查询条件构造
 
@@ -312,60 +187,97 @@ private String id;
 
 条件构造就是表中的列值符合什么样的条件,把这些条件组合.
 
-支持条件
+支持条件方法
 
 | 条件               | 快速方法                                     | 对应的sql             |
 | :----------------- | :------------------------------------------- | --------------------- |
 | 是空             | `isNull(C column)`                           | `IS NULL`             |
-| 不为空           | `notNull(C column)`                          | `IS NOT NULL`         |
-| 是空字符串       | `empty(C column)`                            | `= ''`                |
-| 不是空字符串     | `notEmpty(C column)`                         | `<> ''`               |
-| 等于             | `equal(C column, V value)`                   | `= ?`                 |
-| 不等于           | `notEqual(C column, V value)`                | `<> ?`                |
+| 不为空           | `isNotNull(C column)`                 | `IS NOT NULL`         |
+| 是空字符串       | `isEmpty(C column)`                     | `= ''`                |
+| 不是空字符串     | `isNotEmpty(C column)`               | `<> ''`               |
+| 等于             | `equalTo(C column, V value)`            | `= ?`                 |
+| 不等于           | `notEqualTo(C column, V value)`      | `<> ?`                |
 | 大于             | `greaterThan(C column, V value)`             | `> ?`                 |
 | 不大于           | `notGreaterThan(C column, V value)`          | `<= ?`                |
-| 大于等于         | `greaterThanOrEqualTo(C column, V value)`    | `>= ?`                |
-| 不大于等于       | `notGreaterThanOrEqualTo(C column, V value)` | `< ?`                 |
+| 大于等于         | `greaterThanOrEqual(C column, V value)` | `>= ?`                |
+| 不大于等于       | `notGreaterThanOrEqual(C column, V value)` | `< ?`                 |
 | 小于             | `lessThan(C column, V value)`                | `< ?`                 |
 | 不小于           | `notLessThan(C column, V value)`             | `>= ?`                |
-| 小于等于         | `lessThanOrEqualTo(C column, V value)`       | `<= ?`                |
-| 不小于等于       | `notLessThanOrEqualTo(C column, V value)`    | `> ?`                 |
+| 小于等于         | `lessThanOrEqual(C column, V value)` | `<= ?`                |
+| 不小于等于       | `notLessThanOrEqual(C column, V value)` | `> ?`                 |
 | 介于??之间       | `between(C column, V value, V value1)`       | `Between ? AND ?`     |
 | 不介于??之间     | `notBetween(C column, V value, V value1)`    | `NOT Between ? AND ?` |
 | 在集合里         | `in(C column, V[] values)`                   | `IN(?,?,?)`           |
 |                    | `in(C column, Collection<V> values)`         | `IN(?,?,?)`           |
 | 不在集合里       | `notIn(C column, V[] values)`                | `NOT IN(?,?,?)`       |
 |                   | `notIn(C column, Collection<V> values)`      | `NOT IN(?,?,?)`       |
-| 字符串全匹配     | `like(C column, String value)`               | `LIKE %?%`            |
-| 字符串不全匹配   | `notLike(C column, String value)`            | `NOT LIKE %?%`        |
-| 字符串前缀匹配   | `likeBefore(C column, String value)`         | `LIKE ?%`             |
-| 字符串前缀不匹配 | `notLikeBefore(C column, String value)`      | `NOT LIKE ?%`         |
-| 字符串后缀匹配   | `likeAfter(C column, String value)`          | `LIKE %?`             |
-| 字符串后缀不匹配 | `notLikeAfter(C column, String value)`       | `NOT LIKE %?`         |
+| 字符串全匹配     | `like(C column, String value)`               | `LIKE ?`            |
+| 字符串不全匹配   | `notLike(C column, String value)`            | `NOT LIKE ?`        |
+| 字符串前缀匹配   | `startsWith(C column, String value)` | `LIKE ?%`             |
+| 字符串前缀不匹配 | `notStartsWith(C column, String value)` | `NOT LIKE ?%`         |
+| 字符串后缀匹配   | `endsWith(C column, String value)`  | `LIKE %?`             |
+| 字符串后缀不匹配 | `notEndsWith(C column, String value)` | `NOT LIKE %?`         |
+| 字符串包含 | `contains(C column, String value)` | `LIKE %?%` |
+| 字符串不包含 | `notContains(C column, String value)` | `NOT LIKE %?%` |
 
-基础Mapper方法中的构造器入参被声明为`EntityCriteriaQuery<T>`,抽象实现类 `AbstractCriteriaQuery<T, C>`,继承了`ConvertToColumn<C>`,`C`代表列的抽象,根据实现类的不同`C`代表类不同的意义.在运行时最终会转换成数据库真实的列名称.
+`CriteriaMapper`方法中的入参类型,继承了`ToColumn<C>`,`C`代表列的抽象,根据实现类的不同`C`代表类不同的意义.在运行时最终会转换成数据库真实的列名称.
 
-基础的等于条件可以直接设置实体对象属性然后添加到`EntityCriteriaQuery`.
+基础的等于条件可以直接设置实体对象属性然后添加到`Criteria`.
 
-| 实现类                     | C代表的意义                   |
-| -------------------------- | ----------------------------- |
-| `ColumnCriteriaQuery<T>`   | 数据库真实列名                |
-| `PropertyCriteriaQuery<T>` | 实体类属性名称                |
-| `LambdaCriteriaQuery<T>`   | 实体类属性的get方法Lambda标识 |
+#### Mapper方法中的条件入参
+
+| Mapper                     | 条件入参             |
+| -------------------------- | -------------------- |
+| 查询(SelectCriteriaMapper) | CriteriaQuery<T, C>  |
+| 更新(UpdateCriteriaMapper) | CriteriaUpdate<T, C> |
+| 删除(DeleteCriteriaMapper) | CriteriaDelete<T, C> |
+
+| 条件入参实现类      | 功能                         | 列名参数的形式                |
+| ------------------- | ---------------------------- | ----------------------------- |
+| `LambdaQuery<T>`    | Lambda形式的查询条件构造器   | 实体类属性的get方法Lambda形式 |
+| `LambdaUpdate<T>`   | Lambda形式的更新条件构造器   | 实体类属性的get方法Lambda形式 |
+| `LambdaDelete<T>`   | Lambda形式的删除条件构造器   | 实体类属性的get方法Lambda形式 |
+| `PropertyQuery<T>`  | 属性名称形式的查询条件构造器 | 实体类属性名称                |
+| `PropertyUpdate<T>` | 属性名称形式的更新条件构造器 | 实体类属性名称                |
+| `PropertyDelete<T>` | 属性名称形式的删除条件构造器 | 实体类属性名称                |
+| `ColumnQuery<T>`    | 真实列名形式的查询条件构造器 | 数据库真实列名                |
+| `ColumnUpdate<T>`   | 真实列名形式的更新条件构造器 | 数据库真实列名                |
+| `ColumnDelete<T>`   | 真实列名形式的删除条件构造器 | 数据库真实列名                |
 
 条件构造中有组条件的概念(`GroupCriterion`),顾名思义就是一组条件的组合,默认的条件连接条件为`OR`.
 
-`AbstractCriteriaQuery`中通过直接添加条件的方式如调用`equal(C column, V value)`方法的条件都会默认添加到第一组条件集合.默认连接为`AND`
+`Where`中通过直接添加条件的方式如调用`equal(C column, V value)`方法的条件都会默认添加到第一组条件集合.默认连接为`AND`
 
-##### 使用
+#### 快速构建条件入参实现类
 
-使用上述表格中的实现类进行条件组合.
+使用构建类`CriteriaBuilder`
 
 ##### 示例
 
+使用实体类型构建
 
+```java
+LambdaQuery<Student> query=CriteriaBuilder.lambdaQuery(Student.class);
+        query.equalTo(Student::getStatus,StatusEnum.ON)
+        .between(Student::getAge,10,30)
+        .lessThan(Student::getCardBalance,new BigDecimal("200"));
 
-### 根据方法名实现查询
+        List<Student> students=mapper.selectList(query);
+```
+
+使用实体对象构建
+
+```java
+Student student=new Student();
+        student.setAge(10);
+        student.setAddress("驻马店");
+
+        LambdaQuery<Student> query=CriteriaBuilder.lambdaQuery(student);
+        query.equalTo(Student::getStatus,StatusEnum.ON)
+        .lessThan(Student::getCardBalance,new BigDecimal("200"));
+```
+
+### JPA式方法名实现查询
 
 ##### 说明
 
@@ -373,7 +285,17 @@ private String id;
 
 [Jpa方法名规范](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation)
 
-支持方法名操作关键字
+#### 支持的操作:
+
+| 方法前缀         | 操作类型     | 返回类型          |
+| ---------------- | ------------ | ----------------- |
+| `find|get|query` | 查询         | List<T>,T         |
+| `count`          | 总数查询     | long              |
+| `exists`         | 是否存在查询 | Optional<Integer> |
+| `delete|remove`  | 删除         | int               |
+| `logicDelete`    | 软删除       | int               |
+
+#### 支持方法名操作关键字
 
 | 关键字                 | 示例                                                         | sql                                                          |
 | :--------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -403,7 +325,17 @@ private String id;
 ```java
 public interface StudentMapper extends BaseMapper<Student, String> {
 
-    List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
+    List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
+
+    List<Student> findByNameStartsWithOrAgeBetween(String name, Integer ageStart, Integer ageEnd);
+
+    long countByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
+
+    Optional<Integer> existsByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
+
+    int deleteByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
+
+    int logicDeleteByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
 }
 ```
@@ -412,57 +344,24 @@ public interface StudentMapper extends BaseMapper<Student, String> {
 
 ### 全新Count查询	
 
-#### 基于`selectAdapter`
+#### 基于`SelectMapper#adapterCount`
 
 ##### 说明
 
 在原查询方法上开启Count查询.
 
-##### 使用
-
-使用`@Provider`注解在需要Count查询的方法上配置`@Provider(adapter = Provider.Adapter.COUNT)`.
-
-然后使用`com.nosugarice.mybatis.mapper.select.SelectPageMapper#selectAdapter`即可查询.
-
 ##### 示例
 
 ```java
-@Provider(adapter = Provider.Adapter.COUNT)
-List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
-```
+List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStrrt,Integer ageEnd);
 
-```java
-long count = studentMapper.selectAdapter((FunS.Param3<String, Integer, Integer, List<Student>>) studentMapper::findByNameStartsWithAndAgeBetween
-                , "王", 15, 19);
+        long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetween
+        ,"王",15,19);
 ```
 
 ###### 注意
 
-方法引用此处要强制转换成`FunS`对应参数个数的实现函数式接口上,`FunS.ParamX`泛型要和原方法相同.调用的方法除第一个方法引用参数外其他的参数类型数量要和原方法对应.
-
-#### 基于方法重命名`countWith`
-
-##### 说明
-
-在Mapper接口中基于原查询方法重命名方法
-
-##### 使用
-
-复制原方法在方法名前加`countWith`.
-
-##### 示例
-
-```java
-List<Student> findByAge(Integer age);
-```
-
-```java
-long countWithFindByAge(Integer age);
-```
-
-```java
-long count = studentMapper.countWithFindByAge(20);
-```
+调用的方法除第一个方法引用参数外其他的参数类型要和原方法对应.
 
 
 
@@ -487,40 +386,24 @@ long count = studentMapper.countWithFindByAge(20);
 
 ##### 使用
 
-使用`@Provider`注解在需要分页查询的方法上配置`@Provider(value = Provider.Type.PAGE, adapter = Provider.Adapter.COUNT)`.`value = Provider.Type.PAGE`目的是让NoSugar自动给方法额外加上分页语句.`adapter = Provider.Adapter.COUNT`是需要查询总数,当然,如果确定总数也可以不用配置,只需要分页查询的时候把总数设置到Page参数属性.
-
-然后使用`com.nosugarice.mybatis.mapper.select.SelectPageMapper`相关的`selectPagePX`方法即可.
+使用`SelectPageMapper`相关的`selectPagePX`方法即可.
 
 ##### 示例
 
 ```java
-@Provider(value = Provider.Type.PAGE, adapter = Provider.Adapter.COUNT)
-List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
-```
+//Mapper中的一个普通查询方法(根据方法名查询,自动构建)
+List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStart,Integer ageEnd);
 
-```java
-Page<Student> page = studentMapper.selectPageP3(new PageImpl<>(2), studentMapper::findByNameStartsWithAndAgeBetween
-        , "王", 15, 19);
+//全新的通用分页方式(非插件实现)
+        Page<Student> page=studentMapper.selectPageP3(new PageImpl<>(2),studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
 
-```
-
-当原方法内已经实现基础的分页查询时候.即方法查询sql使用其他方式如xml,注解已经加载到Mybatis环境中的.如果还是需要`SelectPageMapper`相关的`selectPagePX`方法分页查询,还是和上述的方法一样.第一个分页参数还是需要传递的.
-
-```java
-@Provider(adapter = Provider.Adapter.COUNT)
-List<Student> findByName(String name, Page<Student> page);
-```
-
-```java
-Page<Student> pageParams = new PageImpl<>(2);
-Page<Student> page = studentMapper.selectPageP2(pageParams, studentMapper::findByName, "王", pageParams);
 ```
 
 ###### 注意
 
-- 调用的方法除第一个分页参数和第二个方法引用参数外其他的参数类型数量要和原方法对应.
-- 依赖基于`selectAdapter`的count查询配置
+- 调用的方法除第一个分页参数和第二个方法引用参数外其他的参数类型要和原方法对应.
 - NoSugar自动分页的生成的sql只是通用的分页方式,当数据量超过一定级别,通用的分页方式效率较低,此时应该根据主键或者其他索引字段自己实现分页sql.
+- 分页时count语句的优化只是简单基础的实现,如果追求好的效果可重写`Dialect#optimizationCountSql`
 
 
 
