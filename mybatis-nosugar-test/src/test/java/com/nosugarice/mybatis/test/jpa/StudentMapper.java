@@ -11,11 +11,11 @@ import java.util.Optional;
  */
 public interface StudentMapper extends BaseMapper<Student, String> {
 
-    List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
+    List<Student> findByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
-    List<Student> findByNameStartsWithOrAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
+    List<Student> findByNameStartsWithOrAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
-    long countByNameStartsWithAndAgeBetween(String name, Integer ageStrrt, Integer ageEnd);
+    long countByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
     Optional<Integer> existsByNameStartsWithAndAgeBetween(String name, Integer ageStart, Integer ageEnd);
 
