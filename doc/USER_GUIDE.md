@@ -19,7 +19,7 @@ NoSugar配置使用`mybatis.no-sugar`作为前缀.
 | 前缀:`switch`             | 说明                                                         | 类型                | 默认    |
 | :------------------------ | ------------------------------------------------------------ | ------------------- | ------- |
 | `include-mapper-builders` | 把Mapper方法转换成SQL加载到MyBatis环境中的处理类,全限定类名,以逗号分隔,默认内置处理器,无特殊需求不用配置. | String[ClassName..] |         |
-| exclude-mapper-builders   | 排除部分处理类,全限定类名,以逗号分隔.无特殊需求不用配置.     | String[ClassName..] |         |
+| `exclude-mapper-builders`   | 排除部分处理类,全限定类名,以逗号分隔.无特殊需求不用配置.     | String[ClassName..] |         |
 | `logic-delete`            | 开启软删除                                                   | `boolean`           | `true`  |
 | `version`                 | 开启乐观锁功能                                               | `boolean`           | `true`  |
 | `lazy-builder`            | 开启懒加载                                                   | `boolean`           | `false` |
@@ -355,8 +355,8 @@ public interface StudentMapper extends BaseMapper<Student, String> {
 ```java
 List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStrrt,Integer ageEnd);
 
-        long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetween
-        ,"王",15,19);
+long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
+
 ```
 
 ###### 注意
@@ -395,7 +395,7 @@ List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStrrt,Int
 List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStart,Integer ageEnd);
 
 //全新的通用分页方式(非插件实现)
-        Page<Student> page=studentMapper.selectPageP3(new PageImpl<>(2),studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
+Page<Student> page=studentMapper.selectPageP3(new PageImpl<>(2),studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
 
 ```
 
@@ -430,8 +430,6 @@ private Boolean status;
 @Column(name = "disabled_at")
 private LocalDateTime disabledAt;
 ```
-
-
 
 ### 乐观锁
 

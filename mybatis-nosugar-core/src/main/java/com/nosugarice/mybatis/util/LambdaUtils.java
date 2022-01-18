@@ -22,7 +22,6 @@ import com.nosugarice.mybatis.exception.NoSugarException;
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -57,12 +56,12 @@ public class LambdaUtils {
 
         private final String className;
         private final String methodName;
-        private final String methodSignature;
+        private final Object firstCapturedArg;
 
         public LambdaInfo(SerializedLambda serializedLambda) {
             this.className = serializedLambda.getImplClass().replace("/", ".");
             this.methodName = serializedLambda.getImplMethodName();
-            this.methodSignature = serializedLambda.getImplMethodSignature();
+            this.firstCapturedArg = serializedLambda.getCapturedArgCount() > 0 ? serializedLambda.getCapturedArg(0) : null;
         }
 
         public String getClassName() {
@@ -81,23 +80,10 @@ public class LambdaUtils {
             }
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            LambdaInfo that = (LambdaInfo) o;
-            return Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName)
-                    && Objects.equals(methodSignature, that.methodSignature);
+        public Object getFirstCapturedArg() {
+            return firstCapturedArg;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(className, methodName, methodSignature);
-        }
     }
 
 }
