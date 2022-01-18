@@ -11,7 +11,7 @@
 ## 功能概览
 
 - 无糖配方
-- 开放大量接口给开发者予以重写,配置,让开发者根据自己的需求配置增强的方式
+- 开放大量接口给与开发者很大的自由度,让开发者根据自己的程序适配.不必千篇一律.
 - 性能非常丝滑,大部分功能超越动态标签,参数越多性能提升越明显
 - 使用简单,不影响原有项目,无需修改原Mybatis类声明,没有重构任何Mybatis基础配置类,只需增加一个属性配置即可开启
 - 无缝增强现有Mybatis项目 (+功能),即使现在的项目在使用其他Mybatis框架依旧可增强
@@ -36,11 +36,10 @@
 List<Student> findByNameStartsWithAndAgeBetween(String name,Integer ageStart,Integer ageEnd);
 
 //全新的通用分页方式(非插件实现)
-        Page<Student> page=studentMapper.selectPageP3(new PageImpl<>(2),studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
+Page<Student> page=studentMapper.selectPageP3(new PageImpl<>(2),studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
 
 //全新的通用Count查询(非插件实现)
-        long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetween
-        ,"王",15,19);
+long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetween,"王",15,19);
 
 ```
 
@@ -112,7 +111,6 @@ NoSugar只负责在程序启动的时候把增强的部分加载到Mybatis.启�
 - Spring-boot
 
 ```java
-
 @MapperScan(basePackages = {"com.xxx"}, factoryBean = MybatisMapperFactoryBean.class)
 public class MyBatisConfiguration {
 }
@@ -127,13 +125,13 @@ public class MyBatisConfiguration {
 
 ```java
 @Bean
-public MapperScannerConfigurer mapperScannerConfigurer(){
-        MapperScannerConfigurer mapperScannerConfigurer=new MapperScannerConfigurer();
-        mapperScannerConfigurer.setBasePackage("com.xxx");
-        mapperScannerConfigurer.setSqlSessionFactoryBeanName("xxx");
-        mapperScannerConfigurer.setMapperFactoryBeanClass(MybatisMapperFactoryBean.class);
-        return mapperScannerConfigurer;
-        }
+public MapperScannerConfigurer mapperScannerConfigurer() {
+    MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+    mapperScannerConfigurer.setBasePackage("com.xxx");
+    mapperScannerConfigurer.setSqlSessionFactoryBeanName("xxx");
+    mapperScannerConfigurer.setMapperFactoryBeanClass(MybatisMapperFactoryBean.class);
+    return mapperScannerConfigurer;
+}
 ```
 
 ##### 基于`spring.xml`
@@ -143,7 +141,6 @@ public MapperScannerConfigurer mapperScannerConfigurer(){
 - 基于Xml配置的Spring环境
 
 ```xml
-
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
     <property name="basePackage" value="com.xxx"/>
     <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>

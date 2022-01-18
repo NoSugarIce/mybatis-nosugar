@@ -25,6 +25,9 @@ import com.nosugarice.mybatis.mapper.select.SelectPageMapper;
 import com.nosugarice.mybatis.util.LambdaUtils;
 import com.nosugarice.mybatis.util.LambdaUtils.LambdaInfo;
 import com.nosugarice.mybatis.util.Preconditions;
+import org.apache.ibatis.binding.MapperProxy;
+import org.apache.ibatis.cache.decorators.LruCache;
+import org.apache.ibatis.cache.impl.PerpetualCache;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
@@ -34,8 +37,10 @@ import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.session.Configuration;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
@@ -44,16 +49,28 @@ import java.util.Map;
  */
 public class AdapterSqlSource implements SqlSource {
 
+    private static final Field MAPPER_INTERFACE_FIELD;
+    private static final LruCache METHOD_PARAM_NAME_CACHE;
+
     private final Configuration configuration;
     private final ProviderAdapter.Type adapterType;
     private final Dialect dialect;
-
-    private final Map<LambdaInfo, String[]> methodParamNameMap = new HashMap<>();
 
     public AdapterSqlSource(Configuration configuration, ProviderAdapter.Type adapterType, Dialect dialect) {
         this.configuration = configuration;
         this.adapterType = adapterType;
         this.dialect = dialect;
+    }
+
+    static {
+        try {
+            MAPPER_INTERFACE_FIELD = MapperProxy.class.getDeclaredField("mapperInterface");
+            MAPPER_INTERFACE_FIELD.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new NoSugarException(e);
+        }
+        METHOD_PARAM_NAME_CACHE = new LruCache(new PerpetualCache("METHOD_PARAM_NAME_CACHE"));
+        METHOD_PARAM_NAME_CACHE.setSize(2048);
     }
 
     @Override
@@ -62,12 +79,16 @@ public class AdapterSqlSource implements SqlSource {
         Map<?, ?> parameterMap = ((Map<?, ?>) parameterObject);
 
         Object mapperFunction = parameterMap.get(MapperParam.MAPPER_FUNCTION);
-
         LambdaInfo lambdaInfo = LambdaUtils.getLambdaInfo((Serializable) mapperFunction);
         String functionalName = lambdaInfo.getMethodName();
         String className = lambdaInfo.getClassName();
-
         String statementId = className + "." + functionalName;
+        if (!configuration.hasStatement(statementId)) {
+            Class<?> targetMapperClass = getTargetMapperClass(lambdaInfo.getFirstCapturedArg());
+            Preconditions.checkNotNull(targetMapperClass, functionalName + "未获取到真实Mapper类型.");
+            className = targetMapperClass.getName();
+            statementId = className + "." + functionalName;
+        }
         Preconditions.checkArgument(configuration.hasStatement(statementId), functionalName + "没有构建Statement.");
         Preconditions.checkArgument(configuration.getMappedStatement(statementId, false)
                 .getSqlCommandType() == SqlCommandType.SELECT, functionalName + "不支持桥接方式.");
@@ -93,7 +114,11 @@ public class AdapterSqlSource implements SqlSource {
             boundSql = createNewBoundSql(configuration, existsStr, originalBoundSql);
         }
         Preconditions.checkNotNull(boundSql, "未找到桥接BoundSql!");
-        String[] methodParamNames = methodParamNameMap.computeIfAbsent(lambdaInfo, this::getMethodParamNames);
+        String[] methodParamNames = (String[]) METHOD_PARAM_NAME_CACHE.getObject(statementId);
+        if (methodParamNames == null) {
+            methodParamNames = getMethodParamNames(lambdaInfo);
+            METHOD_PARAM_NAME_CACHE.putObject(statementId, methodParamNames);
+        }
 
         setBoundSqlParameter(boundSql, methodParamNames, params);
         return boundSql;
@@ -127,6 +152,21 @@ public class AdapterSqlSource implements SqlSource {
             boundSql.setAdditionalParameter(parameterMapping.getProperty(), parameter);
         }
         return boundSql;
+    }
+
+    private static Class<?> getTargetMapperClass(Object obj) {
+        if (obj != null && Proxy.isProxyClass(obj.getClass())) {
+            InvocationHandler invocationHandler = Proxy.getInvocationHandler(obj);
+            if (invocationHandler instanceof MapperProxy) {
+                MapperProxy<?> mapperProxy = (MapperProxy<?>) invocationHandler;
+                try {
+                    return (Class<?>) MAPPER_INTERFACE_FIELD.get(mapperProxy);
+                } catch (Exception e) {
+                    throw new NoSugarException(e);
+                }
+            }
+        }
+        return null;
     }
 
 }
