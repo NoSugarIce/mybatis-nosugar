@@ -8,37 +8,22 @@ CREATE TABLE movie
     release_date DATE         NOT NULL,
     ordinal      INTEGER      NOT NULL,
     score        DOUBLE       NOT NULL,
-    category     VARCHAR(20) NULL,
+    category     VARCHAR(20)  NULL,
     PRIMARY KEY (id)
 );
 
-INSERT INTO movie
-VALUES (0, '肖申克的救赎', 'US', 142, '1994-09-23', 1, 9.7, '剧情');
-INSERT INTO movie
-VALUES (1, '霸王别姬', 'CHN', 171, '1993-07-26', 2, 9.6, '剧情');
-INSERT INTO movie
-VALUES (2, '阿甘正传 ', 'US', 142, '1994-06-23', 3, 9.5, '剧情');
-INSERT INTO movie
-VALUES (3, '美丽人生 ', 'IT', 116, '1997-12-20', 4, 9.6, '');
-INSERT INTO movie
-VALUES (4, '千与千寻 ', 'JP', 125, '2001-07-20', 5, 9.4, '奇幻');
-INSERT INTO movie
-VALUES (5, '泰坦尼克号 ', 'US', 194, '1997-12-19', 6, 9.4, '爱情');
-INSERT INTO movie
-VALUES (6, '这个杀手不太冷', 'FR', 133, '1994-09-14', 7, 9.4, '犯罪');
-INSERT INTO movie
-VALUES (7, '星际穿越', 'US', 169, '2014-11-12', 8, 9.4, '科幻');
-INSERT INTO movie
-VALUES (8, '无间道', 'CHN', 101, '2003-09-05', 9, 9.3, '犯罪');
-INSERT INTO movie
-VALUES (9, '疯狂动物城', 'US', 109, '2016-03-04', 10, 9.2, '喜剧');
-INSERT INTO movie
-VALUES (10, '机器人总动员', 'US', 98, '2008-06-27', 11, 9.3, '动画');
-INSERT INTO movie
-VALUES (11, '罗马假日', 'US', 118, '1953-08-20', 12, 9.1, '爱情');
-INSERT INTO movie
-VALUES (12, '大话西游之大圣娶亲', 'CHN', 95, '1995-02-04', 13, 9.2, '剧情');
-INSERT INTO movie
-VALUES (13, '大话西游之月光宝盒', 'CHN', 87, '1995-01-21', 14, 9.0, '喜剧');
-INSERT INTO movie
-VALUES (14, '指环王3', 'US', 201, '2003-12-17', 15, 9.3, null);
+INSERT INTO movie VALUES (0, '肖申克的救赎', 'US', 142, '1994-09-23', 1, 9.7, '剧情');
+INSERT INTO movie VALUES (1, '霸王别姬', 'CHN', 171, '1993-07-26', 2, 9.6, '剧情');
+INSERT INTO movie VALUES (2, '阿甘正传 ', 'US', 142, '1994-06-23', 3, 9.5, '剧情');
+INSERT INTO movie VALUES (3, '美丽人生 ', 'IT', 116, '1997-12-20', 4, 9.6, '');
+INSERT INTO movie VALUES (4, '千与千寻 ', 'JP', 125, '2001-07-20', 5, 9.4, '奇幻');
+INSERT INTO movie VALUES (5, '泰坦尼克号 ', 'US', 194, '1997-12-19', 6, 9.4, '爱情');
+INSERT INTO movie VALUES (6, '这个杀手不太冷', 'FR', 133, '1994-09-14', 7, 9.4, '犯罪');
+INSERT INTO movie VALUES (7, '星际穿越', 'US', 169, '2014-11-12', 8, 9.4, '科幻');
+INSERT INTO movie VALUES (8, '无间道', 'CHN', 101, '2003-09-05', 9, 9.3, '犯罪');
+INSERT INTO movie VALUES (9, '疯狂动物城', 'US', 109, '2016-03-04', 10, 9.2, '喜剧');
+INSERT INTO movie VALUES (10, '机器人总动员', 'US', 98, '2008-06-27', 11, 9.3, '动画');
+INSERT INTO movie VALUES (11, '罗马假日', 'US', 118, '1953-08-20', 12, 9.1, '爱情');
+INSERT INTO movie VALUES (12, '大话西游之大圣娶亲', 'CHN', 95, '1995-02-04', 13, 9.2, '剧情');
+INSERT INTO movie VALUES (13, '大话西游之月光宝盒', 'CHN', 87, '1995-01-21', 14, 9.0, '喜剧');
+INSERT INTO movie VALUES (14, '指环王3', 'US', 201, '2003-12-17', 15, 9.3, null);

@@ -35,7 +35,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      * @return 总数
      */
     default long countP0(FunS.Param0<List<T>> selectFunction) {
-        return adapterCount(selectFunction);
+        return adapterCount(selectFunction).longValue();
     }
 
     /**
@@ -47,7 +47,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      * @return 总数
      */
     default <X1> long countP1(FunS.Param1<X1, List<T>> selectFunction, X1 params) {
-        return adapterCount(selectFunction, params);
+        return adapterCount(selectFunction, params).longValue();
     }
 
     /**
@@ -61,7 +61,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      * @return 总数
      */
     default <X1, X2> long countP2(FunS.Param2<X1, X2, List<T>> selectFunction, X1 params1, X2 params2) {
-        return adapterCount(selectFunction, params1, params2);
+        return adapterCount(selectFunction, params1, params2).longValue();
     }
 
     /**
@@ -78,7 +78,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      */
     default <X1, X2, X3> long countP3(FunS.Param3<X1, X2, X3, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3) {
-        return adapterCount(selectFunction, params1, params2, params3);
+        return adapterCount(selectFunction, params1, params2, params3).longValue();
     }
 
     /**
@@ -97,7 +97,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      */
     default <X1, X2, X3, X4> long countP4(FunS.Param4<X1, X2, X3, X4, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4) {
-        return adapterCount(selectFunction, params1, params2, params3, params4);
+        return adapterCount(selectFunction, params1, params2, params3, params4).longValue();
     }
 
     /**
@@ -118,7 +118,7 @@ public interface SelectCountMapper<T> extends SelectMapper {
      */
     default <X1, X2, X3, X4, X5> long countP5(FunS.Param5<X1, X2, X3, X4, X5, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4, X5 params5) {
-        return adapterCount(selectFunction, params1, params2, params3, params4, params5);
+        return adapterCount(selectFunction, params1, params2, params3, params4, params5).longValue();
     }
 
 }

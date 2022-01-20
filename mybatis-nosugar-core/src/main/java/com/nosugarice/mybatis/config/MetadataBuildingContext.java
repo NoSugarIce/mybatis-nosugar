@@ -122,15 +122,17 @@ public class MetadataBuildingContext {
 
     private Dialect getDialect(Configuration configuration) {
         String databaseName;
+        int version;
         try (Connection connection = configuration.getEnvironment().getDataSource().getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             //Arrays.stream(metaData.getSQLKeywords().split(",")).forEach(ReservedWords.SQL::registerKeyword);
             databaseName = metaData.getDatabaseProductName();
+            version = metaData.getDatabaseMajorVersion();
         } catch (SQLException e) {
             throw new BuilderException(e);
         }
         //TODO 可能会有问题,没有一一验证
-        return new DialectRegistry().getObject(databaseName);
+        return new DialectRegistry().chooseDialect(databaseName, version);
     }
 
     private void registryBean(RelationalConfig relationalConfig) {

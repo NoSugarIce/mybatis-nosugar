@@ -27,6 +27,11 @@ import com.nosugarice.mybatis.util.StringFormatter;
 public class SqlServer2012Dialect extends SqlServerDialect {
 
     @Override
+    public boolean supportsVersion(int version) {
+        return version > 8;
+    }
+
+    @Override
     public Limitable getLimitHandler() {
         return LimitHolder.LIMITABLE_INSTANCE;
     }

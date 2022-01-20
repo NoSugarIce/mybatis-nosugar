@@ -40,7 +40,7 @@ public interface SelectMapper extends AdapterMapper, Mapper {
      * @return
      */
     @ProviderAdapter(value = ProviderAdapter.Type.COUNT)
-    long adapterCount(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
+    Number adapterCount(@Param(MapperParam.MAPPER_FUNCTION) FunS<?> funS, @Param(MapperParam.PARAMS) Object... params);
 
     /**
      * 桥接 EXISTS 查询

@@ -25,6 +25,16 @@ import com.nosugarice.mybatis.sql.SQLConstants;
 public interface Dialect {
 
     /**
+     * 是否适配版本
+     *
+     * @param version
+     * @return
+     */
+    default boolean supportsVersion(int version) {
+        return true;
+    }
+
+    /**
      * 处理数据库关键字
      *
      * @param name

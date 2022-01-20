@@ -140,7 +140,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      */
     default Page<T> selectPage(Page<T> page, FunS<List<T>> selectFunction, Object... params) {
         Assert.notNull(page, "Page不能为空.");
-        long count = page.getTotal() > 0 ? page.getTotal() : adapterCount(selectFunction, params);
+        long count = page.getTotal() > 0 ? page.getTotal() : adapterCount(selectFunction, params).longValue();
         page.setTotal(count);
         if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
             try {

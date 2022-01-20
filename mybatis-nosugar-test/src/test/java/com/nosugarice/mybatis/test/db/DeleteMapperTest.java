@@ -1,8 +1,7 @@
-package com.nosugarice.mybatis.test.crud;
+package com.nosugarice.mybatis.test.db;
 
 import com.nosugarice.mybatis.criteria.CriteriaBuilder;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaDelete;
-import com.nosugarice.mybatis.test.BaseMapperTest;
 import com.nosugarice.mybatis.test.base.mode.StatusEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,11 +13,11 @@ import java.util.Arrays;
  * @author dingjingyang@foxmail.com
  * @date 2021/7/20
  */
-class DeleteMapperTest extends BaseMapperTest {
+public abstract class DeleteMapperTest extends BaseDbMapperTest {
 
     @Test
     void deleteById() {
-        StudentMapper mapper = getMapper(StudentMapper.class);
+        StudentMapper mapper = getMapper();
         int delete = mapper.deleteById("002f2dcb10ba4be0adc333cecb886111");
         Assertions.assertEquals(1, delete);
         boolean exists = mapper.selectById("002f2dcb10ba4be0adc333cecb886111").isPresent();
@@ -27,7 +26,7 @@ class DeleteMapperTest extends BaseMapperTest {
 
     @Test
     void deleteByIds() {
-        StudentMapper mapper = getMapper(StudentMapper.class);
+        StudentMapper mapper = getMapper();
         int delete = mapper.deleteByIds(
                 Arrays.asList("002f2dcb10ba4be0adc333cecb886111", "002f2dcb10ba4be0adc333cecb896118"));
         Assertions.assertEquals(2, delete);
@@ -38,7 +37,7 @@ class DeleteMapperTest extends BaseMapperTest {
 
     @Test
     void defaultDeleteByIds() {
-        StudentMapper mapper = getMapper(StudentMapper.class);
+        StudentMapper mapper = getMapper();
         int delete = mapper.deleteByIds("002f2dcb10ba4be0adc333cecb886111", "002f2dcb10ba4be0adc333cecb896118");
         Assertions.assertEquals(2, delete);
 
@@ -48,9 +47,9 @@ class DeleteMapperTest extends BaseMapperTest {
 
     @Test
     void delete() {
-        StudentMapper mapper = getMapper(StudentMapper.class);
+        StudentMapper mapper = getMapper();
 
-        LambdaDelete<Student> query = CriteriaBuilder.lambdaDelete(Student.class);
+        LambdaDelete<Student> query = CriteriaBuilder.lambdaDelete(getEntityClass());
         query.equalTo(Student::getStatus, StatusEnum.ON)
                 .between(Student::getAge, 10, 30)
                 .lessThan(Student::getCardBalance, new BigDecimal("200"));
@@ -61,36 +60,13 @@ class DeleteMapperTest extends BaseMapperTest {
 
     @Test
     void deleteByEntity() {
-        StudentMapper mapper = getMapper(StudentMapper.class);
+        StudentMapper mapper = getMapper();
 
-        Student student = new Student();
+        Student student = crateEntity();
         student.setStatus(StatusEnum.OFF);
 
         int delete = mapper.delete(student);
         Assertions.assertEquals(1, delete);
     }
 
-
-    @Override
-    public String[] withScriptPath() {
-        return new String[]{
-                "/db/student_schema.sql"
-        };
-    }
-
-    @Override
-    public String[] withScript() {
-        return new String[]{
-                "INSERT INTO student VALUES ('002f2dcb10ba4be0adc333cecb886111', '张三', 12, 1, '10021', '18600509022', '南京', 0.00, 0, 0,'2021-07-03 14:46:23', NULL, NULL);",
-                "INSERT INTO student VALUES ('002f2dcb10ba4be0adc333cecb896118', '李四', 20, 1, '10022', '18600509025', '驻马店', 100.00, 0, 0,'2021-07-03 14:46:23', NULL, NULL);",
-                "INSERT INTO student VALUES ('002f2dcb10ba4be0adc333cecb896925', '王五', 25, 1, '10023', '18600509026', '白鹿原', 0.00, 1, 0,'2021-07-03 14:46:23', NULL, NULL);"
-        };
-    }
-
-    @Override
-    public Class<?>[] withMapper() {
-        return new Class<?>[]{
-                StudentMapper.class
-        };
-    }
 }

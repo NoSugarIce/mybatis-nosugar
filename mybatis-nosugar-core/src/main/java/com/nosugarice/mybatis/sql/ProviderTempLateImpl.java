@@ -233,10 +233,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             }
             Object value = columnValues.get(property.getColumn());
             if (value == null) {
-                if (property.isNullable()) {
-                    continue;
-                }
-                if (property.getValue().insertHandler() == null) {
+                if (!property.isNullable() && property.getValue().insertHandler() == null) {
                     throw new IllegalArgumentException("[" + property.getName() + "]不能为空.");
                 }
             }

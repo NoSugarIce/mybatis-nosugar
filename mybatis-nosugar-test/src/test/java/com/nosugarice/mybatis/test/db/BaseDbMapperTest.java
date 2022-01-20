@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.nosugarice.mybatis.test;
+package com.nosugarice.mybatis.test.db;
 
 import com.nosugarice.mybatis.builder.MapperBuilder;
 import com.nosugarice.mybatis.config.MapperBuilderConfigBuilder;
@@ -28,7 +28,6 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,7 +35,7 @@ import java.util.Properties;
  * @author dingjingyang@foxmail.com
  * @date 2021/7/6
  */
-public abstract class BaseMapperTest {
+public abstract class BaseDbMapperTest implements MapperTest {
 
     private SqlSession sqlSession;
 
@@ -62,10 +61,6 @@ public abstract class BaseMapperTest {
         sqlSession.close();
     }
 
-    public Map<String, String> getProperties() {
-        return null;
-    }
-
     private Properties properties() {
         Properties properties = new Properties();
         Map<String, String> propertyMap = getProperties();
@@ -75,27 +70,22 @@ public abstract class BaseMapperTest {
         return properties;
     }
 
-    public abstract String[] withScriptPath();
-
-    public String[] withScript() {
-        return new String[0];
+    public Student crateEntity() {
+        return new Student();
     }
 
-    public abstract Class<?>[] withMapper();
-
-    public <T> T getMapper(Class<T> mapperClass) {
-        return sqlSession.getMapper(mapperClass);
+    public Class<Student> getEntityClass() {
+        return Student.class;
     }
 
-    public DataSource getDataSource() {
-        return new DataSourceBuild()
-                .withJdbcDriver("org.hsqldb.jdbcDriver")
-                .withJdbcUrl("jdbc:hsqldb:mem:aname")
-                .withUsername("sa")
-                .withPassword("")
-                .withScriptPath(withScriptPath())
-                .withScript(withScript())
-                .build();
+    public Class<?>[] withMapper() {
+        return new Class<?>[]{
+                StudentMapper.class
+        };
+    }
+
+    public StudentMapper getMapper() {
+        return sqlSession.getMapper(StudentMapper.class);
     }
 
 }

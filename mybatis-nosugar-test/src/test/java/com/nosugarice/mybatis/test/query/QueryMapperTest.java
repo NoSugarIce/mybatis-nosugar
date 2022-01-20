@@ -520,7 +520,7 @@ class QueryMapperTest extends BaseMapperTest {
         MovieMapper mapper = getMapper(MovieMapper.class);
 
         long count = mapper.adapterCount((FunS.Param3<String, Double, String, List<Movie>>)
-                mapper::findByLocationAndScoreGreaterThanAndCategoryContains, "US", 9.0, "情");
+                mapper::findByLocationAndScoreGreaterThanAndCategoryContains, "US", 9.0, "情").longValue();
         Assertions.assertEquals(4, count);
     }
 
