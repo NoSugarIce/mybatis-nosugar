@@ -56,97 +56,79 @@ public class CriteriaBuilder {
     //---------------------------lambda---------------------------------------
 
     public static <T> LambdaQuery<T> lambdaQuery(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<LambdaQuery<T>>() {
-        });
+        return lambdaCriteria(entityClass, new TypeToken<LambdaQuery<T>>() {});
     }
 
     public static <T> LambdaQuery<T> lambdaQuery(T entity) {
-        return lambdaCriteria(entity, new TypeToken<LambdaQuery<T>>() {
-        });
+        return lambdaCriteria(entity, new TypeToken<LambdaQuery<T>>() {});
     }
 
     public static <T> LambdaUpdate<T> lambdaUpdate(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<LambdaUpdate<T>>() {
-        });
+        return lambdaCriteria(entityClass, new TypeToken<LambdaUpdate<T>>() {});
     }
 
     public static <T> LambdaUpdate<T> lambdaUpdate(T entity) {
-        return lambdaCriteria(entity, new TypeToken<LambdaUpdate<T>>() {
-        });
+        return lambdaCriteria(entity, new TypeToken<LambdaUpdate<T>>() {});
     }
 
     public static <T> LambdaDelete<T> lambdaDelete(Class<T> entityClass) {
-        return lambdaCriteria(entityClass, new TypeToken<LambdaDelete<T>>() {
-        });
+        return lambdaCriteria(entityClass, new TypeToken<LambdaDelete<T>>() {});
     }
 
     public static <T> LambdaDelete<T> lambdaDelete(T entity) {
-        return lambdaCriteria(entity, new TypeToken<LambdaDelete<T>>() {
-        });
+        return lambdaCriteria(entity, new TypeToken<LambdaDelete<T>>() {});
     }
 
     //---------------------------property---------------------------------------
 
     public static <T> PropertyQuery<T> propertyQuery(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<PropertyQuery<T>>() {
-        });
+        return propertyCriteria(entityClass, new TypeToken<PropertyQuery<T>>() {});
     }
 
     public static <T> PropertyQuery<T> propertyQuery(T entity) {
-        return propertyCriteria(entity, new TypeToken<PropertyQuery<T>>() {
-        });
+        return propertyCriteria(entity, new TypeToken<PropertyQuery<T>>() {});
     }
 
     public static <T> PropertyUpdate<T> propertyUpdate(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<PropertyUpdate<T>>() {
-        });
+        return propertyCriteria(entityClass, new TypeToken<PropertyUpdate<T>>() {});
     }
 
     public static <T> PropertyUpdate<T> propertyUpdate(T entity) {
-        return propertyCriteria(entity, new TypeToken<PropertyUpdate<T>>() {
-        });
+        return propertyCriteria(entity, new TypeToken<PropertyUpdate<T>>() {});
     }
 
     public static <T> PropertyDelete<T> propertyDelete(Class<T> entityClass) {
-        return propertyCriteria(entityClass, new TypeToken<PropertyDelete<T>>() {
-        });
+        return propertyCriteria(entityClass, new TypeToken<PropertyDelete<T>>() {});
     }
 
     public static <T> PropertyDelete<T> propertyDelete(T entity) {
-        return propertyCriteria(entity, new TypeToken<PropertyDelete<T>>() {
-        });
+        return propertyCriteria(entity, new TypeToken<PropertyDelete<T>>() {});
     }
 
     //---------------------------column---------------------------------------
 
     public static <T> ColumnQuery<T> columnQuery(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<ColumnQuery<T>>() {
-        });
+        return columnCriteria(entityClass, new TypeToken<ColumnQuery<T>>() {});
     }
 
     public static <T> ColumnQuery<T> columnQuery(T entity) {
-        return columnCriteria(entity, new TypeToken<ColumnQuery<T>>() {
-        });
+        return columnCriteria(entity, new TypeToken<ColumnQuery<T>>() {});
     }
 
     public static <T> ColumnUpdate<T> columnUpdate(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<ColumnUpdate<T>>() {
-        });
+        return columnCriteria(entityClass, new TypeToken<ColumnUpdate<T>>() {});
     }
 
     public static <T> ColumnUpdate<T> columnUpdate(T entity) {
-        return columnCriteria(entity, new TypeToken<ColumnUpdate<T>>() {
-        });
+        return columnCriteria(entity, new TypeToken<ColumnUpdate<T>>() {});
     }
 
     public static <T> ColumnDelete<T> columnDelete(Class<T> entityClass) {
-        return columnCriteria(entityClass, new TypeToken<ColumnDelete<T>>() {
-        });
+        return columnCriteria(entityClass, new TypeToken<ColumnDelete<T>>() {});
     }
 
     public static <T> ColumnDelete<T> columnDelete(T entity) {
-        return columnCriteria(entity, new TypeToken<ColumnDelete<T>>() {
-        });
+        return columnCriteria(entity, new TypeToken<ColumnDelete<T>>() {});
     }
 
     //---------------------------------未确定类型构建----------------------------------------

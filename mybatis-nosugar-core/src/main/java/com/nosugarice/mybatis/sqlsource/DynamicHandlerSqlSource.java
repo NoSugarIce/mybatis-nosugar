@@ -30,9 +30,20 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.SqlSource;
+import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +55,8 @@ import java.util.function.Function;
  * @date 2021/10/30
  */
 public class DynamicHandlerSqlSource implements SqlSource {
+
+    private static final Map<Class<?>, JdbcType> JDBC_TYPE_MAP;
 
     private final SqlCommandType sqlCommandType;
 
@@ -75,6 +88,37 @@ public class DynamicHandlerSqlSource implements SqlSource {
         this.providerFun = providerFun;
         this.sqlSourceScriptBuilder = sqlSourceScriptBuilder;
         this.fixedParameter = fixedParameter;
+    }
+
+    static {
+        JDBC_TYPE_MAP = new HashMap<>(27);
+        JDBC_TYPE_MAP.put(BigDecimal.class, JdbcType.NUMERIC);
+        JDBC_TYPE_MAP.put(BigInteger.class, JdbcType.BIGINT);
+        JDBC_TYPE_MAP.put(boolean.class, JdbcType.BOOLEAN);
+        JDBC_TYPE_MAP.put(Boolean.class, JdbcType.BOOLEAN);
+        JDBC_TYPE_MAP.put(byte[].class, JdbcType.VARBINARY);
+        JDBC_TYPE_MAP.put(byte.class, JdbcType.TINYINT);
+        JDBC_TYPE_MAP.put(Byte.class, JdbcType.TINYINT);
+        JDBC_TYPE_MAP.put(Calendar.class, JdbcType.TIMESTAMP);
+        JDBC_TYPE_MAP.put(java.sql.Date.class, JdbcType.DATE);
+        JDBC_TYPE_MAP.put(java.util.Date.class, JdbcType.TIMESTAMP);
+        JDBC_TYPE_MAP.put(double.class, JdbcType.DOUBLE);
+        JDBC_TYPE_MAP.put(Double.class, JdbcType.DOUBLE);
+        JDBC_TYPE_MAP.put(float.class, JdbcType.REAL);
+        JDBC_TYPE_MAP.put(Float.class, JdbcType.REAL);
+        JDBC_TYPE_MAP.put(int.class, JdbcType.INTEGER);
+        JDBC_TYPE_MAP.put(Integer.class, JdbcType.INTEGER);
+        JDBC_TYPE_MAP.put(LocalDate.class, JdbcType.DATE);
+        JDBC_TYPE_MAP.put(LocalDateTime.class, JdbcType.TIMESTAMP);
+        JDBC_TYPE_MAP.put(LocalTime.class, JdbcType.TIME);
+        JDBC_TYPE_MAP.put(long.class, JdbcType.BIGINT);
+        JDBC_TYPE_MAP.put(Long.class, JdbcType.BIGINT);
+        JDBC_TYPE_MAP.put(OffsetDateTime.class, JdbcType.TIMESTAMP_WITH_TIMEZONE);
+        JDBC_TYPE_MAP.put(OffsetTime.class, JdbcType.TIME_WITH_TIMEZONE);
+        JDBC_TYPE_MAP.put(Short.class, JdbcType.SMALLINT);
+        JDBC_TYPE_MAP.put(String.class, JdbcType.VARCHAR);
+        JDBC_TYPE_MAP.put(Time.class, JdbcType.TIME);
+        JDBC_TYPE_MAP.put(Timestamp.class, JdbcType.TIMESTAMP);
     }
 
     public void addSqlHandler(Function<String, String> sqlHandler) {
@@ -135,6 +179,7 @@ public class DynamicHandlerSqlSource implements SqlSource {
             if (typeHandlerType != null) {
                 builder.typeHandler(buildingContext.getConfiguration().getTypeHandlerRegistry().getTypeHandler(typeHandlerType));
             }
+            builder.jdbcType(JDBC_TYPE_MAP.get(propertyType));
             ParameterMapping parameterMapping = builder.build();
             if (property != null && parameterColumnBind.isCanHandle()) {
                 ValueHandler<?> valueHandler = null;

@@ -71,7 +71,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 符合条件的记录数
      */
     default <C> long count(CriteriaQuery<T, C> criteria) {
-        return adapterCount((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria);
+        return adapterCount((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria).longValue();
     }
 
 

@@ -27,6 +27,11 @@ import com.nosugarice.mybatis.util.StringFormatter;
 public class SqlServerDialect implements Dialect {
 
     @Override
+    public boolean supportsVersion(int version) {
+        return version <= 8;
+    }
+
+    @Override
     public String processKeywords(String name) {
         return "[" + name + "]";
     }
@@ -142,7 +147,7 @@ public class SqlServerDialect implements Dialect {
         }
 
         public String removeSelect(String sql) {
-            return sql.substring(sql.toUpperCase().indexOf("SELECT"));
+            return sql.substring("SELECT".length());
         }
 
     }

@@ -4,14 +4,14 @@
 
 当年刚出道的时候写的Mybatis模板Xml已然跟不上时代.其他工具又不顺手.
 
-天下武功,无坚不破,唯快不破.开发此项目的原因之一就是需要启动快一点,运行快一点.
+天下武功,无坚不破,唯快不破.开发此项目的原因之一就是需要上手快一点,启动快一点,运行快一点,内存占用小一点.
 
 希望为开发者提供简单易用功能完善的Api.NoSugar只做Mybatis增强这一件事.NoSugar并没有实现Jpa,时间精力有限,只实现了Jpa根据方法名查询的功能.
 
 ## 功能概览
 
 - 无糖配方
-- 开放大量接口给与开发者很大的自由度,让开发者根据自己的程序适配.不必千篇一律.
+- 开放大量接口给与开发者很大的自由度,让开发者根据自己的程序适配.不必千篇一律
 - 性能非常丝滑,大部分功能超越动态标签,参数越多性能提升越明显
 - 使用简单,不影响原有项目,无需修改原Mybatis类声明,没有重构任何Mybatis基础配置类,只需增加一个属性配置即可开启
 - 无缝增强现有Mybatis项目 (+功能),即使现在的项目在使用其他Mybatis框架依旧可增强
@@ -101,7 +101,7 @@ NoSugar项目Maven引用Spring相关的依赖作用范围是`provided`,使用时
 
 NoSugar只负责在程序启动的时候把增强的部分加载到Mybatis.启动的部分依旧交由官方的Mybatis-Spring,MyBatis-Spring-Boot负责.
 
-只需要在原来`Mybatis-Spring`配置的基础上把`factoryBean`替换成NoSugar中的`MybatisMapperFactoryBean`,即可体验所有功能.
+只需要在原来`Mybatis-Spring`配置的基础上把`factoryBean`替换成NoSugar中的`MybatisMapperFactoryBean`,即可开启所有功能.
 
 ##### 基于`@MapperScan`注解
 

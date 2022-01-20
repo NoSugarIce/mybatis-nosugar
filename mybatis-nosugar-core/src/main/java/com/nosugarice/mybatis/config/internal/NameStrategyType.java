@@ -86,6 +86,14 @@ public enum NameStrategyType implements NameStrategy {
         }
     },
 
+    /** 驼峰转下划线大写 */
+    CAMEL_TO_UNDERSCORE_UPPERCASE {
+        @Override
+        public String conversion(String originalStr) {
+            return CAMEL_TO_UNDERSCORE.conversion(originalStr).toUpperCase();
+        }
+    },
+
     /** 首字母小写 */
     LOWERCASE_FIRST {
         @Override

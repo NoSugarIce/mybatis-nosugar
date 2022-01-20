@@ -75,6 +75,10 @@ public class BeanRegistry<T> {
         }
     }
 
+    public boolean containsType(String name) {
+        return typeMap.containsKey(name.toUpperCase());
+    }
+
     public T getObject(String name) {
         return objMap.computeIfAbsent(name.toUpperCase(), nameTemp -> {
             Class<? extends T> clazz = typeMap.get(nameTemp);
