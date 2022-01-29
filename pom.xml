@@ -34,12 +34,13 @@
     </developers>
 
     <scm>
-        <url></url>
-        <connection></connection>
-        <developerConnection></developerConnection>
+        <url>https://github.com/NoSugarIce/mybatis-nosugar</url>
+        <connection>scm:git:ssh://github.com/NoSugarIce/mybatis-nosugar.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/NoSugarIce/mybatis-nosugar.git</developerConnection>
     </scm>
     <issueManagement>
-        <url></url>
+        <system>GitHub Issue Management</system>
+        <url>https://github.com/NoSugarIce/mybatis-nosugar/issues</url>
     </issueManagement>
 
     <properties>
@@ -48,12 +49,12 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <mybatis.version>3.5.8</mybatis.version>
+        <mybatis.version>3.5.9</mybatis.version>
         <mybatis-spring.version>2.0.6</mybatis-spring.version>
-        <spring.version>5.3.14</spring.version>
+        <spring.version>5.3.15</spring.version>
         <javax.persistence.version>2.2</javax.persistence.version>
 
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.9.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -89,10 +90,6 @@
         </pluginManagement>
 
         <resources>
-            <resource>
-                <directory>${project.basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
             <resource>
                 <directory>${project.basedir}</directory>
                 <targetPath>META-INF</targetPath>

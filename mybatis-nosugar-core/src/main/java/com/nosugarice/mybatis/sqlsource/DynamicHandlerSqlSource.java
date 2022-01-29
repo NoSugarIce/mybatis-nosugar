@@ -139,7 +139,6 @@ public class DynamicHandlerSqlSource implements SqlSource {
 
     @Override
     public BoundSql getBoundSql(Object parameterObject) {
-        Object[] params = getOriginalParameters(parameterObject, parameterNames);
         if (fixedParameter) {
             if (sqlAndParameterBindCache == null) {
                 SqlAndParameterBind sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFun, SqlSourceScriptBuilder.PLACEHOLDER_OBJECT);
@@ -152,6 +151,7 @@ public class DynamicHandlerSqlSource implements SqlSource {
                     .apply(parameterObject, sqlAndParameterBindCache.getParameterBind().getParameterColumnBinds(), boundSql);
             return boundSql;
         } else {
+            Object[] params = getOriginalParameters(parameterObject, parameterNames);
             SqlAndParameterBind sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFun, params);
             List<ParameterMapping> parameterMappings = getParameterMappings(sqlAndParameterBind.getParameterBind().getParameterColumnBinds());
             BoundSql boundSql = new BoundSql(buildingContext.getConfiguration(), sqlHandler(sqlAndParameterBind.getSql())
