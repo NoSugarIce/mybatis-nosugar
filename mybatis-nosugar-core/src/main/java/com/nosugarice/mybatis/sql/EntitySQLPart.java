@@ -53,8 +53,13 @@ public class EntitySQLPart {
         StringBuilder sqlBuilder = new StringBuilder();
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
             String safeColumn = SQLPart.safeColumnName(property.getColumn(), dialect);
-            sqlBuilder.append(Placeholder.columnAliasState(safeColumn)).append(AS_)
-                    .append("\"").append(property.getName()).append("\"").append(",").append(SPACE);
+            if (property.getName().equals(property.getColumn())) {
+                sqlBuilder.append(Placeholder.columnAliasState(safeColumn));
+            } else {
+                sqlBuilder.append(Placeholder.columnAliasState(safeColumn))
+                        .append(AS_).append("\"").append(property.getName()).append("\"");
+            }
+            sqlBuilder.append(",").append(SPACE);
         }
         return sqlBuilder.toString();
     }

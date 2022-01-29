@@ -78,10 +78,10 @@ public class JpaMapperBuilder extends AbstractMapperBuilder {
 
     private StatementBuilder statementBuilder;
 
-    private static final Map<Class<? extends ColumnCriterion<?>>, Class<? extends TypeHandler<?>>> CRITERION_TYPE_HANDLER_MAP
-            = new HashMap<>();
+    private static final Map<Class<? extends ColumnCriterion<?>>, Class<? extends TypeHandler<?>>> CRITERION_TYPE_HANDLER_MAP;
 
     static {
+        CRITERION_TYPE_HANDLER_MAP = new HashMap<>(3);
         CRITERION_TYPE_HANDLER_MAP.put(Like.StartLike.class, StartLikeTypeHandler.class);
         CRITERION_TYPE_HANDLER_MAP.put(Like.EndLike.class, EenLikeTypeHandler.class);
         CRITERION_TYPE_HANDLER_MAP.put(Like.AnyLike.class, AnyLikeTypeHandler.class);

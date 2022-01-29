@@ -214,8 +214,9 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
                     .map(columns -> columns.stream().filter(column -> !excludeColumnSet.contains(column))
                             .map(ColumnSelection::new).collect(Collectors.toList()));
         }
-        columnSelections.ifPresent(selections -> selections.forEach(selection
-                -> selection.alias(entityMetadata.getPropertyByColumnName(selection.getColumn()).getName())));
+        columnSelections.ifPresent(selections -> selections.stream()
+                .filter(selection -> !selection.getColumn().equals(entityMetadata.getPropertyByColumnName(selection.getColumn()).getName()))
+                .forEach(selection -> selection.alias(entityMetadata.getPropertyByColumnName(selection.getColumn()).getName())));
         return columnSelections;
     }
 
