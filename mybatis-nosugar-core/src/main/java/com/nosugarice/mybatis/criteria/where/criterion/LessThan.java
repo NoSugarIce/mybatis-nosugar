@@ -29,11 +29,7 @@ public class LessThan<T> extends SingleValueCriterion<T, LessThan<T>> {
     }
 
     public LessThan(String column, T value) {
-        super(column, value);
+        super(column, value, OperatorType.LESS_THAN);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.LESS_THAN;
-    }
 }

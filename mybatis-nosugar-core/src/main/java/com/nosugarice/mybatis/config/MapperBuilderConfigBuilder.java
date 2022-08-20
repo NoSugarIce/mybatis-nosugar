@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.config;
 
+import com.nosugarice.mybatis.assign.id.IdGenerator;
 import com.nosugarice.mybatis.builder.mapper.AbstractMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.AdapterMapperBuilder;
 import com.nosugarice.mybatis.builder.mapper.CrudMapperBuilder;
@@ -23,9 +24,10 @@ import com.nosugarice.mybatis.builder.mapper.JpaMapperBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultEntityBuilder;
 import com.nosugarice.mybatis.config.internal.DefaultMapperStrategy;
 import com.nosugarice.mybatis.config.internal.NameStrategyType;
+import com.nosugarice.mybatis.dialect.DefaultDialectFactory;
 import com.nosugarice.mybatis.dialect.Dialect;
+import com.nosugarice.mybatis.dialect.DialectFactory;
 import com.nosugarice.mybatis.exception.NoSugarException;
-import com.nosugarice.mybatis.mapping.id.IdGenerator;
 import com.nosugarice.mybatis.registry.ConfigRegistry;
 import com.nosugarice.mybatis.support.EntityPropertyNameStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
@@ -74,7 +76,9 @@ public class MapperBuilderConfigBuilder {
 
     private static final String SQL_BUILD_CONFIG = "mybatis.no-sugar.sql-build.";
     private static final String SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR = SQL_BUILD_CONFIG + "ignore-empty-char";
+    private static final String SQL_BUILD_CONFIG_DIALECT_FACTORY_CLASS = SQL_BUILD_CONFIG + "dialect-factory-class";
     private static final String SQL_BUILD_CONFIG_DIALECT_CLASS = SQL_BUILD_CONFIG + "dialect-class";
+    private static final String SQL_BUILD_CONFIG_RUNTIME_DIALECT = SQL_BUILD_CONFIG + "runtime-dialect";
 
     private final ConfigRegistry configRegistry;
     private Properties properties;
@@ -124,7 +128,9 @@ public class MapperBuilderConfigBuilder {
         setIdGeneratorTypes(relationalConfig::setIdGenerators);
 
         setPrimitiveValue(SQL_BUILD_CONFIG_IGNORE_EMPTY_CHAR, Boolean::parseBoolean, () -> false, sqlBuildConfig::setIgnoreEmptyChar);
+        setBeanValue(SQL_BUILD_CONFIG_DIALECT_FACTORY_CLASS, DialectFactory.class, DefaultDialectFactory::new, sqlBuildConfig::setDialectFactory);
         setBeanValue(SQL_BUILD_CONFIG_DIALECT_CLASS, Dialect.class, () -> null, sqlBuildConfig::setDialect);
+        setPrimitiveValue(SQL_BUILD_CONFIG_RUNTIME_DIALECT, Boolean::parseBoolean, () -> false, sqlBuildConfig::setRuntimeDialect);
         return config;
     }
 

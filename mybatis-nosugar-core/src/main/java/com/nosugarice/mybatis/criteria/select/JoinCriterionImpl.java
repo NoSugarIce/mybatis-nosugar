@@ -16,8 +16,12 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
-import com.nosugarice.mybatis.criteria.ToColumn;
-import com.nosugarice.mybatis.criteria.where.Operator;
+import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.AggFunction;
+import com.nosugarice.mybatis.criteria.clause.Operator;
+import com.nosugarice.mybatis.criteria.clause.SQLFunction;
+import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.Preconditions;

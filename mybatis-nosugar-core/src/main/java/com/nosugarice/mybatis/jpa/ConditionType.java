@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.jpa;
 
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
+import com.nosugarice.mybatis.criteria.criterion.ColumnCriterion;
 import com.nosugarice.mybatis.criteria.where.criterion.Between;
 import com.nosugarice.mybatis.criteria.where.criterion.Empty;
 import com.nosugarice.mybatis.criteria.where.criterion.EqualTo;

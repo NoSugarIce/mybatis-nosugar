@@ -16,6 +16,9 @@
 
 package com.nosugarice.mybatis.annotation;
 
+import com.nosugarice.mybatis.handler.ValueHandler;
+
+import java.io.Serializable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -42,5 +45,7 @@ public @interface LogicDelete {
 
     //逻辑删除值
     String deleteValue();
+
+    Class<? extends ValueHandler<? extends Serializable>> deleteValueHandler() default ColumnOptions.VoidHandler.class;
 
 }

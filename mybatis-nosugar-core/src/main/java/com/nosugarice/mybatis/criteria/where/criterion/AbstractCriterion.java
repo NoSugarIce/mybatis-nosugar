@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.where.criterion;
 
-import com.nosugarice.mybatis.criteria.where.Criterion;
+import com.nosugarice.mybatis.criteria.criterion.Criterion;
 import com.nosugarice.mybatis.sql.SQLStrategy;
 
 /**
@@ -31,7 +31,7 @@ public abstract class AbstractCriterion<T extends AbstractCriterion<T>> implemen
 
     protected ConnectorType connectorType;
 
-    private SQLStrategy sqlStrategy;
+    private transient SQLStrategy sqlStrategy;
 
     @Override
     public ConnectorType getConnectorType() {

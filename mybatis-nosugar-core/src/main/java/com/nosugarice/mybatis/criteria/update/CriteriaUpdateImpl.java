@@ -17,7 +17,7 @@
 package com.nosugarice.mybatis.criteria.update;
 
 import com.nosugarice.mybatis.criteria.CriteriaUpdate;
-import com.nosugarice.mybatis.criteria.ToColumn;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.criteria.where.AbstractWhere;
 
 import java.util.LinkedHashMap;

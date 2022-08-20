@@ -29,11 +29,7 @@ public class GreaterThan<T> extends SingleValueCriterion<T, GreaterThan<T>> {
     }
 
     public GreaterThan(String column, T value) {
-        super(column, value);
+        super(column, value, OperatorType.GREATER_THAN);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.GREATER_THAN;
-    }
 }

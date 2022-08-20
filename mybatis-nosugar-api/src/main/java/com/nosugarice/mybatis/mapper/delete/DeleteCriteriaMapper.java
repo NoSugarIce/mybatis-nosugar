@@ -32,22 +32,10 @@ public interface DeleteCriteriaMapper<T> extends DeleteMapper {
      * 根据查询的条件进行删除
      *
      * @param criteria
-     * @param logicDelete
      * @return
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE)
-    <C> int delete(@Param(MapperParam.CRITERIA) CriteriaDelete<T, C> criteria, boolean logicDelete);
-
-    /**
-     * 根据查询的条件进行删除
-     *
-     * @param criteria
-     * @param <C>
-     * @return
-     */
-    default <C> int delete(CriteriaDelete<T, C> criteria) {
-        return delete(criteria, false);
-    }
+    <C> int delete(@Param(MapperParam.CRITERIA) CriteriaDelete<T, C> criteria);
 
     /**
      * 根据查询的条件进行删除

@@ -16,8 +16,6 @@
 
 package com.nosugarice.mybatis.criteria;
 
-import com.nosugarice.mybatis.criteria.select.Query;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/4

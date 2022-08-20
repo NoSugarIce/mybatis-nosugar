@@ -45,11 +45,17 @@ public interface ProviderTempLate {
 
     <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria);
 
-    <ID> SqlAndParameterBind deleteById(ID id, boolean logicDelete);
+    <ID> SqlAndParameterBind deleteById(ID id);
 
-    <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids, boolean logicDelete);
+    <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria, boolean logicDelete);
+    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria);
+
+    <ID> SqlAndParameterBind logicDeleteById(ID id);
+
+    <ID> SqlAndParameterBind logicDeleteByIds(Collection<ID> ids);
+
+    <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria);
 
     //--------------jpa------------------------
 

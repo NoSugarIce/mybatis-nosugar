@@ -16,10 +16,10 @@
 
 package com.nosugarice.mybatis.mapping;
 
-import com.nosugarice.mybatis.mapping.value.KeyValue;
-import com.nosugarice.mybatis.mapping.value.LogicDeleteValue;
-import com.nosugarice.mybatis.mapping.value.Value;
-import com.nosugarice.mybatis.mapping.value.VersionValue;
+import com.nosugarice.mybatis.assign.value.KeyValue;
+import com.nosugarice.mybatis.assign.value.LogicDeleteValue;
+import com.nosugarice.mybatis.assign.value.Value;
+import com.nosugarice.mybatis.assign.value.VersionValue;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.type.TypeHandler;
 

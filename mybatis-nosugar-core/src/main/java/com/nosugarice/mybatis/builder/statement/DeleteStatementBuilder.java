@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import org.apache.ibatis.mapping.SqlCommandType;
+import com.nosugarice.mybatis.config.DmlType;
 
 import java.lang.reflect.Method;
 
@@ -30,8 +30,8 @@ public class DeleteStatementBuilder extends StatementBuilder {
     }
 
     @Override
-    public SqlCommandType getSqlCommandType(Method method) {
-        return SqlCommandType.DELETE;
+    public DmlType getDmlType(Method method) {
+        return DmlType.DELETE;
     }
 
 }

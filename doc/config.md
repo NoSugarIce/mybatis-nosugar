@@ -44,9 +44,11 @@ NoSugar配置使用`mybatis.no-sugar`作为前缀.
 
 ### 生成SQL配置
 
-| 前缀:`sql-build` | 说明             | 类型                       | 默认                   |
-| ---------------- | :--------------- | -------------------------- | ---------------------- |
-| `dialect-class`  | 数据库方言实现类 | `Class<? extends Dialect>` | 根据数据库连接自动判断 |
+| 前缀:`sql-build` | 说明          | 类型                       | 默认                                      |
+| --- |:------------| -------------------------- |-----------------------------------------|
+| `dialect-factory-class`  | 数据库方言工厂类    | `Class<? extends DialectFactory>` | DefaultDialectFactory(性能不高,如有性能要求请自己实现) |
+| `dialect-class` | 数据库方言实现类    | `Class<? extends Dialect>` | 根据数据库连接自动判断(第一优先级)                      |
+| `runtime-dialect` | 运行时动态获取方言实现 | `Boolean` | false                                   |
 
 注:
 
@@ -57,6 +59,8 @@ NoSugar配置使用`mybatis.no-sugar`作为前缀.
 `NameStrategy->com.nosugarice.mybatis.support.NameStrategy`
 
 `Dialect->com.nosugarice.mybatis.dialect.Dialect`
+
+`DialectFactory->com.nosugarice.mybatis.dialect.DefaultDialectFactory`
 
 ##### 示例:
 

@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.mapping;
 
-import com.nosugarice.mybatis.mapping.value.KeyValue;
+import com.nosugarice.mybatis.assign.value.KeyValue;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -16,6 +16,8 @@
 
 package com.nosugarice.mybatis.criteria.where;
 
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
+
 import java.util.Optional;
 
 /**
@@ -37,5 +39,12 @@ public interface WhereStructure {
      * @return
      */
     Optional<GroupCriterion> getCriterion();
+
+    /**
+     * 是否包含软删除
+     *
+     * @return
+     */
+    boolean isIncludeLogicDelete();
 
 }

@@ -16,13 +16,12 @@
 
 package com.nosugarice.mybatis.builder.mapper;
 
-import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.builder.statement.StatementBuilder;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
+import com.nosugarice.mybatis.criteria.criterion.ColumnCriterion;
+import com.nosugarice.mybatis.criteria.criterion.CriterionSQLVisitor;
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
 import com.nosugarice.mybatis.criteria.select.OrderByCriterion;
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
-import com.nosugarice.mybatis.criteria.where.CriterionSQLVisitor;
-import com.nosugarice.mybatis.criteria.where.GroupCriterion;
 import com.nosugarice.mybatis.criteria.where.criterion.GroupCriterionImpl;
 import com.nosugarice.mybatis.criteria.where.criterion.Like;
 import com.nosugarice.mybatis.domain.Page;
@@ -41,6 +40,7 @@ import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 import com.nosugarice.mybatis.sql.render.AbstractRenderingContext;
+import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.util.Preconditions;
 import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.session.RowBounds;
@@ -68,7 +68,7 @@ import static com.nosugarice.mybatis.sql.SQLConstants.EMPTY;
 import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
 
 /**
- * https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation
+ * <a href="https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation">jpa方法名查询规范</a>
  * 简单实现
  *
  * @author dingjingyang@foxmail.com
@@ -225,7 +225,7 @@ public class JpaMapperBuilder extends AbstractMapperBuilder {
 
         @Override
         public String visit(GroupCriterion criterion) {
-            setSQLStrategy(criterion, this);
+            setSQLStrategy(criterion);
             return criterion.getSql();
         }
 

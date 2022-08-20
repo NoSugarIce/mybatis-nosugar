@@ -18,16 +18,16 @@ package com.nosugarice.mybatis.config.internal;
 
 import com.nosugarice.mybatis.annotation.ColumnOptions;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.assign.value.KeyValue;
+import com.nosugarice.mybatis.assign.value.LogicDeleteValue;
+import com.nosugarice.mybatis.assign.value.SimpleValue;
+import com.nosugarice.mybatis.assign.value.Value;
+import com.nosugarice.mybatis.assign.value.VersionValue;
 import com.nosugarice.mybatis.config.EntityBuilder;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.mapping.Table;
-import com.nosugarice.mybatis.mapping.value.KeyValue;
-import com.nosugarice.mybatis.mapping.value.LogicDeleteValue;
-import com.nosugarice.mybatis.mapping.value.SimpleValue;
-import com.nosugarice.mybatis.mapping.value.Value;
-import com.nosugarice.mybatis.mapping.value.VersionValue;
 import com.nosugarice.mybatis.registry.ReservedWords;
 import com.nosugarice.mybatis.support.EntityPropertyNameStrategy;
 import com.nosugarice.mybatis.support.NameStrategy;
@@ -44,6 +44,7 @@ import javax.persistence.Id;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -123,25 +124,15 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 if (columnOptions.typeHandler() != ColumnOptions.VoidHandler.class) {
                     relationalProperty.setTypeHandler(columnOptions.typeHandler());
                 }
-                ValueHandler<?> insertHandler = null;
-                if (columnOptions.insertHandler() != ColumnOptions.VoidHandler.class) {
-                    valueHandlerRegistry.registerType(columnOptions.insertHandler());
-                    insertHandler = valueHandlerRegistry.getObject(columnOptions.insertHandler());
-                }
-                ValueHandler<?> updateHandler = null;
-                if (columnOptions.updateHandler() != ColumnOptions.VoidHandler.class) {
-                    valueHandlerRegistry.registerType(columnOptions.updateHandler());
-                    updateHandler = valueHandlerRegistry.getObject(columnOptions.updateHandler());
-                }
-                ValueHandler<?> resultHandler = null;
-                if (columnOptions.resultHandler() != ColumnOptions.VoidHandler.class) {
-                    valueHandlerRegistry.registerType(columnOptions.resultHandler());
-                    resultHandler = valueHandlerRegistry.getObject(columnOptions.resultHandler());
-                }
-                if (insertHandler != null || updateHandler != null || resultHandler != null) {
+                ValueHandler<?> insertHandler = getValueHandler(columnOptions.insertHandler());
+                ValueHandler<?> updateHandler = getValueHandler(columnOptions.updateHandler());
+                ValueHandler<?> logicDeleteHandler = getValueHandler(columnOptions.logicDeleteHandler());
+                ValueHandler<?> resultHandler = getValueHandler(columnOptions.resultHandler());
+                if (insertHandler != null || updateHandler != null || logicDeleteHandler != null || resultHandler != null) {
                     SimpleValue value = new SimpleValue(relationalProperty.getJavaType());
                     value.setInsertHandler(insertHandler);
                     value.setUpdateHandler(updateHandler);
+                    value.setLogicDeleteHandler(logicDeleteHandler);
                     value.setResultHandler(resultHandler);
                     relationalProperty.setValue(value);
                 }
@@ -180,7 +171,9 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 Preconditions.checkArgument(StringUtils.isNotBlank(logicDelete.deleteValue())
                         , "[" + member.getName() + "]" + "逻辑删除值未设置!");
                 relationalProperty.setLogicDelete(true);
-                Value value = new LogicDeleteValue(type, logicDelete.defaultValue(), logicDelete.deleteValue());
+                LogicDeleteValue value = new LogicDeleteValue(type, logicDelete.defaultValue(), logicDelete.deleteValue());
+                value.setLogicDeleteHandler(getValueHandler(logicDelete.deleteValueHandler()));
+
                 relationalProperty.setValue(value);
             }
             if (isAnnotationPresent(OrderBy.class)) {
@@ -217,6 +210,14 @@ public class DefaultEntityBuilder extends EntityBuilder {
 
         private <T extends Annotation> boolean isAnnotationPresent(Class<T> annotationType) {
             return ((AnnotatedElement) member).isAnnotationPresent(annotationType);
+        }
+
+        private ValueHandler<?> getValueHandler(Class<? extends ValueHandler<? extends Serializable>> valueHandlerType) {
+            if (valueHandlerType != ColumnOptions.VoidHandler.class) {
+                valueHandlerRegistry.registerType(valueHandlerType);
+                return valueHandlerRegistry.getObject(valueHandlerType);
+            }
+            return null;
         }
     }
 

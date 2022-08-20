@@ -17,7 +17,7 @@
 package com.nosugarice.mybatis.criteria.delete;
 
 import com.nosugarice.mybatis.criteria.CriteriaDelete;
-import com.nosugarice.mybatis.criteria.ToColumn;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.criteria.where.AbstractWhere;
 
 /**

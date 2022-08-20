@@ -59,7 +59,7 @@ public class AdapterMapperBuilder extends AbstractMapperBuilder {
         Integer cacheHash = Objects.hash(configuration, providerAdapter.value());
         SqlSource sqlSource = (SqlSource) CACHE.get(cacheHash);
         if (sqlSource == null) {
-            sqlSource = new AdapterSqlSource(configuration, providerAdapter.value(), buildingContext.getDialect());
+            sqlSource = new AdapterSqlSource(configuration, providerAdapter.value(), buildingContext.getDialectFactory());
             CACHE.put(cacheHash, sqlSource);
         }
 

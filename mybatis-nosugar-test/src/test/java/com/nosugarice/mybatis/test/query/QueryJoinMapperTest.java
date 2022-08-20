@@ -1,7 +1,7 @@
 package com.nosugarice.mybatis.test.query;
 
 import com.nosugarice.mybatis.criteria.CriteriaBuilder;
-import com.nosugarice.mybatis.criteria.Getter;
+import com.nosugarice.mybatis.criteria.tocolumn.Getter;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaQuery;
 import com.nosugarice.mybatis.test.BaseMapperTest;
 import org.junit.jupiter.api.Assertions;

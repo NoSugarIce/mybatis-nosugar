@@ -29,12 +29,7 @@ public class EqualTo<T> extends SingleValueCriterion<T, EqualTo<T>> {
     }
 
     public EqualTo(String column, T value) {
-        super(column, value);
-    }
-
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.EQUALS_TO;
+        super(column, value, OperatorType.EQUALS_TO);
     }
 
 }

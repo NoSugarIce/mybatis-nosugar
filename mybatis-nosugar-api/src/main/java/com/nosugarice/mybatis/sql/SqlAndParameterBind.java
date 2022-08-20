@@ -4,7 +4,9 @@ import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.sql.ParameterBind.ParameterColumnBind;
 import org.apache.ibatis.mapping.BoundSql;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -17,6 +19,8 @@ public class SqlAndParameterBind {
     private final ParameterBind parameterBind;
 
     private FunS.Param3<Object, List<ParameterColumnBind>, BoundSql, Void> parameterHandle;
+
+    private Map<String, Object> parameters;
 
     public SqlAndParameterBind() {
         parameterBind = new ParameterBind();
@@ -36,16 +40,31 @@ public class SqlAndParameterBind {
         this.parameterBind = parameterBind;
     }
 
+    public SqlAndParameterBind(SqlAndParameterBind sqlAndParameterBind) {
+        this.sql = sqlAndParameterBind.getSql();
+        this.parameterBind = sqlAndParameterBind.getParameterBind();
+        this.parameterHandle = sqlAndParameterBind.getParameterHandle();
+        this.parameters = sqlAndParameterBind.getParameters();
+    }
+
     public ParameterColumnBind bind(Object value, String column, Class<?> entityClass) {
         return parameterBind.bindValue(value, column, entityClass);
+    }
+
+    public void addParameter(String key, Object value) {
+        if (parameters == null) {
+            parameters = new HashMap<>();
+        }
+        parameters.put(key, value);
     }
 
     public String getSql() {
         return sql;
     }
 
-    public void setSql(String sql) {
+    public SqlAndParameterBind setSql(String sql) {
         this.sql = sql;
+        return this;
     }
 
     public ParameterBind getParameterBind() {
@@ -58,5 +77,9 @@ public class SqlAndParameterBind {
 
     public void setParameterHandle(FunS.Param3<Object, List<ParameterColumnBind>, BoundSql, Void> parameterHandle) {
         this.parameterHandle = parameterHandle;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 }

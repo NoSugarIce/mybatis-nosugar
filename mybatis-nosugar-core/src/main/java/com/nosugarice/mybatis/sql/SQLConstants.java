@@ -69,4 +69,6 @@ public final class SQLConstants {
     public static final String VALUES = "VALUES";
     public static final String EXIT = "EXIT";
 
+    public static final String FOR_UPDATE = "FOR UPDATE";
+
 }

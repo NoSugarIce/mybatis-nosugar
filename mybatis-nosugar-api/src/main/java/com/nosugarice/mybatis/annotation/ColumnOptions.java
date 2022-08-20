@@ -49,6 +49,8 @@ public @interface ColumnOptions {
 
     Class<? extends ValueHandler<? extends Serializable>> updateHandler() default VoidHandler.class;
 
+    Class<? extends ValueHandler<? extends Serializable>> logicDeleteHandler() default VoidHandler.class;
+
     Class<? extends ValueHandler<? extends Serializable>> resultHandler() default VoidHandler.class;
 
     class VoidHandler implements TypeHandler<Void>, ValueHandler<VoidHandler.VoidS> {

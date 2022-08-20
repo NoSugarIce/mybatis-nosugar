@@ -17,12 +17,17 @@
 package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.config.EntityMetadata;
-import com.nosugarice.mybatis.criteria.ToColumn;
-import com.nosugarice.mybatis.criteria.select.JoinCriterion.JoinType;
+import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.AggFunction;
+import com.nosugarice.mybatis.criteria.clause.Operator;
+import com.nosugarice.mybatis.criteria.clause.SQLFunction;
+import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
+import com.nosugarice.mybatis.criteria.criterion.JoinCriterion.JoinType;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.criteria.where.AbstractWhere;
-import com.nosugarice.mybatis.criteria.where.Operator;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
+import com.nosugarice.mybatis.sql.ParameterBind;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
 import com.nosugarice.mybatis.sql.render.QuerySQLRender;
 import com.nosugarice.mybatis.util.CollectionUtils;
@@ -36,7 +41,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 
 /**
  * @author dingjingyang@foxmail.com
@@ -58,6 +62,8 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     /** 扩展字段 */
     private List<FunctionSelection> functionSelections;
 
+    private String countColumn;
+
     private GroupByCriterion groupByCriterion;
 
     private HavingCriterion havingCriterion;
@@ -68,7 +74,11 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
 
     private JoinCriteria<T> joinCriteria;
 
+    private boolean forUpdate;
+
     private QuerySQLRender render;
+
+    private ParameterBind parameterBind;
 
     protected AbstractQuery(Class<?> entityClass, ToColumn<C> toColumn) {
         super(entityClass, toColumn);
@@ -140,6 +150,12 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     }
 
     @Override
+    public X count(C column) {
+        this.countColumn = toColumn(column);
+        return getThis();
+    }
+
+    @Override
     public X groupBy(Collection<C> columns) {
         if (CollectionUtils.isEmpty(columns)) {
             return getThis();
@@ -175,6 +191,12 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     @Override
     public X limit(int offset, int limit) {
         this.rowBounds = new RowBounds(offset, limit);
+        return getThis();
+    }
+
+    @Override
+    public X forUpdate() {
+        this.forUpdate = true;
         return getThis();
     }
 
@@ -226,6 +248,11 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     }
 
     @Override
+    public Optional<String> getCountColumn() {
+        return Optional.ofNullable(countColumn);
+    }
+
+    @Override
     public Optional<GroupByCriterion> getGroupBy() {
         return Optional.ofNullable(groupByCriterion);
     }
@@ -246,6 +273,11 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     }
 
     @Override
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
+    @Override
     public Optional<JoinCriteria<T>> getJoinCriteria() {
         return Optional.ofNullable(joinCriteria);
     }
@@ -262,6 +294,16 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
             render = new QuerySQLRender(this);
         }
         return render;
+    }
+
+    @Override
+    public ParameterBind getParameterBind() {
+        return parameterBind;
+    }
+
+    @Override
+    public void setParameterBind(ParameterBind parameterBind) {
+        this.parameterBind = parameterBind;
     }
 
     @SuppressWarnings("unchecked")

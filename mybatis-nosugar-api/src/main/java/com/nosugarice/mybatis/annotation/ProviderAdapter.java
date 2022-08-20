@@ -31,12 +31,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ProviderAdapter {
 
+    Type value();
+
     enum Type {
         COUNT,
         EXISTS,
         PAGE
     }
-
-    Type value();
 
 }

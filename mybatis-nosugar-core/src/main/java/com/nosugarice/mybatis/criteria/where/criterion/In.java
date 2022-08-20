@@ -34,8 +34,4 @@ public class In<T> extends ListValueCriterion<T, In<T>> {
         super(column, values);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.IN;
-    }
 }

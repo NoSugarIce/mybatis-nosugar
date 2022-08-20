@@ -25,12 +25,12 @@ import java.util.Collection;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class ListValueCriterion<T, E extends ListValueCriterion<T, E>> extends AbstractColumnCriterion<Collection<T>, E> {
+public abstract class ListValueCriterion<T, E extends ListValueCriterion<T, E>> extends SimpleColumnCriterion<Collection<T>, E> {
 
     private static final long serialVersionUID = 1138903658585350512L;
 
     protected ListValueCriterion(String column, Collection<T> values) {
-        super(column, values);
+        super(column, values, OperatorType.IN);
         setSqlStrategy((SQLStrategy) () -> patternSql("(" + StringUtils.join(getValue(), ",") + ")"));
     }
 

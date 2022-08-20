@@ -17,7 +17,6 @@
 package com.nosugarice.mybatis.criteria.tocolumn;
 
 import com.nosugarice.mybatis.criteria.CriteriaDelete;
-import com.nosugarice.mybatis.criteria.Getter;
 
 /**
  * @author dingjingyang@foxmail.com

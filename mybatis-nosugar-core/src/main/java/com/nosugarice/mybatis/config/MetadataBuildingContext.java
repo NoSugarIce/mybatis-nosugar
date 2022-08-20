@@ -16,25 +16,22 @@
 
 package com.nosugarice.mybatis.config;
 
+import com.nosugarice.mybatis.assign.id.IdGenerator;
 import com.nosugarice.mybatis.builder.MapperBuilder;
-import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.dialect.Dialect;
+import com.nosugarice.mybatis.dialect.DialectFactory;
+import com.nosugarice.mybatis.dialect.RuntimeDialect;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
-import com.nosugarice.mybatis.mapping.id.IdGenerator;
 import com.nosugarice.mybatis.registry.BeanRegistry;
-import com.nosugarice.mybatis.registry.DialectRegistry;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.registry.IdGeneratorRegistry;
+import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.ReflectionUtils;
-import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.session.Configuration;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +45,7 @@ public class MetadataBuildingContext {
     private final Configuration configuration;
     private final MapperBuilderConfig config;
     private final MapperBuilder mapperBuilder;
+    private final DialectFactory dialectFactory;
     private final Dialect dialect;
     private final BeanRegistry<IdGenerator<?>> idGeneratorRegistry;
     private final BeanRegistry<ValueHandler<?>> valueHandlerRegistry;
@@ -60,7 +58,14 @@ public class MetadataBuildingContext {
         this.configuration = configuration;
         this.config = config;
         this.mapperBuilder = new MapperBuilder(this);
-        this.dialect = config.getSqlBuildConfig().getDialect() != null ? config.getSqlBuildConfig().getDialect() : getDialect(configuration);
+        this.dialectFactory = config.getSqlBuildConfig().getDialectFactory();
+
+        Dialect defaultDialect = config.getSqlBuildConfig().getDialect();
+        defaultDialect = defaultDialect != null
+                ? defaultDialect : dialectFactory.getDialect(configuration.getEnvironment().getDataSource());
+        DialectContext.defaultDialect = defaultDialect;
+
+        this.dialect = config.getSqlBuildConfig().isRuntimeDialect() ? new RuntimeDialect() : defaultDialect;
         this.idGeneratorRegistry = new IdGeneratorRegistry();
         this.valueHandlerRegistry = new BeanRegistry<>();
         registryBean(config.getRelationalConfig());
@@ -120,21 +125,6 @@ public class MetadataBuildingContext {
         mapperBuilderAssistantMap.remove(mapperInterfaceClass);
     }
 
-    private Dialect getDialect(Configuration configuration) {
-        String databaseName;
-        int version;
-        try (Connection connection = configuration.getEnvironment().getDataSource().getConnection()) {
-            DatabaseMetaData metaData = connection.getMetaData();
-            //Arrays.stream(metaData.getSQLKeywords().split(",")).forEach(ReservedWords.SQL::registerKeyword);
-            databaseName = metaData.getDatabaseProductName();
-            version = metaData.getDatabaseMajorVersion();
-        } catch (SQLException e) {
-            throw new BuilderException(e);
-        }
-        //TODO 可能会有问题,没有一一验证
-        return new DialectRegistry().chooseDialect(databaseName, version);
-    }
-
     private void registryBean(RelationalConfig relationalConfig) {
         Map<String, IdGenerator<?>> idGenerators;
         if ((idGenerators = relationalConfig.getIdGenerators()) != null) {
@@ -156,6 +146,10 @@ public class MetadataBuildingContext {
 
     public MapperBuilder getMapperBuilder() {
         return mapperBuilder;
+    }
+
+    public DialectFactory getDialectFactory() {
+        return dialectFactory;
     }
 
     public Dialect getDialect() {

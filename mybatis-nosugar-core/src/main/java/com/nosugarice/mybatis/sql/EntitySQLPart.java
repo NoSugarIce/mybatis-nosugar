@@ -39,14 +39,12 @@ public class EntitySQLPart {
 
     public String selectResult;
     public String selectParameterLogicDelete;
-    public String logicDeleteColumnValue;
 
     public EntitySQLPart(EntityMetadata entityMetadata, Dialect dialect) {
         this.entityMetadata = entityMetadata;
         this.dialect = dialect;
         this.selectResult = selectResult();
         this.selectParameterLogicDelete = selectParameterLogicDelete();
-        this.logicDeleteColumnValue = logicDeleteColumnValue();
     }
 
     private String selectResult() {
@@ -76,16 +74,6 @@ public class EntitySQLPart {
                 joinerBuilder.withElements(EQUALS_TO, dialect.getLiteralValueHandler().convert(defaultValue));
             }
             return joinerBuilder.build();
-        }
-        return null;
-    }
-
-    private String logicDeleteColumnValue() {
-        if (entityMetadata.getSupports().isSupportLogicDelete()) {
-            RelationalProperty logicDeleteProperty = entityMetadata.getLogicDeleteProperty();
-            return StringJoinerBuilder.createSpaceJoin().withElements(logicDeleteProperty.getColumn(), EQUALS_TO
-                            , dialect.getLiteralValueHandler().convert(logicDeleteProperty.getAsLogicDeleteValue().getLogicDeleteValue()))
-                    .build();
         }
         return null;
     }

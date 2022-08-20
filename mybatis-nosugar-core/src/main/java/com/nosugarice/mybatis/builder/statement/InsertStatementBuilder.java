@@ -16,11 +16,12 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
+import com.nosugarice.mybatis.assign.id.IdGenerator;
+import com.nosugarice.mybatis.assign.value.KeyValue;
+import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.Supports;
 import com.nosugarice.mybatis.dialect.Identity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
-import com.nosugarice.mybatis.mapping.id.IdGenerator;
-import com.nosugarice.mybatis.mapping.value.KeyValue;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.StringUtils;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -55,8 +56,8 @@ public class InsertStatementBuilder extends StatementBuilder {
     }
 
     @Override
-    public SqlCommandType getSqlCommandType(Method method) {
-        return SqlCommandType.INSERT;
+    public DmlType getDmlType(Method method) {
+        return DmlType.INSERT;
     }
 
     @Override

@@ -24,14 +24,12 @@ import java.util.function.BiPredicate;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class TwoValueCriterion<T, E extends TwoValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
+public abstract class TwoValueCriterion<T, E extends TwoValueCriterion<T, E>> extends SimpleColumnCriterion<T, E> {
 
     private static final long serialVersionUID = 3407529238253654774L;
 
-    private T secondValue;
-
     protected TwoValueCriterion(String column, T low, T high) {
-        super(column, low);
+        super(column, low, OperatorType.BETWEEN);
         this.secondValue = high;
         setSqlStrategy((SQLStrategy) () -> patternSql("? ?"));
     }
@@ -39,15 +37,6 @@ public abstract class TwoValueCriterion<T, E extends TwoValueCriterion<T, E>> ex
     @Override
     public boolean isTwoValue() {
         return true;
-    }
-
-    @Override
-    public T getSecondValue() {
-        return secondValue;
-    }
-
-    public void setSecondValue(T secondValue) {
-        this.secondValue = secondValue;
     }
 
     @SuppressWarnings("unchecked")

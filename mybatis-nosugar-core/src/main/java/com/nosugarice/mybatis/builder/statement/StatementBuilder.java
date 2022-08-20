@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
+import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.domain.Page;
@@ -29,6 +29,7 @@ import com.nosugarice.mybatis.mapper.logicdelete.LogicDeleteMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateMapper;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.ResultType;
 import org.apache.ibatis.binding.MapperMethod;
@@ -84,11 +85,14 @@ public class StatementBuilder {
         if (InsertMapper.class.isAssignableFrom(mapperType)) {
             statementBuilder = new InsertStatementBuilder();
         }
-        if (UpdateMapper.class.isAssignableFrom(mapperType) || LogicDeleteMapper.class.isAssignableFrom(mapperType)) {
+        if (UpdateMapper.class.isAssignableFrom(mapperType)) {
             statementBuilder = new UpdateStatementBuilder();
         }
         if (DeleteMapper.class.isAssignableFrom(mapperType)) {
             statementBuilder = new DeleteStatementBuilder();
+        }
+        if (LogicDeleteMapper.class.isAssignableFrom(mapperType)) {
+            statementBuilder = new LogicDeleteStatementBuilder();
         }
         if (JpaMapper.class.isAssignableFrom(mapperType)) {
             statementBuilder = new JpaStatementBuilder();
@@ -115,8 +119,8 @@ public class StatementBuilder {
      * @param method
      * @return
      */
-    public SqlCommandType getSqlCommandType(Method method) {
-        return SqlCommandType.SELECT;
+    public DmlType getDmlType(Method method) {
+        return DmlType.SELECT;
     }
 
     public void addMappedStatement(Method method, String script) {
@@ -127,8 +131,9 @@ public class StatementBuilder {
         Class<?> parameterTypeClass = getParameterType(method);
 
         StatementType statementType = StatementType.PREPARED;
-        final SqlCommandType sqlCommandType = getSqlCommandType(method);
-        SqlSource sqlSource = createSqlSource(configuration, method, script, parameterTypeClass, sqlCommandType);
+        DmlType dmlType = getDmlType(method);
+        final SqlCommandType sqlCommandType = dmlType.getSqlCommandType();
+        SqlSource sqlSource = createSqlSource(configuration, method, script, parameterTypeClass, dmlType);
 
         boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
         boolean flushCache = !isSelect;
@@ -159,9 +164,9 @@ public class StatementBuilder {
     }
 
     protected SqlSource createSqlSource(Configuration configuration, Method method, String script, Class<?> parameterType
-            , SqlCommandType sqlCommandType) {
+            , DmlType dmlType) {
         if (script == null) {
-            return sqlSourceScriptBuilder.buildSqlSource(method, sqlCommandType);
+            return sqlSourceScriptBuilder.buildSqlSource(method, dmlType);
         }
         return configuration.getLanguageRegistry().getDefaultDriver().createSqlSource(configuration, script, parameterType);
     }

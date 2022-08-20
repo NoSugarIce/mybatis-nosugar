@@ -28,8 +28,4 @@ public class IsNull extends NoValueCriterion<Object, IsNull> {
         super(column);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.Null;
-    }
 }

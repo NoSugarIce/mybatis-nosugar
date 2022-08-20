@@ -17,6 +17,7 @@
 package com.nosugarice.mybatis.config;
 
 import com.nosugarice.mybatis.dialect.Dialect;
+import com.nosugarice.mybatis.dialect.DialectFactory;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -27,8 +28,15 @@ public class SqlBuildConfig {
     /** 忽略空字符 */
     private boolean ignoreEmptyChar;
 
+    private DialectFactory dialectFactory;
+
     /** 数据库方言 */
     private Dialect dialect;
+
+    /**
+     * 自动判断数据库
+     */
+    private boolean runtimeDialect;
 
     public boolean isIgnoreEmptyChar() {
         return ignoreEmptyChar;
@@ -42,7 +50,23 @@ public class SqlBuildConfig {
         return dialect;
     }
 
+    public DialectFactory getDialectFactory() {
+        return dialectFactory;
+    }
+
+    public void setDialectFactory(DialectFactory dialectFactory) {
+        this.dialectFactory = dialectFactory;
+    }
+
     public void setDialect(Dialect dialect) {
         this.dialect = dialect;
+    }
+
+    public boolean isRuntimeDialect() {
+        return runtimeDialect;
+    }
+
+    public void setRuntimeDialect(boolean runtimeDialect) {
+        this.runtimeDialect = runtimeDialect;
     }
 }

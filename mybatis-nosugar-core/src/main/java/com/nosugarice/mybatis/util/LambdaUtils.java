@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.util;
 
-import com.nosugarice.mybatis.criteria.Getter;
+import com.nosugarice.mybatis.criteria.tocolumn.Getter;
 import com.nosugarice.mybatis.exception.NoSugarException;
 
 import java.io.Serializable;

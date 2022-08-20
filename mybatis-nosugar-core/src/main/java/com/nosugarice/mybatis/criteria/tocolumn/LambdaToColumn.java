@@ -16,8 +16,6 @@
 
 package com.nosugarice.mybatis.criteria.tocolumn;
 
-import com.nosugarice.mybatis.criteria.Getter;
-import com.nosugarice.mybatis.criteria.ToColumn;
 import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.util.LambdaUtils;

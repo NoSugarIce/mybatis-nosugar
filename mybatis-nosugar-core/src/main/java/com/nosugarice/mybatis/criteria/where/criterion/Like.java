@@ -27,13 +27,9 @@ public class Like extends SingleValueCriterion<String, Like> {
     private static final long serialVersionUID = -6810211854915959905L;
 
     public Like(String column, String value) {
-        super(column, value);
+        super(column, value, OperatorType.LIKE);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.LIKE;
-    }
 
     public static class StartLike extends Like {
 
@@ -52,7 +48,7 @@ public class Like extends SingleValueCriterion<String, Like> {
 
     public static class EndLike extends Like {
 
-        private static final long serialVersionUID = -2280464375029796120L;
+        private static final long serialVersionUID = 2812781368677440111L;
 
         public static final Function<String, String> MATCH = pattern -> '%' + pattern;
 
@@ -67,7 +63,7 @@ public class Like extends SingleValueCriterion<String, Like> {
 
     public static class AnyLike extends Like {
 
-        private static final long serialVersionUID = -2280464375029796120L;
+        private static final long serialVersionUID = -6896746513911588772L;
 
         public static final Function<String, String> MATCH = pattern -> '%' + pattern + '%';
 

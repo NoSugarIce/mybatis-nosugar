@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
-import org.apache.ibatis.mapping.SqlCommandType;
+import com.nosugarice.mybatis.config.DmlType;
 
 import java.lang.reflect.Method;
 
@@ -30,8 +30,8 @@ public class UpdateStatementBuilder extends StatementBuilder {
     }
 
     @Override
-    public SqlCommandType getSqlCommandType(Method method) {
-        return SqlCommandType.UPDATE;
+    public DmlType getDmlType(Method method) {
+        return DmlType.UPDATE;
     }
 
 }

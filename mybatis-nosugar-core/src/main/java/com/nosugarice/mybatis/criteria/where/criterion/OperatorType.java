@@ -1,6 +1,6 @@
 package com.nosugarice.mybatis.criteria.where.criterion;
 
-import com.nosugarice.mybatis.criteria.where.Operator;
+import com.nosugarice.mybatis.criteria.clause.Operator;
 import com.nosugarice.mybatis.sql.SQLConstants;
 
 /**
@@ -11,10 +11,10 @@ import com.nosugarice.mybatis.sql.SQLConstants;
  */
 public enum OperatorType implements Operator {
     /** 相等 */
-    Null {
+    NULL {
         @Override
         public OperatorType negated() {
-            return NOT_Null;
+            return NOT_NULL;
         }
 
         @Override
@@ -23,10 +23,10 @@ public enum OperatorType implements Operator {
         }
     },
     /** 相等 */
-    NOT_Null {
+    NOT_NULL {
         @Override
         public OperatorType negated() {
-            return Null;
+            return NULL;
         }
 
         @Override
@@ -176,6 +176,18 @@ public enum OperatorType implements Operator {
         @Override
         public String operator() {
             return SQLConstants.NOT_IN;
+        }
+    },
+    /** 未定义 */
+    UNDEFINED {
+        @Override
+        public OperatorType negated() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String operator() {
+            throw new UnsupportedOperationException();
         }
     }
 }

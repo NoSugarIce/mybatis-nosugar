@@ -27,7 +27,7 @@ import static com.nosugarice.mybatis.sql.SQLConstants.AS;
  * @author dingjingyang@foxmail.com
  * @date 2021/9/15
  */
-public class ColumnSelection implements Selection, Expression, ColumnReader {
+public class ColumnSelection implements Expression, ColumnReader {
 
     private static final long serialVersionUID = 7438894860588332431L;
 
@@ -39,8 +39,7 @@ public class ColumnSelection implements Selection, Expression, ColumnReader {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public <T extends Selection> T alias(String alias) {
+    public <T extends ColumnSelection> T alias(String alias) {
         this.alias = alias;
         return (T) this;
     }

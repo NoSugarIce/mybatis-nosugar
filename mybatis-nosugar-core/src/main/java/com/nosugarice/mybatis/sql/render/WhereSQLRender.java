@@ -16,11 +16,12 @@
 
 package com.nosugarice.mybatis.sql.render;
 
-import com.nosugarice.mybatis.criteria.where.CriterionSQLVisitor;
-import com.nosugarice.mybatis.criteria.where.GroupCriterion;
+import com.nosugarice.mybatis.criteria.criterion.CriterionSQLVisitor;
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
 import com.nosugarice.mybatis.criteria.where.WhereStructure;
 import com.nosugarice.mybatis.sql.ParameterBind;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
+import com.nosugarice.mybatis.sql.vistor.PreparedSQLVisitor;
 
 import java.util.Optional;
 import java.util.function.Function;

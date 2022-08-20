@@ -32,9 +32,4 @@ public class Between<T> extends TwoValueCriterion<T, Between<T>> {
         super(column, low, high);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.BETWEEN;
-    }
-
 }

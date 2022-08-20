@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.sqlsource;
 
-import com.nosugarice.mybatis.builder.SqlSourceScriptBuilder;
+import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.handler.ParameterValueHandler;
@@ -28,7 +28,6 @@ import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
@@ -48,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -58,7 +58,7 @@ public class DynamicHandlerSqlSource implements SqlSource {
 
     private static final Map<Class<?>, JdbcType> JDBC_TYPE_MAP;
 
-    private final SqlCommandType sqlCommandType;
+    private final DmlType dmlType;
 
     private final MetadataBuildingContext buildingContext;
 
@@ -80,9 +80,9 @@ public class DynamicHandlerSqlSource implements SqlSource {
 
     private static final Map<ParameterColumnBind, ParameterColumnBind> PARAMETER_COLUMN_BIND_CACHE = new HashMap<>();
 
-    public DynamicHandlerSqlSource(SqlCommandType sqlCommandType, MetadataBuildingContext buildingContext, String[] parameterNames
+    public DynamicHandlerSqlSource(DmlType dmlType, MetadataBuildingContext buildingContext, String[] parameterNames
             , FunS<SqlAndParameterBind> providerFun, SqlSourceScriptBuilder sqlSourceScriptBuilder, boolean fixedParameter) {
-        this.sqlCommandType = sqlCommandType;
+        this.dmlType = dmlType;
         this.buildingContext = buildingContext;
         this.parameterNames = parameterNames;
         this.providerFun = providerFun;
@@ -147,8 +147,10 @@ public class DynamicHandlerSqlSource implements SqlSource {
             }
             BoundSql boundSql = new BoundSql(buildingContext.getConfiguration(), sqlHandler(sqlAndParameterBindCache.getSql())
                     , parameterMappingsCache, parameterObject);
-            sqlAndParameterBindCache.getParameterHandle()
-                    .apply(parameterObject, sqlAndParameterBindCache.getParameterBind().getParameterColumnBinds(), boundSql);
+            if (sqlAndParameterBindCache.getParameterHandle() != null) {
+                sqlAndParameterBindCache.getParameterHandle()
+                        .apply(parameterObject, sqlAndParameterBindCache.getParameterBind().getParameterColumnBinds(), boundSql);
+            }
             return boundSql;
         } else {
             Object[] params = getOriginalParameters(parameterObject, parameterNames);
@@ -156,6 +158,8 @@ public class DynamicHandlerSqlSource implements SqlSource {
             List<ParameterMapping> parameterMappings = getParameterMappings(sqlAndParameterBind.getParameterBind().getParameterColumnBinds());
             BoundSql boundSql = new BoundSql(buildingContext.getConfiguration(), sqlHandler(sqlAndParameterBind.getSql())
                     , parameterMappings, parameterObject);
+            Optional.of(sqlAndParameterBind).map(SqlAndParameterBind::getParameters)
+                    .ifPresent(bindParams -> bindParams.forEach(boundSql::setAdditionalParameter));
             sqlAndParameterBind.getParameterBind().getParameterColumnBinds()
                     .forEach(parameterColumnBind
                             -> boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), parameterColumnBind.getValue()));
@@ -183,10 +187,12 @@ public class DynamicHandlerSqlSource implements SqlSource {
             ParameterMapping parameterMapping = builder.build();
             if (property != null && parameterColumnBind.isCanHandle()) {
                 ValueHandler<?> valueHandler = null;
-                if (sqlCommandType == SqlCommandType.INSERT) {
+                if (dmlType == DmlType.INSERT) {
                     valueHandler = property.getValue().insertHandler();
-                } else if (sqlCommandType == SqlCommandType.UPDATE) {
+                } else if (dmlType == DmlType.UPDATE) {
                     valueHandler = property.getValue().updateHandler();
+                } else if (dmlType == DmlType.LOGIC_DELETE) {
+                    valueHandler = property.getValue().logicDeleteHandler();
                 }
                 if (valueHandler != null) {
                     builder.typeHandler(createTypeHandler(parameterMapping.getTypeHandler(), valueHandler));

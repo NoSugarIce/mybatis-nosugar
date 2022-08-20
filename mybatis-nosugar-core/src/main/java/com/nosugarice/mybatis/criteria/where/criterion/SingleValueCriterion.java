@@ -24,12 +24,12 @@ import java.util.function.Predicate;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class SingleValueCriterion<T, E extends SingleValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
+public abstract class SingleValueCriterion<T, E extends SingleValueCriterion<T, E>> extends SimpleColumnCriterion<T, E> {
 
     private static final long serialVersionUID = 662382880058191739L;
 
-    protected SingleValueCriterion(String column, T value) {
-        super(column, value);
+    protected SingleValueCriterion(String column, T value, OperatorType operatorType) {
+        super(column, value, operatorType);
         setSqlStrategy((SQLStrategy) () -> patternSql("?"));
     }
 

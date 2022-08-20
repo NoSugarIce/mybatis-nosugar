@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.sql.render;
 
-import com.nosugarice.mybatis.criteria.where.ColumnCriterion;
+import com.nosugarice.mybatis.criteria.criterion.ColumnCriterion;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.SQLConstants;

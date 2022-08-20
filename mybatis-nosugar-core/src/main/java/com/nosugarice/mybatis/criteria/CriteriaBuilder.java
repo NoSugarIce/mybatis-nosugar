@@ -17,6 +17,8 @@
 package com.nosugarice.mybatis.criteria;
 
 import com.nosugarice.mybatis.config.EntityMetadata;
+import com.nosugarice.mybatis.criteria.clause.Where;
+import com.nosugarice.mybatis.criteria.criterion.Criterion;
 import com.nosugarice.mybatis.criteria.delete.CriteriaDeleteImpl;
 import com.nosugarice.mybatis.criteria.select.CriteriaQueryImpl;
 import com.nosugarice.mybatis.criteria.select.QueryStructure;
@@ -24,6 +26,7 @@ import com.nosugarice.mybatis.criteria.tocolumn.ColumnDelete;
 import com.nosugarice.mybatis.criteria.tocolumn.ColumnQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.ColumnToColumn;
 import com.nosugarice.mybatis.criteria.tocolumn.ColumnUpdate;
+import com.nosugarice.mybatis.criteria.tocolumn.Getter;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaDelete;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaToColumn;
@@ -32,12 +35,12 @@ import com.nosugarice.mybatis.criteria.tocolumn.PropertyDelete;
 import com.nosugarice.mybatis.criteria.tocolumn.PropertyQuery;
 import com.nosugarice.mybatis.criteria.tocolumn.PropertyToColumn;
 import com.nosugarice.mybatis.criteria.tocolumn.PropertyUpdate;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.criteria.update.CriteriaUpdateImpl;
 import com.nosugarice.mybatis.criteria.update.UpdateStructure;
-import com.nosugarice.mybatis.criteria.where.Criterion;
-import com.nosugarice.mybatis.criteria.where.Where;
 import com.nosugarice.mybatis.criteria.where.WhereStructure;
 import com.nosugarice.mybatis.criteria.where.criterion.EqualTo;
+import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.util.Preconditions;
@@ -280,7 +283,7 @@ public class CriteriaBuilder {
                     interfaces = new Class[]{criteriaRawType, WhereStructure.class};
                 }
             } else {
-                throw new IllegalArgumentException("不支持的类型:" + criteriaRawType);
+                throw new NoSugarException("不支持的类型:" + criteriaRawType);
             }
 
             if (entity != null) {

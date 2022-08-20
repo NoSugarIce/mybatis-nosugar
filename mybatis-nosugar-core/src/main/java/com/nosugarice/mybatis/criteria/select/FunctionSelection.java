@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
+import com.nosugarice.mybatis.criteria.clause.SQLFunction;
 import com.nosugarice.mybatis.util.StringJoinerBuilder;
 import com.nosugarice.mybatis.util.StringUtils;
 

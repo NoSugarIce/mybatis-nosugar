@@ -1,9 +1,9 @@
 package com.nosugarice.mybatis.test.query;
 
 import com.nosugarice.mybatis.criteria.CriteriaBuilder;
-import com.nosugarice.mybatis.criteria.select.AggFunction;
+import com.nosugarice.mybatis.criteria.clause.AggFunction;
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
 import com.nosugarice.mybatis.criteria.tocolumn.LambdaQuery;
-import com.nosugarice.mybatis.criteria.where.GroupCriterion;
 import com.nosugarice.mybatis.criteria.where.criterion.GroupCriterionImpl;
 import com.nosugarice.mybatis.criteria.where.criterion.OperatorType;
 import com.nosugarice.mybatis.domain.Page;

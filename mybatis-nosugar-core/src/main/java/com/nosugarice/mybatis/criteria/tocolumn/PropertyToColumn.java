@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.criteria.tocolumn;
 
-import com.nosugarice.mybatis.criteria.ToColumn;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 
 /**

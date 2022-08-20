@@ -16,7 +16,12 @@
 
 package com.nosugarice.mybatis.criteria.where;
 
-import com.nosugarice.mybatis.criteria.ToColumn;
+import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Where;
+import com.nosugarice.mybatis.criteria.criterion.Criterion;
+import com.nosugarice.mybatis.criteria.criterion.CriterionBuilder;
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
+import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.criteria.where.criterion.Between;
 import com.nosugarice.mybatis.criteria.where.criterion.Empty;
 import com.nosugarice.mybatis.criteria.where.criterion.EqualTo;
@@ -24,6 +29,7 @@ import com.nosugarice.mybatis.criteria.where.criterion.GreaterThan;
 import com.nosugarice.mybatis.criteria.where.criterion.GreaterThanOrEqual;
 import com.nosugarice.mybatis.criteria.where.criterion.GroupCriterionImpl;
 import com.nosugarice.mybatis.criteria.where.criterion.In;
+import com.nosugarice.mybatis.criteria.where.criterion.InSubQuery;
 import com.nosugarice.mybatis.criteria.where.criterion.IsNull;
 import com.nosugarice.mybatis.criteria.where.criterion.LessThan;
 import com.nosugarice.mybatis.criteria.where.criterion.LessThanOrEqual;
@@ -43,6 +49,8 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     private final ToColumn<C> toColumn;
 
     private final GroupCriterion groupCriterion = new GroupCriterionImpl();
+
+    private boolean includeLogicDelete;
 
     protected AbstractWhere(Class<?> entityClass, ToColumn<C> toColumn) {
         this.entityClass = entityClass;
@@ -76,6 +84,13 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     @Override
     public X or(Criterion... criterions) {
         return addCriterion(new GroupCriterionImpl(criterions).byOr());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public X includeLogicDelete() {
+        this.includeLogicDelete = true;
+        return (X) this;
     }
 
     @Override
@@ -129,6 +144,11 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     }
 
     @Override
+    public InSubQuery buildIn(C column, Query<?, ?, ?> query) {
+        return new InSubQuery(toColumn(column), query);
+    }
+
+    @Override
     public Like buildLike(C column, String value) {
         return new Like(toColumn(column), value);
     }
@@ -159,5 +179,9 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
     @Override
     public Optional<GroupCriterion> getCriterion() {
         return Optional.of(groupCriterion);
+    }
+
+    public boolean isIncludeLogicDelete() {
+        return includeLogicDelete;
     }
 }

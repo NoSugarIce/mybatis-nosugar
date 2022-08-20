@@ -17,6 +17,7 @@
 package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.criteria.where.WhereStructure;
+import com.nosugarice.mybatis.sql.ParameterBind;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
 import com.nosugarice.mybatis.sql.render.QuerySQLRender;
 import org.apache.ibatis.session.RowBounds;
@@ -50,6 +51,13 @@ public interface QueryStructure<T> extends WhereStructure {
      * @return
      */
     Optional<List<ColumnSelection>> getColumnSelections();
+
+    /**
+     * 获取count字段
+     *
+     * @return
+     */
+    Optional<String> getCountColumn();
 
     /**
      * 获取结果集
@@ -86,6 +94,8 @@ public interface QueryStructure<T> extends WhereStructure {
      */
     Optional<RowBounds> getLimit();
 
+    boolean isForUpdate();
+
     /**
      * 获取关联表条件
      *
@@ -100,5 +110,9 @@ public interface QueryStructure<T> extends WhereStructure {
      * @return
      */
     QuerySQLRender getRender(EntitySQLRender sqlRender);
+
+    void setParameterBind(ParameterBind parameterBind);
+
+    ParameterBind getParameterBind();
 
 }

@@ -17,11 +17,16 @@
 package com.nosugarice.mybatis.sqlsource;
 
 import com.nosugarice.mybatis.annotation.ProviderAdapter;
+import com.nosugarice.mybatis.config.Constants;
+import com.nosugarice.mybatis.config.DialectContext;
 import com.nosugarice.mybatis.dialect.Dialect;
+import com.nosugarice.mybatis.dialect.DialectFactory;
+import com.nosugarice.mybatis.dialect.RuntimeDialect;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.exception.NoSugarException;
 import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.select.SelectPageMapper;
+import com.nosugarice.mybatis.sql.SQLConstants;
 import com.nosugarice.mybatis.util.LambdaUtils;
 import com.nosugarice.mybatis.util.LambdaUtils.LambdaInfo;
 import com.nosugarice.mybatis.util.Preconditions;
@@ -54,12 +59,12 @@ public class AdapterSqlSource implements SqlSource {
 
     private final Configuration configuration;
     private final ProviderAdapter.Type adapterType;
-    private final Dialect dialect;
+    private final DialectFactory dialectFactory;
 
-    public AdapterSqlSource(Configuration configuration, ProviderAdapter.Type adapterType, Dialect dialect) {
+    public AdapterSqlSource(Configuration configuration, ProviderAdapter.Type adapterType, DialectFactory dialectFactory) {
         this.configuration = configuration;
         this.adapterType = adapterType;
-        this.dialect = dialect;
+        this.dialectFactory = dialectFactory;
     }
 
     static {
@@ -98,19 +103,33 @@ public class AdapterSqlSource implements SqlSource {
         Object params = parameterMap.get(MapperParam.PARAMS);
         BoundSql originalBoundSql = sqlSource.getBoundSql(params);
 
+        Dialect dialect = DialectContext.getDefaultDialect();
+        boolean runtimeDialect = dialect instanceof RuntimeDialect;
+        if (runtimeDialect) {
+            if (DialectContext.isDominate()) {
+                dialect = DialectContext.getDialect();
+            } else {
+                dialect = dialectFactory.getDialect(mappedStatement);
+            }
+        }
+
+        String sql = originalBoundSql.getSql();
         if (adapterType == ProviderAdapter.Type.COUNT) {
-            String countStr = dialect.optimizationCountSql(originalBoundSql.getSql());
+            String countColumn = originalBoundSql.hasAdditionalParameter(Constants.COUNT_COLUMN)
+                    ? String.valueOf(originalBoundSql.getAdditionalParameter(Constants.COUNT_COLUMN)) : null;
+            String countStr = dialect.optimizationCountSql(sql, countColumn);
             boundSql = createNewBoundSql(configuration, countStr, originalBoundSql);
         } else if (adapterType == ProviderAdapter.Type.PAGE) {
             Page<?> page = SelectPageMapper.PageStorage.getPage();
             if (page == null) {
                 boundSql = originalBoundSql;
             } else {
-                String pageSql = dialect.getLimitHandler().processSql(originalBoundSql.getSql(), page.getOffset(), page.getLimit());
+                sql = sql.endsWith(SQLConstants.FOR_UPDATE) ? sql.replace(SQLConstants.FOR_UPDATE, SQLConstants.EMPTY) : sql;
+                String pageSql = dialect.getLimitHandler().processSql(sql, page.getOffset(), page.getLimit());
                 boundSql = createNewBoundSql(configuration, pageSql, originalBoundSql);
             }
         } else if (adapterType == ProviderAdapter.Type.EXISTS) {
-            String existsStr = dialect.optimizationExistsSql(originalBoundSql.getSql());
+            String existsStr = dialect.optimizationExistsSql(sql);
             boundSql = createNewBoundSql(configuration, existsStr, originalBoundSql);
         }
         Preconditions.checkNotNull(boundSql, "未找到桥接BoundSql!");

@@ -16,6 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
+import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.ParameterBind;
 import com.nosugarice.mybatis.sql.SQLPart;

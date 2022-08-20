@@ -22,12 +22,12 @@ import com.nosugarice.mybatis.sql.SQLConstants;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public abstract class NoValueCriterion<T, E extends NoValueCriterion<T, E>> extends AbstractColumnCriterion<T, E> {
+public abstract class NoValueCriterion<T, E extends NoValueCriterion<T, E>> extends SimpleColumnCriterion<T, E> {
 
     private static final long serialVersionUID = -8957654596073038239L;
 
     protected NoValueCriterion(String column) {
-        super(column, null);
+        super(column, null, OperatorType.NULL);
     }
 
     @Override

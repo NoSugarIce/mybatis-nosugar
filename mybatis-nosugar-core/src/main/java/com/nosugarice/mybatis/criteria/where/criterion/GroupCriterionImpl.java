@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.criteria.where.criterion;
 
-import com.nosugarice.mybatis.criteria.where.Criterion;
-import com.nosugarice.mybatis.criteria.where.GroupCriterion;
+import com.nosugarice.mybatis.criteria.criterion.Criterion;
+import com.nosugarice.mybatis.criteria.criterion.GroupCriterion;
 import com.nosugarice.mybatis.sql.Expression;
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.StringUtils;

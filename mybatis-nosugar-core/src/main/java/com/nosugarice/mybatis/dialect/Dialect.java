@@ -17,6 +17,7 @@
 package com.nosugarice.mybatis.dialect;
 
 import com.nosugarice.mybatis.sql.SQLConstants;
+import com.nosugarice.mybatis.util.StringUtils;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -62,16 +63,21 @@ public interface Dialect {
      * 优化 Count 语句
      * TODO 先简单粗暴
      *
-     * @param sql 原sql
+     * @param sql         原sql
+     * @param countColumn count指定的列
      * @return
      */
-    default String optimizationCountSql(String sql) {
+    default String optimizationCountSql(String sql, String countColumn) {
         String upperCaseSql = sql.toUpperCase();
+        String countSqlPart = "SELECT COUNT(*) ";
+        if (StringUtils.isNotBlank(countColumn)) {
+            countSqlPart = "SELECT COUNT(" + countColumn + ") ";
+        }
         if (upperCaseSql.contains(SQLConstants.DISTINCT)) {
-            return "SELECT COUNT(*) FROM ( " + sql + " )";
+            return countSqlPart + "FROM ( " + sql + " )";
         } else {
             sql = sql.substring(upperCaseSql.indexOf(SQLConstants.FROM));
-            return "SELECT COUNT(*) " + interceptOrderBy(sql);
+            return countSqlPart + interceptOrderBy(sql);
         }
     }
 

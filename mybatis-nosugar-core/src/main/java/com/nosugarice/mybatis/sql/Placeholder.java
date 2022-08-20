@@ -28,6 +28,7 @@ public interface Placeholder {
     String AS_ALIAS_P = "${AS_ALIAS}";
     String FROM_WITH_ALIAS_P = "${FROM_WITH_ALIAS}";
     String ALIAS_STATE_P = "${ALIAS_STATE}";
+    String SUB_QUERY = "${SUB_QUERY}";
 
     /**
      * 表别名占位符+列

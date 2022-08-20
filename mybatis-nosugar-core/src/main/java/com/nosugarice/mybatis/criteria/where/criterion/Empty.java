@@ -22,17 +22,12 @@ import com.nosugarice.mybatis.sql.SQLConstants;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public class Empty extends SingleValueCriterion<String, Empty> {
+public class Empty extends EqualTo<String> {
 
     private static final long serialVersionUID = -5563648620367424156L;
 
     public Empty(String column) {
         super(column, SQLConstants.EMPTY);
-    }
-
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.EQUALS_TO;
     }
 
 }

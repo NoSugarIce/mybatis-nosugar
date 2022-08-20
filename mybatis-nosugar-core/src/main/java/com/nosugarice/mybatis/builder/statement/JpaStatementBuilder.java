@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.builder.statement;
 
+import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.jpa.parser.PartTree;
-import org.apache.ibatis.mapping.SqlCommandType;
 
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
@@ -35,14 +35,14 @@ public class JpaStatementBuilder extends StatementBuilder {
     }
 
     @Override
-    public SqlCommandType getSqlCommandType(Method method) {
-        SqlCommandType sqlCommandType = SqlCommandType.SELECT;
+    public DmlType getDmlType(Method method) {
+        DmlType dmlType = DmlType.SELECT;
         if (DELETE_PATTERN.matcher(method.getName()).find()) {
-            sqlCommandType = SqlCommandType.DELETE;
+            dmlType = DmlType.DELETE;
         }
         if (LOGIC_DELETE_PATTERN.matcher(method.getName()).find()) {
-            sqlCommandType = SqlCommandType.UPDATE;
+            dmlType = DmlType.LOGIC_DELETE;
         }
-        return sqlCommandType;
+        return dmlType;
     }
 }

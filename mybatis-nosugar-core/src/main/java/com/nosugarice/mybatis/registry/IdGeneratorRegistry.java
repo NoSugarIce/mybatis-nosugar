@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.registry;
 
-import com.nosugarice.mybatis.mapping.id.IdGenerator;
-import com.nosugarice.mybatis.mapping.id.UUIDGenerator;
+import com.nosugarice.mybatis.assign.id.IdGenerator;
+import com.nosugarice.mybatis.assign.id.UUIDGenerator;
 
 /**
  * @author dingjingyang@foxmail.com

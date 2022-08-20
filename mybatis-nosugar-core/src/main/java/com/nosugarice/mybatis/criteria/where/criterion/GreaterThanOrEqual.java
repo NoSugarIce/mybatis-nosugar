@@ -29,11 +29,7 @@ public class GreaterThanOrEqual<T> extends SingleValueCriterion<T, GreaterThanOr
     }
 
     public GreaterThanOrEqual(String column, T value) {
-        super(column, value);
+        super(column, value, OperatorType.GREATER_THAN_OR_EQUAL);
     }
 
-    @Override
-    protected OperatorType getOperator() {
-        return OperatorType.GREATER_THAN_OR_EQUAL;
-    }
 }
