@@ -16,13 +16,11 @@
 
 package com.nosugarice.mybatis.criteria;
 
-import com.nosugarice.mybatis.criteria.clause.From;
-import com.nosugarice.mybatis.criteria.clause.UpdateSet;
-import com.nosugarice.mybatis.criteria.clause.Where;
+import com.nosugarice.mybatis.criteria.clause.Update;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/4
  */
-public interface CriteriaUpdate<T, C> extends Criteria, UpdateSet<C, CriteriaUpdate<T, C>>, From<T>, Where<C, CriteriaUpdate<T, C>> {
+public interface CriteriaUpdate<T, C, X extends CriteriaUpdate<T, C, X>> extends Criteria, Update<T, C, X> {
 }

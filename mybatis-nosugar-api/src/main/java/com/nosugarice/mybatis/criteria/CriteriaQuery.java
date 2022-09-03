@@ -16,17 +16,11 @@
 
 package com.nosugarice.mybatis.criteria;
 
+import com.nosugarice.mybatis.criteria.clause.Query;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/4
  */
-public interface CriteriaQuery<T, C> extends Criteria, Query<T, C, CriteriaQuery<T, C>> {
-
-    /**
-     * 简单查询
-     *
-     * @return
-     */
-    CriteriaQuery<T, C> simple();
-
+public interface CriteriaQuery<T, C, X extends CriteriaQuery<T, C, X>> extends Criteria, Query<T, C, X> {
 }

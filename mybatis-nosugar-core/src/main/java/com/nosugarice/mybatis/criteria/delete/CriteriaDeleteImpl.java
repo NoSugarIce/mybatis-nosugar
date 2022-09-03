@@ -18,23 +18,15 @@ package com.nosugarice.mybatis.criteria.delete;
 
 import com.nosugarice.mybatis.criteria.CriteriaDelete;
 import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
-import com.nosugarice.mybatis.criteria.where.AbstractWhere;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2021/12/5
  */
-public class CriteriaDeleteImpl<T, C> extends AbstractWhere<C, CriteriaDelete<T, C>> implements CriteriaDelete<T, C> {
-
-    private static final long serialVersionUID = -3286450766474934503L;
+public class CriteriaDeleteImpl<T, C> extends AbstractDelete<T, C, CriteriaDeleteImpl<T, C>> implements CriteriaDelete<T, C, CriteriaDeleteImpl<T, C>> {
 
     public CriteriaDeleteImpl(Class<T> entityClass, ToColumn<C> toColumn) {
         super(entityClass, toColumn);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<T> getType() {
-        return (Class<T>) getEntityClass();
-    }
 }

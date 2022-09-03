@@ -82,7 +82,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         this.dialect = dialect;
         this.entitySqlPart = new EntitySQLPart(entityMetadata, dialect);
         this.sqlRender = new EntitySQLRender.Builder()
-                .withTable(entityMetadata.getRelationalEntity().getTable().getName())
+                .withTable(entityMetadata.getRelationalEntity().getTable().getName()
+                        , entityMetadata.getRelationalEntity().getTable().getSchema())
                 .withSupportDynamicTableName(entityMetadata.getSupports().isSupportDynamicTableName())
                 .build();
     }
@@ -90,13 +91,15 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     @Override
     public <ID> SqlAndParameterBind selectById(ID id) {
         return byIdBind(id, sqlAndParameterBind ->
-                new SqlAndParameterBind(sqlAndParameterBind).setSql(getSimpleSelectSql(false, sqlAndParameterBind.getSql())));
+                new SqlAndParameterBind(sqlAndParameterBind)
+                        .setSql(getSimpleSelectSql(false, sqlAndParameterBind.getSql())));
     }
 
     @Override
     public <ID> SqlAndParameterBind selectByIds(Collection<ID> ids) {
         return byIdsBind(ids, sqlAndParameterBind ->
-                new SqlAndParameterBind(sqlAndParameterBind).setSql(getSimpleSelectSql(false, sqlAndParameterBind.getSql())));
+                new SqlAndParameterBind(sqlAndParameterBind)
+                        .setSql(getSimpleSelectSql(false, sqlAndParameterBind.getSql())));
     }
 
     private String getSimpleSelectSql(boolean distinct, String where) {
@@ -112,7 +115,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?> criteria) {
+    public <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?, ?> criteria) {
         if (criteria == null) {
             return selectAll();
         }
@@ -160,7 +163,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             sql = sql.endsWith(SQLConstants.FOR_UPDATE) ? sql.replace(SQLConstants.FOR_UPDATE, SQLConstants.EMPTY) : sql;
             sql = dialect.getLimitHandler().processSql(sql, rowBounds.getOffset(), rowBounds.getLimit());
         }
-        structure.getCountColumn().ifPresent(countColumn -> whereSqlAndParameterBind.addParameter(Constants.COUNT_COLUMN, countColumn));
+        structure.getCountColumn().ifPresent(countColumn ->
+                whereSqlAndParameterBind.addParameter(Constants.COUNT_COLUMN, countColumn));
         return whereSqlAndParameterBind.setSql(sql);
     }
 
@@ -194,7 +198,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             Map<String, Object> columnValues = getEntityColumnValues(entity, true);
             for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
                 if (property.getValue().isInsertable()) {
-                    sqlAndParameterBind.bind(columnValues.get(property.getColumn()), property.getColumn(), entityMetadata.getEntityClass()).canHandle();
+                    sqlAndParameterBind.bind(columnValues.get(property.getColumn()), property.getColumn()
+                            , entityMetadata.getEntityClass()).canHandle();
                     columnJoin.withElements(property.getColumn());
                     valueJoin.withElements("?");
                 }
@@ -211,7 +216,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             sqlAndParameterBind.setParameterHandle((t, parameterColumnBinds, boundSql) -> {
                 Map<String, Object> columnValues = getEntityColumnValues(t, true);
                 for (ParameterColumnBind parameterColumnBind : parameterColumnBinds) {
-                    boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), columnValues.get(parameterColumnBind.getColumn()));
+                    boundSql.setAdditionalParameter(parameterColumnBind.getParameter()
+                            , columnValues.get(parameterColumnBind.getColumn()));
                 }
                 return null;
             });
@@ -259,7 +265,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     @Override
     public <T> SqlAndParameterBind updateByIdChoseProperty(T entity, Set<String> choseProperties) {
         Set<String> relationalProperties = entityMetadata.getRelationalEntity().getProperties().stream()
-                .filter(relationalProperty -> choseProperties.contains(relationalProperty.getName()) || relationalProperty.isVersion())
+                .filter(relationalProperty ->
+                        choseProperties.contains(relationalProperty.getName()) || relationalProperty.isVersion())
                 .map(RelationalProperty::getColumn)
                 .collect(Collectors.toSet());
         return updateById(entity, relationalProperties, false);
@@ -269,11 +276,12 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         Map<String, Object> values = entityToUpdateValues(entity, includeColumns, nullable);
         SqlAndParameterBind sqlAndParameterBind = updateValueBind(values);
         String updateIdWhere = buildIdBind(entity, sqlAndParameterBind.getParameterBind());
-        return update(values, sqlAndParameterBind.getSql(), excludeLogicDeleteSql(updateIdWhere), sqlAndParameterBind.getParameterBind());
+        return update(values, sqlAndParameterBind.getSql(), excludeLogicDeleteSql(updateIdWhere)
+                , sqlAndParameterBind.getParameterBind());
     }
 
     @Override
-    public <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria) {
+    public <T> SqlAndParameterBind update(CriteriaUpdate<T, ?, ?> criteria) {
         Preconditions.checkArgument(criteria instanceof UpdateStructure, "不支持的查询结构类型.");
         UpdateStructure structure = (UpdateStructure) criteria;
         Map<String, Object> values = structure.getSetValues();
@@ -332,7 +340,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria) {
+    public <T> SqlAndParameterBind delete(CriteriaDelete<T, ?, ?> criteria) {
         return delete(criteria, this::getDeleteSql);
     }
 
@@ -347,11 +355,12 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria) {
+    public <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?, ?> criteria) {
         return delete(criteria, this::getLogicDeleteSql);
     }
 
-    private <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria, Function<SqlAndParameterBind, SqlAndParameterBind> deleteSqlHandler) {
+    private <T> SqlAndParameterBind delete(CriteriaDelete<T, ?, ?> criteria
+            , Function<SqlAndParameterBind, SqlAndParameterBind> deleteSqlHandler) {
         Preconditions.checkArgument(criteria instanceof WhereStructure, "不支持的查询结构类型.");
         WhereStructure structure = (WhereStructure) criteria;
         SqlAndParameterBind sqlAndParameterBind = structureWhereBind(structure, null);
@@ -484,7 +493,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         sqlAndParameterBind.bind(id, idColumn, entityMetadata.getEntityClass());
         if (id == SqlSourceScriptBuilder.PLACEHOLDER_OBJECT) {
             sqlAndParameterBind.setParameterHandle((idValue, parameterColumnBinds, boundSql) -> {
-                parameterColumnBinds.forEach(parameterColumnBind -> boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), idValue));
+                parameterColumnBinds.forEach(parameterColumnBind ->
+                        boundSql.setAdditionalParameter(parameterColumnBind.getParameter(), idValue));
                 return null;
             });
         }

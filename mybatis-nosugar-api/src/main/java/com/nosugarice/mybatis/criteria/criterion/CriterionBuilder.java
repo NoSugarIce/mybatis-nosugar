@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.criterion;
 
-import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Query;
 
 import java.util.Collection;
 

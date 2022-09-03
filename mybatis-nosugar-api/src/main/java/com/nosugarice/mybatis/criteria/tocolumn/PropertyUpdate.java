@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaUpdate;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface PropertyUpdate<T> extends CriteriaUpdate<T, String> {
+public interface PropertyUpdate<T> extends CriteriaUpdate<T, String, PropertyUpdate<T>> {
 }

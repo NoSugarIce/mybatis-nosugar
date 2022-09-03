@@ -23,7 +23,7 @@ import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/5
  */
-public class CriteriaQueryImpl<T, C> extends AbstractQuery<T, C, CriteriaQuery<T, C>> implements CriteriaQuery<T, C> {
+public class CriteriaQueryImpl<T, C> extends AbstractQuery<T, C, CriteriaQueryImpl<T, C>> implements CriteriaQuery<T, C, CriteriaQueryImpl<T, C>> {
 
     public CriteriaQueryImpl(Class<T> entityClass, ToColumn<C> toColumn) {
         super(entityClass, toColumn);

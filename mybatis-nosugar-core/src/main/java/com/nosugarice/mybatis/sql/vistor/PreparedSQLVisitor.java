@@ -45,7 +45,7 @@ public class PreparedSQLVisitor extends PlaceholderSQLVisitor {
     public SqlAndParameterBind visit(ColumnCriterion<?> criterion) {
         Object value = criterion.getValue();
         if (value instanceof CriteriaQuery) {
-            return new SubQueryPreparedSQLVisitor(((CriteriaQuery<?, ?>) value).getType(), getParameterBind()).visit(criterion);
+            return new SubQueryPreparedSQLVisitor(((CriteriaQuery<?, ?, ?>) value).getType(), getParameterBind()).visit(criterion);
         }
         return super.visit(criterion);
     }

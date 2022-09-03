@@ -14,19 +14,37 @@
  *    limitations under the License.
  */
 
-package com.nosugarice.mybatis.criteria.update;
+package com.nosugarice.mybatis.criteria.clause;
 
-import com.nosugarice.mybatis.criteria.CriteriaUpdate;
 import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 
 /**
  * @author dingjingyang@foxmail.com
- * @date 2021/12/5
+ * @date 2020/12/19
  */
-public class CriteriaUpdateImpl<T, C> extends AbstractUpdate<T, C, CriteriaUpdateImpl<T, C>> implements CriteriaUpdate<T, C, CriteriaUpdateImpl<T, C>> {
+public interface Query<T, C, X extends Query<T, C, X>> extends
+        Select<C, X>
+        , From<T>
+        , Join<C, X>
+        , Where<C, X>
+        , GroupBy<C, X>
+        , Having<C, X>
+        , OrderBy<C, X>
+        , Limit<X>
+        , ForUpdate<X> {
 
-    public CriteriaUpdateImpl(Class<T> entityClass, ToColumn<C> toColumn) {
-        super(entityClass, toColumn);
-    }
+    /**
+     * 简单查询
+     *
+     * @return
+     */
+    X simple();
+
+    /**
+     * 获取列名转换
+     *
+     * @return
+     */
+    ToColumn<C> getToColumn();
 
 }

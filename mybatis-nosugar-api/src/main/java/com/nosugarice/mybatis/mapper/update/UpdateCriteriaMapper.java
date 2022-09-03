@@ -35,7 +35,7 @@ public interface UpdateCriteriaMapper<T> extends UpdateMapper {
      * @return 更新行数
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE)
-    <C> int update(@Param(MapperParam.CRITERIA) CriteriaUpdate<T, C> criteria);
+    <C> int update(@Param(MapperParam.CRITERIA) CriteriaUpdate<T, C, ?> criteria);
 
     /**
      * 根据所选条件更新,仅生效条件
@@ -45,7 +45,7 @@ public interface UpdateCriteriaMapper<T> extends UpdateMapper {
      * @param criteria 查询条件,#set(k, v)将忽略
      * @return 更新行数
      */
-    default <C> int update(T entity, CriteriaUpdate<T, C> criteria) {
+    default <C> int update(T entity, CriteriaUpdate<T, C, ?> criteria) {
         return update(EntityToCriterion.getInstance().mergeCriteriaUpdate(entity, criteria, true));
     }
 
@@ -57,7 +57,7 @@ public interface UpdateCriteriaMapper<T> extends UpdateMapper {
      * @param criteria ,#set(k, v)将忽略
      * @return 更新行数
      */
-    default <C> int updateNullable(T entity, CriteriaUpdate<T, C> criteria) {
+    default <C> int updateNullable(T entity, CriteriaUpdate<T, C, ?> criteria) {
         return update(EntityToCriterion.getInstance().mergeCriteriaUpdate(entity, criteria, false));
     }
 

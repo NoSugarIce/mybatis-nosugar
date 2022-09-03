@@ -16,12 +16,11 @@
 
 package com.nosugarice.mybatis.criteria;
 
-import com.nosugarice.mybatis.criteria.clause.From;
-import com.nosugarice.mybatis.criteria.clause.Where;
+import com.nosugarice.mybatis.criteria.clause.Delete;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/5
  */
-public interface CriteriaDelete<T, C> extends Criteria, From<T>, Where<C, CriteriaDelete<T, C>> {
+public interface CriteriaDelete<T, C, X extends CriteriaDelete<T, C, X>> extends Criteria, Delete<T, C, X> {
 }

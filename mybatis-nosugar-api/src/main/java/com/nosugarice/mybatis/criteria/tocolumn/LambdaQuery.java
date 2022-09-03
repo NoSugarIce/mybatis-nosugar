@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaQuery;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface LambdaQuery<T> extends CriteriaQuery<T, Getter<T, ?>> {
+public interface LambdaQuery<T> extends CriteriaQuery<T, Getter<T, ?>, LambdaQuery<T>> {
 }

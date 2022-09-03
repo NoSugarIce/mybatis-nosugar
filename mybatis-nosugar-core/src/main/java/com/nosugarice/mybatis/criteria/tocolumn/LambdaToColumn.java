@@ -47,7 +47,7 @@ public interface LambdaToColumn extends ToColumn<Getter<?, ?>> {
         } else if (methodName.startsWith(is)) {
             name = methodName.substring(is.length());
         } else {
-            throw new NoSugarException("[? extends Getter] 不是一个有效的属性方法!");
+            throw new NoSugarException(methodName + "不是一个有效的属性方法!");
         }
         return name.length() > 1
                 ? Character.toLowerCase(name.charAt(0)) + name.substring(1)

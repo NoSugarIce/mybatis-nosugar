@@ -18,8 +18,10 @@ package com.nosugarice.mybatis.mapper.logicdelete;
 
 import com.nosugarice.mybatis.criteria.CriteriaDelete;
 import com.nosugarice.mybatis.criteria.EntityToCriterion;
+import com.nosugarice.mybatis.mapper.MapperParam;
 import com.nosugarice.mybatis.mapper.delete.DeleteCriteriaMapper;
 import com.nosugarice.mybatis.sql.SqlBuilder;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -34,7 +36,7 @@ public interface LogicDeleteCriteriaMapper<T> extends DeleteCriteriaMapper<T>, L
      * @return
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.LOGIC_DELETE)
-    <C> int logicDelete(CriteriaDelete<T, C> criteria);
+    <C> int logicDelete(@Param(MapperParam.CRITERIA) CriteriaDelete<T, C, ?> criteria);
 
     /**
      * 根据查询的条件进行删除

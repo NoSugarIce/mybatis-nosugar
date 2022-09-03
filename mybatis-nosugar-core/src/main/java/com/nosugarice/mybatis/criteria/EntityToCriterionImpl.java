@@ -14,22 +14,22 @@ import java.util.Map;
 public class EntityToCriterionImpl implements EntityToCriterion {
 
     @Override
-    public <T> CriteriaQuery<T, String> entityToSimpleCriteriaQuery(T entity) {
+    public <T> CriteriaQuery<T, String, ?> entityToSimpleCriteriaQuery(T entity) {
         return CriteriaBuilder.propertyQuery(entity).simple();
     }
 
     @Override
-    public <T> CriteriaUpdate<T, String> entityToCriteriaUpdate(T entity) {
+    public <T> CriteriaUpdate<T, String, ?> entityToCriteriaUpdate(T entity) {
         return CriteriaBuilder.propertyUpdate(entity);
     }
 
     @Override
-    public <T> CriteriaDelete<T, String> entityToCriteriaDelete(T entity) {
+    public <T> CriteriaDelete<T, String, ?> entityToCriteriaDelete(T entity) {
         return CriteriaBuilder.propertyDelete(entity);
     }
 
     @Override
-    public <T, C> CriteriaUpdate<T, C> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C> criteria, boolean nullable) {
+    public <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteria, boolean nullable) {
         criteria.cleanValues();
         Map<String, Object> setValues = entityToSetValues(entity, nullable);
         setValues.forEach(criteria::setByColumn);

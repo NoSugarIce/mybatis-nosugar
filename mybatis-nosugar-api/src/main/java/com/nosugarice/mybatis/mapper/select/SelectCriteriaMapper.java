@@ -43,7 +43,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 符合条件的记录
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_LIST)
-    <C> List<T> selectList(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C> criteria);
+    <C> List<T> selectList(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C, ?> criteria);
 
     /**
      * 查询所有记录
@@ -51,7 +51,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @return 所有记录
      */
     default <C> List<T> selectAll() {
-        return selectList((CriteriaQuery<T, C>) null);
+        return selectList((CriteriaQuery<T, C, ?>) null);
     }
 
     /**
@@ -60,8 +60,8 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param criteria 查询条件封装
      * @return 是否存在包装
      */
-    default <C> Optional<Integer> exists(CriteriaQuery<T, C> criteria) {
-        return adapterExists((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria);
+    default <C> Optional<Integer> exists(CriteriaQuery<T, C, ?> criteria) {
+        return adapterExists((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria);
     }
 
     /**
@@ -70,8 +70,8 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param criteria 查询条件封装
      * @return 符合条件的记录数
      */
-    default <C> long count(CriteriaQuery<T, C> criteria) {
-        return adapterCount((FunS.Param1<CriteriaQuery<T, C>, List<T>>) this::selectList, criteria).longValue();
+    default <C> long count(CriteriaQuery<T, C, ?> criteria) {
+        return adapterCount((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria).longValue();
     }
 
 
@@ -153,7 +153,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param page     分页参数
      * @return 分页数据
      */
-    default <C> Page<T> selectPage(CriteriaQuery<T, C> criteria, Page<T> page) {
+    default <C> Page<T> selectPage(CriteriaQuery<T, C, ?> criteria, Page<T> page) {
         return selectPageX(criteria, page, this::count, (tCriteriaQuery, tPage) -> selectList(tCriteriaQuery.limit(tPage)));
     }
 

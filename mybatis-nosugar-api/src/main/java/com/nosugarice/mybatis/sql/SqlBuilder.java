@@ -53,7 +53,7 @@ public @interface SqlBuilder {
         },
         SELECT_LIST() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaQuery<T, ?>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaQuery<T, ?, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::selectList;
             }
         },
@@ -83,7 +83,7 @@ public @interface SqlBuilder {
         },
         UPDATE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaUpdate<T, ?>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaUpdate<T, ?, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::update;
             }
         },
@@ -101,7 +101,7 @@ public @interface SqlBuilder {
         },
         DELETE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::delete;
             }
         },
@@ -119,7 +119,7 @@ public @interface SqlBuilder {
         },
         LOGIC_DELETE() {
             @Override
-            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?>, SqlAndParameterBind> providerFun() {
+            public <T, ID> FunS.Param2<ProviderTempLate, CriteriaDelete<T, ?, ?>, SqlAndParameterBind> providerFun() {
                 return ProviderTempLate::logicDelete;
             }
         },

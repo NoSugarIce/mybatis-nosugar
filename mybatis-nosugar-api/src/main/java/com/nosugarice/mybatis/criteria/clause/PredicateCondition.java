@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.criteria.clause;
 
-import com.nosugarice.mybatis.criteria.Query;
 import com.nosugarice.mybatis.criteria.criterion.Criterion;
 import com.nosugarice.mybatis.criteria.criterion.CriterionBuilder;
 

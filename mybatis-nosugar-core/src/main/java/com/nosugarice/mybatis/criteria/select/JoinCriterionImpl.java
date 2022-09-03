@@ -16,12 +16,13 @@
 
 package com.nosugarice.mybatis.criteria.select;
 
-import com.nosugarice.mybatis.criteria.Query;
 import com.nosugarice.mybatis.criteria.clause.AggFunction;
 import com.nosugarice.mybatis.criteria.clause.Operator;
+import com.nosugarice.mybatis.criteria.clause.Query;
 import com.nosugarice.mybatis.criteria.clause.SQLFunction;
 import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
 import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
+import com.nosugarice.mybatis.mapping.Table;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.Preconditions;
@@ -37,6 +38,7 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
 
     private final Query<?, C, ?> masterQuery;
     private final JoinType joinType;
+    private final String schema;
     private final String table;
     private final String tableAlias;
     private final String column;
@@ -47,6 +49,7 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
         super(builder.entityClass, (ToColumn<C1>) builder.masterQuery.getToColumn());
         this.masterQuery = builder.masterQuery;
         this.joinType = builder.joinType;
+        this.schema = builder.schema;
         this.table = builder.table;
         this.tableAlias = builder.tableAlias;
         this.column = toColumn(builder.property, getType());
@@ -89,6 +92,11 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
     }
 
     @Override
+    public String getSchema() {
+        return schema;
+    }
+
+    @Override
     public String getTable() {
         return table;
     }
@@ -118,6 +126,8 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
         private final Query<?, C, ?> masterQuery;
         private final Class<T1> entityClass;
         private JoinType joinType;
+
+        private String schema;
         private String table;
         private String tableAlias;
         private C1 property;
@@ -150,8 +160,10 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
             Preconditions.checkNotNull(masterProperty, "主表属性为空.");
 
             EntityMetadataRegistry registry = EntityMetadataRegistry.getInstance();
-            this.table = registry.getTable(entityClass);
-            this.tableAlias = SQLPart.tableAlias(table);
+            Table table = registry.getEntityMetadata(entityClass).getRelationalEntity().getTable();
+            this.schema = table.getSchema();
+            this.table = table.getName();
+            this.tableAlias = SQLPart.tableAlias(table.getName());
 
             return new JoinCriterionImpl<>(this);
         }

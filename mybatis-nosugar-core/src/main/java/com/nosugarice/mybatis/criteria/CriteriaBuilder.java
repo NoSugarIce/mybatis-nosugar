@@ -295,6 +295,9 @@ public class CriteriaBuilder {
                 Criteria finalCriteria = criteria;
                 criteria = (X) Proxy.newProxyInstance(entityClass.getClassLoader(), interfaces
                         , (proxy, method, args) -> method.invoke(finalCriteria, args));
+                if (criteria instanceof ThisX) {
+                    ((ThisX) criteria).setThis((ThisX) criteria);
+                }
             }
             return criteria;
         }

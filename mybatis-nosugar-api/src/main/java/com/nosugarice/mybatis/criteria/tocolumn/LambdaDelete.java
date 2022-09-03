@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaDelete;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface LambdaDelete<T> extends CriteriaDelete<T, Getter<T, ?>> {
+public interface LambdaDelete<T> extends CriteriaDelete<T, Getter<T, ?>, LambdaDelete<T>> {
 }

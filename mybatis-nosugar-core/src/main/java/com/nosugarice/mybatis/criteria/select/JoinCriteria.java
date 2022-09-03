@@ -23,6 +23,7 @@ import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
 import com.nosugarice.mybatis.sql.render.JoinQuerySQLRender;
 import com.nosugarice.mybatis.util.StringJoinerBuilder;
+import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +57,7 @@ public class JoinCriteria<T> {
     public void addJoinCriterion(JoinCriterion<?, ?, ?, ?> joinCriterion) {
         joinCriterionList.add(joinCriterion);
         joinCriterionMap.put(Objects.hash(joinCriterion), new JoinQuerySQLRender((QueryStructure<?>) joinCriterion, new EntitySQLRender.Builder()
-                .withTable(joinCriterion.getTable())
+                .withTable(joinCriterion.getTable(), joinCriterion.getSchema())
                 .withSupportDynamicTableName(false)
                 .build()));
     }
@@ -73,7 +74,9 @@ public class JoinCriteria<T> {
                 .map(joinCriterion -> StringJoinerBuilder.createSpaceJoin()
                         .withPrefix(SPACE)
                         .withSuffix(LINE_SEPARATOR)
-                        .withElements(joinCriterion.getJoinType().getName(), joinCriterion.getTable(), joinCriterion.getTableAlias(), ON)
+                        .withElements(joinCriterion.getJoinType().getName())
+                        .withElements(StringUtils.isNotBlank(joinCriterion.getSchema()), joinCriterion.getSchema() + DOT)
+                        .withElements(joinCriterion.getTable(), joinCriterion.getTableAlias(), ON)
                         .withElements(masterTableAlias + DOT + joinCriterion.getMasterColumn())
                         .withElements(EQUALS_TO, joinCriterion.getTableAlias() + DOT + joinCriterion.getColumn())
                         .build())

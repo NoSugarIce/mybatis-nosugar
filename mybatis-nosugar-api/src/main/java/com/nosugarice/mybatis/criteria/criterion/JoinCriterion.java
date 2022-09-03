@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.criterion;
 
-import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Query;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -30,6 +30,13 @@ public interface JoinCriterion<T1, C1, C, X extends JoinCriterion<T1, C1, C, X>>
      * @return
      */
     JoinType getJoinType();
+
+    /**
+     * 获取Schema
+     *
+     * @return
+     */
+    String getSchema();
 
     /**
      * 获取表名

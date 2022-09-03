@@ -17,9 +17,9 @@
 package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.config.EntityMetadata;
-import com.nosugarice.mybatis.criteria.Query;
 import com.nosugarice.mybatis.criteria.clause.AggFunction;
 import com.nosugarice.mybatis.criteria.clause.Operator;
+import com.nosugarice.mybatis.criteria.clause.Query;
 import com.nosugarice.mybatis.criteria.clause.SQLFunction;
 import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
 import com.nosugarice.mybatis.criteria.criterion.JoinCriterion.JoinType;
@@ -304,11 +304,6 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     @Override
     public void setParameterBind(ParameterBind parameterBind) {
         this.parameterBind = parameterBind;
-    }
-
-    @SuppressWarnings("unchecked")
-    private X getThis() {
-        return (X) this;
     }
 
 }

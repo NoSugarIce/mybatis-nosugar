@@ -17,7 +17,7 @@
 package com.nosugarice.mybatis.criteria.where.criterion;
 
 import com.nosugarice.mybatis.criteria.ColumnReader;
-import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Query;
 import com.nosugarice.mybatis.criteria.criterion.ColumnCriterion;
 import com.nosugarice.mybatis.sql.SQLPart;
 

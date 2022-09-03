@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.where.criterion;
 
-import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Query;
 
 /**
  * @author dingjingyang@foxmail.com

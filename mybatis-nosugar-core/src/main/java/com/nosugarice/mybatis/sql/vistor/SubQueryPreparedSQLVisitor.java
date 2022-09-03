@@ -72,7 +72,7 @@ public class SubQueryPreparedSQLVisitor extends PlaceholderSQLVisitor {
         String subQuery = SQLConstants.EMPTY;
         Object value = criterion.getValue();
         if (value instanceof CriteriaQuery) {
-            CriteriaQuery<?, ?> subCriteriaQuery = (CriteriaQuery<?, ?>) value;
+            CriteriaQuery<?, ?, ?> subCriteriaQuery = (CriteriaQuery<?, ?, ?>) value;
             ProviderTempLate subProviderTempLate = new ProviderTempLateImpl(
                     EntityMetadataRegistry.getInstance().getEntityMetadata(subCriteriaQuery.getType()), DialectContext.getDialect());
             if (subCriteriaQuery instanceof QueryStructure) {

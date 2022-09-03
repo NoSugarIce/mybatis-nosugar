@@ -16,7 +16,7 @@
 
 package com.nosugarice.mybatis.criteria.where;
 
-import com.nosugarice.mybatis.criteria.Query;
+import com.nosugarice.mybatis.criteria.clause.Query;
 import com.nosugarice.mybatis.criteria.clause.Where;
 import com.nosugarice.mybatis.criteria.criterion.Criterion;
 import com.nosugarice.mybatis.criteria.criterion.CriterionBuilder;
@@ -45,6 +45,9 @@ import java.util.Optional;
  */
 public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C, X>, CriterionBuilder<C>, WhereStructure {
 
+    @SuppressWarnings("unchecked")
+    private X thisX = (X) this;
+
     private final Class<?> entityClass;
     private final ToColumn<C> toColumn;
 
@@ -69,16 +72,15 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
 
     @Override
     public Class<?> getType() {
-        return null;
+        return entityClass;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public X addCriterion(boolean condition, Criterion... criterions) {
         if (condition && criterions != null && criterions.length > 0) {
             groupCriterion.append(criterions);
         }
-        return (X) this;
+        return getThis();
     }
 
     @Override
@@ -86,11 +88,10 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
         return addCriterion(new GroupCriterionImpl(criterions).byOr());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public X includeLogicDelete() {
         this.includeLogicDelete = true;
-        return (X) this;
+        return getThis();
     }
 
     @Override
@@ -183,5 +184,15 @@ public abstract class AbstractWhere<C, X extends Where<C, X>> implements Where<C
 
     public boolean isIncludeLogicDelete() {
         return includeLogicDelete;
+    }
+
+    @Override
+    public void setThis(X x) {
+        this.thisX = x;
+    }
+
+    @Override
+    public X getThis() {
+        return thisX;
     }
 }

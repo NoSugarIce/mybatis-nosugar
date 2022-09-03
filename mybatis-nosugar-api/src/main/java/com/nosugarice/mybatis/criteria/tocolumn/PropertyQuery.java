@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaQuery;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface PropertyQuery<T> extends CriteriaQuery<T, String> {
+public interface PropertyQuery<T> extends CriteriaQuery<T, String, PropertyQuery<T>> {
 }

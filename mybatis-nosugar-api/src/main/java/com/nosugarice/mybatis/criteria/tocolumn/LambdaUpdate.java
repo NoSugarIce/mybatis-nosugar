@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaUpdate;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface LambdaUpdate<T> extends CriteriaUpdate<T, Getter<T, ?>> {
+public interface LambdaUpdate<T> extends CriteriaUpdate<T, Getter<T, ?>, LambdaUpdate<T>> {
 }

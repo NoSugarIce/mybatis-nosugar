@@ -16,13 +16,14 @@
 
 package com.nosugarice.mybatis.criteria.clause;
 
+import com.nosugarice.mybatis.criteria.ThisX;
 import com.nosugarice.mybatis.criteria.criterion.Criterion;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Where<C, X extends Where<C, X>> extends PredicateCondition<C, X> {
+public interface Where<C, X extends Where<C, X>> extends PredicateCondition<C, X>, ThisX<X> {
 
     /**
      * 添加条件

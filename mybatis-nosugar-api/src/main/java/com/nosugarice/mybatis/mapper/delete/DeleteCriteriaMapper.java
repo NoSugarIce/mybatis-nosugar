@@ -35,7 +35,7 @@ public interface DeleteCriteriaMapper<T> extends DeleteMapper {
      * @return
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.DELETE)
-    <C> int delete(@Param(MapperParam.CRITERIA) CriteriaDelete<T, C> criteria);
+    <C> int delete(@Param(MapperParam.CRITERIA) CriteriaDelete<T, C, ?> criteria);
 
     /**
      * 根据查询的条件进行删除

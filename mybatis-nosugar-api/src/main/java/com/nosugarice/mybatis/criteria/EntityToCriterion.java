@@ -17,7 +17,7 @@ public interface EntityToCriterion {
      * @param <T>
      * @return
      */
-    <T> CriteriaQuery<T, String> entityToSimpleCriteriaQuery(T entity);
+    <T> CriteriaQuery<T, String, ?> entityToSimpleCriteriaQuery(T entity);
 
     /**
      * 实体对象转更新查询体
@@ -26,7 +26,7 @@ public interface EntityToCriterion {
      * @param <T>
      * @return
      */
-    <T> CriteriaUpdate<T, String> entityToCriteriaUpdate(T entity);
+    <T> CriteriaUpdate<T, String, ?> entityToCriteriaUpdate(T entity);
 
     /**
      * 实体对象转删除查询体
@@ -35,7 +35,7 @@ public interface EntityToCriterion {
      * @param <T>
      * @return
      */
-    <T> CriteriaDelete<T, String> entityToCriteriaDelete(T entity);
+    <T> CriteriaDelete<T, String, ?> entityToCriteriaDelete(T entity);
 
     /**
      * 将实体属性合并到更新结构体
@@ -46,7 +46,7 @@ public interface EntityToCriterion {
      * @param <T>
      * @return
      */
-    <T, C> CriteriaUpdate<T, C> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C> criteriaUpdate, boolean nullable);
+    <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteriaUpdate, boolean nullable);
 
     /**
      * 获取实例

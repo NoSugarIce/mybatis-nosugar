@@ -22,5 +22,5 @@ import com.nosugarice.mybatis.criteria.CriteriaDelete;
  * @author dingjingyang@foxmail.com
  * @date 2021/12/26
  */
-public interface ColumnDelete<T> extends CriteriaDelete<T, String> {
+public interface ColumnDelete<T> extends CriteriaDelete<T, String, ColumnDelete<T>> {
 }

@@ -33,7 +33,7 @@ public interface ProviderTempLate {
 
     <ID> SqlAndParameterBind selectByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?> criteria);
+    <T> SqlAndParameterBind selectList(CriteriaQuery<T, ?, ?> criteria);
 
     <T> SqlAndParameterBind insert(T entity);
 
@@ -43,19 +43,19 @@ public interface ProviderTempLate {
 
     <T> SqlAndParameterBind updateByIdChoseProperty(T entity, Set<String> choseProperties);
 
-    <T> SqlAndParameterBind update(CriteriaUpdate<T, ?> criteria);
+    <T> SqlAndParameterBind update(CriteriaUpdate<T, ?, ?> criteria);
 
     <ID> SqlAndParameterBind deleteById(ID id);
 
     <ID> SqlAndParameterBind deleteByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?> criteria);
+    <T> SqlAndParameterBind delete(CriteriaDelete<T, ?, ?> criteria);
 
     <ID> SqlAndParameterBind logicDeleteById(ID id);
 
     <ID> SqlAndParameterBind logicDeleteByIds(Collection<ID> ids);
 
-    <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?> criteria);
+    <T> SqlAndParameterBind logicDelete(CriteriaDelete<T, ?, ?> criteria);
 
     //--------------jpa------------------------
 

@@ -18,6 +18,7 @@ package com.nosugarice.mybatis.sql.render;
 
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.StringFormatter;
+import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,10 +61,12 @@ public class EntitySQLRender {
     public static class Builder {
 
         private String table;
+        private String schema;
         private boolean supportDynamicTableName;
 
-        public Builder withTable(String table) {
+        public Builder withTable(String table, String schema) {
             this.table = table;
+            this.schema = schema;
             return this;
         }
 
@@ -79,9 +82,12 @@ public class EntitySQLRender {
         public Map<String, String> buildPlaceholderValues(boolean withTableAlias) {
             Map<String, String> placeholderValues = new HashMap<>(7);
             String tableName = supportDynamicTableName ? TABLE_P : table;
-            String fromTable = FROM + SPACE + tableName;
-            String alias = SQLPart.tableAlias(tableName);
+            if (StringUtils.isNotBlank(schema)) {
+                tableName = schema + DOT + tableName;
+            }
+            String alias = SQLPart.tableAlias(table);
             String asAlias = AS_ + alias;
+            String fromTable = FROM + SPACE + tableName;
             String fromWithAlias = fromTable + asAlias;
             String aliasState = alias + DOT;
 
