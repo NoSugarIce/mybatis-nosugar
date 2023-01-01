@@ -20,11 +20,17 @@ import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.OrderComparator;
 import com.nosugarice.mybatis.entity.Entity;
 import com.nosugarice.mybatis.entity.EntityData;
+import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.util.Preconditions;
+import com.nosugarice.mybatis.util.ReflectionUtils;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * p
@@ -46,6 +52,27 @@ public class EntityDataImpl implements EntityData, OrderComparator {
                 .orElse(null);
 
         return (ID) Preconditions.checkNotNull(pkProperty, entity.getClass().getName() + ":未找到主键属性!").getValue(entity);
+    }
+
+    @Override
+    public <T> Set<String> diffValueProperty(T sourceEntity, T entity) {
+        List<RelationalProperty> relationalProperties = Optional.of(EntityMetadataRegistry.getInstance())
+                .map(entityMetadataRegistry -> entityMetadataRegistry.getEntityMetadata(entity.getClass()))
+                .map(EntityMetadata::getRelationalEntity)
+                .map(RelationalEntity::getProperties)
+                .orElse(null);
+
+        if (relationalProperties != null) {
+            return relationalProperties.stream()
+                    .filter(relationalProperty -> !Objects.equals(relationalProperty.getValue(sourceEntity), relationalProperty.getValue(entity)))
+                    .map(RelationalProperty::getName)
+                    .collect(Collectors.toSet());
+        } else {
+            return ReflectionUtils.getAllGetMethod(entity.getClass()).stream()
+                    .filter(method -> !Objects.equals(ReflectionUtils.invoke(method, sourceEntity), ReflectionUtils.invoke(method, entity)))
+                    .map(ReflectionUtils::getPropertyName)
+                    .collect(Collectors.toSet());
+        }
     }
 
     @Override

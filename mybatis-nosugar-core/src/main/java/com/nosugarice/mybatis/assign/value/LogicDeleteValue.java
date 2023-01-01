@@ -91,7 +91,7 @@ public class LogicDeleteValue extends SimpleValue {
                         , Long.class, boolean.class, Boolean.class, Date.class, LocalDateTime.class, String.class)
                 .collect(Collectors.toSet());
 
-        private static final LogicDeleteValueGenerator INSTANCE = new LogicDeleteValue.LogicDeleteValueGenerator();
+        private static final LogicDeleteValueGenerator INSTANCE = new LogicDeleteValueGenerator();
 
         public Serializable generateValue(String value, Class<?> type) {
             Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type)

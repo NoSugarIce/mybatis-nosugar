@@ -97,27 +97,25 @@ public class MybatisMapperFactoryBean<T> extends MapperFactoryBean<T> implements
 
     @Override
     public T getObject() throws Exception {
-        if (!Mapper.class.isAssignableFrom(getMapperInterface())) {
+        Class<T> mapperInterface = getMapperInterface();
+        if (!Mapper.class.isAssignableFrom(mapperInterface)) {
             return super.getObject();
         }
         MapperBuilder mapperBuilder = metadataBuildingContext.getMapperBuilder();
         //可以延迟加载,当使用的时候再进行构建
-        if (!mapperBuilder.isLoaded(getMapperInterface())) {
-            mapperBuilder.process(getMapperInterface());
+        if (!mapperBuilder.isLoaded(mapperInterface)) {
+            mapperBuilder.process(mapperInterface);
         }
-        T mapper;
-        if (metadataBuildingContext.getConfig().getSwitchConfig().isSpeedBatch() && getMapperInterface().isAnnotationPresent(SpeedBatch.class)) {
-            T defaultObj = super.getObject();
+        T mapper = super.getObject();
+        if (metadataBuildingContext.getConfig().getSwitchConfig().isSpeedBatch() && mapperInterface.isAnnotationPresent(SpeedBatch.class)) {
             SqlSession sqlSession = BATCH_SQL_SESSION_TEMPLATE_MAP.computeIfAbsent(getSqlSessionFactory(), sqlSessionFactory
                     -> new SqlSessionTemplate(new DefaultSqlSessionFactory(getSqlSessionFactory().getConfiguration()), ExecutorType.BATCH));
-            T batchMapper = sqlSession.getMapper(getMapperInterface());
-            MutativeMapperProxy<T> mutativeMapperProxy = new MutativeMapperProxy<>(getMapperInterface(), defaultObj, batchMapper);
+            T batchMapper = sqlSession.getMapper(mapperInterface);
+            MutativeMapperProxy<T> mutativeMapperProxy = new MutativeMapperProxy<>(mapperInterface, mapper, batchMapper);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + getMapperInterface().getName() + "] " + "已增强批处理功能");
+                LOG.debug("[" + mapperInterface.getName() + "] " + "已增强批处理功能");
             }
             mapper = mutativeMapperProxy.getObject();
-        } else {
-            mapper = super.getObject();
         }
         return mapper;
     }

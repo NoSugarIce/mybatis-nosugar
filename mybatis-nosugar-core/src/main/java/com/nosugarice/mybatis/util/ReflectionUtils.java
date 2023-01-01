@@ -20,6 +20,7 @@ import com.nosugarice.mybatis.exception.NoSugarException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -145,6 +146,14 @@ public class ReflectionUtils {
             throw new NoSugarException("Method " + fullName + " is not a property getter");
         }
         return member.getName();
+    }
+
+    public static Object invoke(Method method, Object obj, Object... args) {
+        try {
+            return method.invoke(obj, args);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String decapitalize(String name) {

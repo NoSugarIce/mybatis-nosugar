@@ -18,6 +18,8 @@ package com.nosugarice.mybatis.entity;
 
 import com.nosugarice.mybatis.utils.ServiceLoaderUtils;
 
+import java.util.Set;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
@@ -27,12 +29,22 @@ public interface EntityData {
     /**
      * 获取主键值
      *
-     * @param entity
-     * @param <T>
-     * @param <ID>
+     * @param entity 实体对象
+     * @param <T>    实体类型
+     * @param <ID>   id类型
      * @return
      */
     <T, ID> ID getId(T entity);
+
+    /**
+     * 根据两个实体对象对比出不同值的属性集合
+     *
+     * @param sourceEntity 原实体对象
+     * @param entity       对比的实体对象
+     * @param <T>          实体类型
+     * @return
+     */
+    <T> Set<String> diffValueProperty(T sourceEntity, T entity);
 
     class Holder {
 

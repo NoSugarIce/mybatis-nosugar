@@ -104,8 +104,7 @@ public class AdapterSqlSource implements SqlSource {
         BoundSql originalBoundSql = sqlSource.getBoundSql(params);
 
         Dialect dialect = DialectContext.getDefaultDialect();
-        boolean runtimeDialect = dialect instanceof RuntimeDialect;
-        if (runtimeDialect) {
+        if (dialect instanceof RuntimeDialect) {
             if (DialectContext.isDominate()) {
                 dialect = DialectContext.getDialect();
             } else {
