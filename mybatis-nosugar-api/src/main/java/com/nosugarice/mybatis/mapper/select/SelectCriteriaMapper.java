@@ -55,7 +55,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
     }
 
     /**
-     * 判断是否存在
+     * 查询是否存在
      *
      * @param criteria 查询条件封装
      * @return 是否存在包装
@@ -86,7 +86,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
     }
 
     /**
-     * 查询符合的行数
+     * 查询是否存在
      *
      * @param entity 实体参数
      * @return 行数

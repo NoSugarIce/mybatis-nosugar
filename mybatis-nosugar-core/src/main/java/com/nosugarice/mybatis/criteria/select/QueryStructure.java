@@ -18,6 +18,7 @@ package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.criteria.where.WhereStructure;
 import com.nosugarice.mybatis.sql.ParameterBind;
+import com.nosugarice.mybatis.sql.TableAliasSequence;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
 import com.nosugarice.mybatis.sql.render.QuerySQLRender;
 import org.apache.ibatis.session.RowBounds;
@@ -29,7 +30,7 @@ import java.util.Optional;
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
  */
-public interface QueryStructure<T> extends WhereStructure {
+public interface QueryStructure extends WhereStructure {
 
     /**
      * 是否简单查询
@@ -101,7 +102,7 @@ public interface QueryStructure<T> extends WhereStructure {
      *
      * @return
      */
-    Optional<JoinCriteria<T>> getJoinCriteria();
+    Optional<JoinCriteria> getJoinCriteria();
 
     /**
      * 获取SQL渲染器
@@ -114,5 +115,16 @@ public interface QueryStructure<T> extends WhereStructure {
     void setParameterBind(ParameterBind parameterBind);
 
     ParameterBind getParameterBind();
+
+    TableAliasSequence getTableAliasSequence();
+
+    /**
+     * 获取表别名
+     *
+     * @return
+     */
+    default String getTableAlias() {
+        return getTableAliasSequence().alias(this);
+    }
 
 }

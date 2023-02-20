@@ -76,7 +76,7 @@ public class SubQueryPreparedSQLVisitor extends PlaceholderSQLVisitor {
             ProviderTempLate subProviderTempLate = new ProviderTempLateImpl(
                     EntityMetadataRegistry.getInstance().getEntityMetadata(subCriteriaQuery.getType()), DialectContext.getDialect());
             if (subCriteriaQuery instanceof QueryStructure) {
-                ((QueryStructure<?>) subCriteriaQuery).setParameterBind(getParameterBind());
+                ((QueryStructure) subCriteriaQuery).setParameterBind(getParameterBind());
             }
             subQuery = subProviderTempLate.selectList(subCriteriaQuery).getSql();
         }

@@ -46,13 +46,6 @@ public interface JoinCriterion<T1, C1, C, X extends JoinCriterion<T1, C1, C, X>>
     String getTable();
 
     /**
-     * 获取表别名
-     *
-     * @return
-     */
-    String getTableAlias();
-
-    /**
      * 连接属性
      *
      * @return

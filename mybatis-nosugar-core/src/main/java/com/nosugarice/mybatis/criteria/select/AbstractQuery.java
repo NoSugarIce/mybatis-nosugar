@@ -28,6 +28,7 @@ import com.nosugarice.mybatis.criteria.where.AbstractWhere;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
 import com.nosugarice.mybatis.sql.ParameterBind;
+import com.nosugarice.mybatis.sql.TableAliasSequence;
 import com.nosugarice.mybatis.sql.render.EntitySQLRender;
 import com.nosugarice.mybatis.sql.render.QuerySQLRender;
 import com.nosugarice.mybatis.util.CollectionUtils;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
  * @date 2021/9/19
  */
 public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends AbstractWhere<C, X>
-        implements Query<T, C, X>, QueryStructure<T> {
+        implements Query<T, C, X>, QueryStructure {
 
     private boolean simple;
 
@@ -72,7 +73,7 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
 
     private RowBounds rowBounds;
 
-    private JoinCriteria<T> joinCriteria;
+    private JoinCriteria joinCriteria;
 
     private boolean forUpdate;
 
@@ -80,8 +81,16 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
 
     private ParameterBind parameterBind;
 
+    private final TableAliasSequence tableAliasSequence;
+
     protected AbstractQuery(Class<?> entityClass, ToColumn<C> toColumn) {
         super(entityClass, toColumn);
+        this.tableAliasSequence = new TableAliasSequence(this);
+    }
+
+    protected AbstractQuery(Class<?> entityClass, ToColumn<C> toColumn, TableAliasSequence tableAliasSequence) {
+        super(entityClass, toColumn);
+        this.tableAliasSequence = tableAliasSequence;
     }
 
     @Override
@@ -203,7 +212,7 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     @Override
     public <T1, C1> X join(JoinCriterion<T1, C1, C, ?> joinCriterion) {
         if (joinCriteria == null) {
-            joinCriteria = new JoinCriteria<>(getType());
+            joinCriteria = new JoinCriteria(getTableAlias());
         }
         joinCriteria.addJoinCriterion(joinCriterion);
         return getThis();
@@ -215,6 +224,7 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
                 .withJoinType(joinType)
                 .withProperty(property)
                 .withMasterProperty(masterProperty)
+                .withTableAliasSequence(tableAliasSequence)
                 .build();
     }
 
@@ -278,7 +288,7 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     }
 
     @Override
-    public Optional<JoinCriteria<T>> getJoinCriteria() {
+    public Optional<JoinCriteria> getJoinCriteria() {
         return Optional.ofNullable(joinCriteria);
     }
 
@@ -304,6 +314,11 @@ public abstract class AbstractQuery<T, C, X extends Query<T, C, X>> extends Abst
     @Override
     public void setParameterBind(ParameterBind parameterBind) {
         this.parameterBind = parameterBind;
+    }
+
+    @Override
+    public TableAliasSequence getTableAliasSequence() {
+        return tableAliasSequence;
     }
 
 }

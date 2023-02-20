@@ -16,20 +16,29 @@
 
 package com.nosugarice.mybatis.sql.render;
 
+import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
 import com.nosugarice.mybatis.criteria.select.JoinCriteria;
 import com.nosugarice.mybatis.criteria.select.QueryStructure;
 import com.nosugarice.mybatis.sql.Expression;
 import com.nosugarice.mybatis.sql.ParameterBind;
 import com.nosugarice.mybatis.util.StringJoinerBuilder;
+import com.nosugarice.mybatis.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.nosugarice.mybatis.sql.Placeholder.AS_ALIAS_P;
 import static com.nosugarice.mybatis.sql.Placeholder.TABLE_P;
+import static com.nosugarice.mybatis.sql.SQLConstants.DOT;
 import static com.nosugarice.mybatis.sql.SQLConstants.EMPTY;
+import static com.nosugarice.mybatis.sql.SQLConstants.EQUALS_TO;
 import static com.nosugarice.mybatis.sql.SQLConstants.FROM;
+import static com.nosugarice.mybatis.sql.SQLConstants.LINE_SEPARATOR;
+import static com.nosugarice.mybatis.sql.SQLConstants.ON;
+import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
 
 
 /**
@@ -38,11 +47,14 @@ import static com.nosugarice.mybatis.sql.SQLConstants.FROM;
  */
 public class QuerySQLRender extends WhereSQLRender {
 
-    private final QueryStructure<?> queryStructure;
+    protected final QueryStructure queryStructure;
 
-    public QuerySQLRender(QueryStructure<?> queryStructure) {
+    private final Optional<JoinSQLRender> joinSQLRenderOptional;
+
+    public QuerySQLRender(QueryStructure queryStructure) {
         super(queryStructure);
         this.queryStructure = queryStructure;
+        this.joinSQLRenderOptional = queryStructure.getJoinCriteria().map(JoinSQLRender::new);
     }
 
     public String renderColumnSelect() {
@@ -81,18 +93,126 @@ public class QuerySQLRender extends WhereSQLRender {
     }
 
     public String renderJoinSelect() {
-        return Optional.of(queryStructure).map(QueryStructure::getJoinCriteria).flatMap(Function.identity())
-                .map(JoinCriteria::getSelectionSql).orElse(EMPTY);
+        return joinSQLRenderOptional.map(JoinSQLRender::getSelectionSql).orElse(EMPTY);
     }
 
     public String renderJoinFom() {
-        return Optional.of(queryStructure).map(QueryStructure::getJoinCriteria).flatMap(Function.identity())
-                .map(JoinCriteria::getJoinSql).orElse(EMPTY);
+        return joinSQLRenderOptional.map(JoinSQLRender::getJoinSql).orElse(EMPTY);
     }
 
     public String renderJoinWhere(ParameterBind parameterBind) {
-        return Optional.of(queryStructure).map(QueryStructure::getJoinCriteria).flatMap(Function.identity())
-                .map(joinCriteria -> joinCriteria.getWhereSql(parameterBind)).orElse(EMPTY);
+        return joinSQLRenderOptional.map(joinSQLRender -> joinSQLRender.getWhereSql(parameterBind)).orElse(EMPTY);
+    }
+
+    private class JoinSQLRender {
+
+        private final JoinCriteria joinCriteria;
+
+        private final Map<JoinCriterion<?, ?, ?, ?>, JoinQuerySQLRender> joinCriterionMap = new HashMap<>();
+
+        public final Function<JoinCriterion<?, ?, ?, ?>, JoinQuerySQLRender> joinQuerySQLRenderFunction =
+                joinCriterion -> new JoinQuerySQLRender((QueryStructure) joinCriterion, new EntitySQLRender.Builder()
+                        .withTable(joinCriterion.getTable(), joinCriterion.getSchema())
+                        .withSupportDynamicTableName(false)
+                        .build());
+
+        public JoinSQLRender(JoinCriteria joinCriteria) {
+            this.joinCriteria = joinCriteria;
+        }
+
+        public String getSelectionSql() {
+            return joinCriteria.getJoinCriterionList().stream()
+                    .map(joinCriterion -> joinCriterionMap.computeIfAbsent(joinCriterion, joinQuerySQLRenderFunction))
+                    .map(JoinQuerySQLRender::renderColumnSelect)
+                    .collect(Collectors.joining());
+        }
+
+        public String getJoinSql() {
+            return joinCriteria.getJoinCriterionList().stream()
+                    .map(joinCriterion -> StringJoinerBuilder.createSpaceJoin()
+                            .withPrefix(SPACE)
+                            .withSuffix(LINE_SEPARATOR)
+                            .withElements(joinCriterion.getJoinType().getName())
+                            .withElements(StringUtils.isNotBlank(joinCriterion.getSchema()), joinCriterion.getSchema() + DOT)
+                            .withElements(joinCriterion.getTable(), ((QueryStructure) joinCriterion).getTableAlias(), ON)
+                            .withElements(joinCriteria.getMasterTableAlias() + DOT + joinCriterion.getMasterColumn())
+                            .withElements(EQUALS_TO, ((QueryStructure) joinCriterion).getTableAlias() + DOT + joinCriterion.getColumn())
+                            .build())
+                    .collect(Collectors.joining(SPACE));
+        }
+
+        public String getWhereSql(ParameterBind parameterBind) {
+            return joinCriteria.getJoinCriterionList().stream()
+                    .map(joinCriterion -> joinCriterionMap.computeIfAbsent(joinCriterion, joinQuerySQLRenderFunction))
+                    .map(render -> render.renderWhere(parameterBind))
+                    .collect(Collectors.joining(SPACE));
+        }
+
+        private class JoinQuerySQLRender extends QuerySQLRender {
+
+            private final EntitySQLRender entitySQLRender;
+
+            public JoinQuerySQLRender(QueryStructure queryStructure, EntitySQLRender entitySQLRender) {
+                super(queryStructure);
+                this.entitySQLRender = entitySQLRender;
+            }
+
+            @Override
+            public String renderColumnSelect() {
+                return replacePlaceholder(super.renderColumnSelect());
+            }
+
+            @Override
+            public String renderFunctionSelect() {
+                return replacePlaceholder(super.renderFunctionSelect());
+            }
+
+            @Override
+            public String renderFrom() {
+                return replacePlaceholder(super.renderFrom());
+            }
+
+            @Override
+            public String renderWhere(ParameterBind parameterBind) {
+                return replacePlaceholder(super.renderWhere(parameterBind));
+            }
+
+            @Override
+            public String renderGroupBy() {
+                return replacePlaceholder(super.renderGroupBy());
+            }
+
+            @Override
+            public String renderHaving() {
+                return replacePlaceholder(super.renderHaving());
+            }
+
+            @Override
+            public String renderOrderBy() {
+                return replacePlaceholder(super.renderOrderBy());
+            }
+
+            @Override
+            public String renderJoinSelect() {
+                return replacePlaceholder(super.renderJoinSelect());
+            }
+
+            @Override
+            public String renderJoinFom() {
+                return replacePlaceholder(super.renderJoinFom());
+            }
+
+            @Override
+            public String renderJoinWhere(ParameterBind parameterBind) {
+                return replacePlaceholder(super.renderJoinWhere(parameterBind));
+            }
+
+            private String replacePlaceholder(String sql) {
+                return entitySQLRender.renderWithTableAlias(sql, JoinQuerySQLRender.this.queryStructure.getTableAlias());
+            }
+
+        }
+
     }
 
 }

@@ -24,7 +24,7 @@ import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
 import com.nosugarice.mybatis.criteria.tocolumn.ToColumn;
 import com.nosugarice.mybatis.mapping.Table;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
-import com.nosugarice.mybatis.sql.SQLPart;
+import com.nosugarice.mybatis.sql.TableAliasSequence;
 import com.nosugarice.mybatis.util.Preconditions;
 
 import java.util.Collection;
@@ -40,18 +40,16 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
     private final JoinType joinType;
     private final String schema;
     private final String table;
-    private final String tableAlias;
     private final String column;
     private final String masterColumn;
 
     @SuppressWarnings("unchecked")
     public JoinCriterionImpl(Builder<T1, C1, C> builder) {
-        super(builder.entityClass, (ToColumn<C1>) builder.masterQuery.getToColumn());
+        super(builder.entityClass, (ToColumn<C1>) builder.masterQuery.getToColumn(), builder.tableAliasSequence);
         this.masterQuery = builder.masterQuery;
         this.joinType = builder.joinType;
         this.schema = builder.schema;
         this.table = builder.table;
-        this.tableAlias = builder.tableAlias;
         this.column = toColumn(builder.property, getType());
         this.masterColumn = masterQuery.getToColumn().toColumn(builder.masterProperty, masterQuery.getType());
     }
@@ -102,11 +100,6 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
     }
 
     @Override
-    public String getTableAlias() {
-        return tableAlias;
-    }
-
-    @Override
     public String getColumn() {
         return column;
     }
@@ -129,9 +122,10 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
 
         private String schema;
         private String table;
-        private String tableAlias;
         private C1 property;
         private C masterProperty;
+
+        private TableAliasSequence tableAliasSequence;
 
         public Builder(Query<?, C, ?> masterQuery, Class<T1> entityClass) {
             this.masterQuery = masterQuery;
@@ -153,17 +147,22 @@ public class JoinCriterionImpl<T1, C1, C> extends AbstractQuery<T1, C1, JoinCrit
             return this;
         }
 
+        public Builder<T1, C1, C> withTableAliasSequence(TableAliasSequence tableAliasSequence) {
+            this.tableAliasSequence = tableAliasSequence;
+            return this;
+        }
+
         public JoinCriterionImpl<T1, C1, C> build() {
             Preconditions.checkNotNull(entityClass, "被关联表类型未设置.");
             Preconditions.checkNotNull(joinType, "关联类型未设置.");
             Preconditions.checkNotNull(property, "关联表属性为空.");
             Preconditions.checkNotNull(masterProperty, "主表属性为空.");
+            Preconditions.checkNotNull(tableAliasSequence, "表别名生成器为空.");
 
             EntityMetadataRegistry registry = EntityMetadataRegistry.getInstance();
             Table table = registry.getEntityMetadata(entityClass).getRelationalEntity().getTable();
             this.schema = table.getSchema();
             this.table = table.getName();
-            this.tableAlias = SQLPart.tableAlias(table.getName());
 
             return new JoinCriterionImpl<>(this);
         }

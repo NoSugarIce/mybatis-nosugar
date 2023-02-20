@@ -113,7 +113,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(WHERE)
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
-        return sqlRender.renderWithTableAlias(sql, false);
+        return sqlRender.render(sql);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             return selectAll();
         }
         Preconditions.checkArgument(criteria instanceof QueryStructure, "不支持的查询结构类型.");
-        QueryStructure<?> structure = (QueryStructure<?>) criteria;
+        QueryStructure structure = (QueryStructure) criteria;
         SqlAndParameterBind whereSqlAndParameterBind = structureWhereBind(structure, structure.getParameterBind());
         String whereSql = whereSqlAndParameterBind.getSql();
         String sql;
@@ -134,7 +134,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                     .withElements(StringUtils.isNotBlank(whereSql), WHERE)
                     .withElements(StringUtils.trim(whereSql, AND, null))
                     .build();
-            sql = sqlRender.renderWithTableAlias(sql, false);
+            sql = sqlRender.render(sql);
         } else {
             QuerySQLRender render = structure.getRender(sqlRender);
             String result = StringJoinerBuilder.createSpaceJoin()
@@ -157,7 +157,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                     .withElements(structure.getOrderBy().isPresent(), render.renderOrderBy())
                     .withElements(structure.isForUpdate(), FOR_UPDATE)
                     .build();
-            sql = sqlRender.renderWithTableAlias(sql, structure.getJoinCriteria().isPresent());
+            sql = structure.getJoinCriteria().isPresent() ?
+                    sqlRender.renderWithTableAlias(sql, structure.getTableAliasSequence().alias(structure)) : sqlRender.render(sql);
         }
 
         if (structure.getLimit().isPresent()) {
@@ -178,7 +179,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(FROM_TABLE_P)
                 .withElements(entityMetadata.getSupports().isSupportLogicDelete(), WHERE, entitySqlPart.selectParameterLogicDelete)
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return sqlAndParameterBind.setSql(sql);
     }
 
@@ -224,7 +225,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 return null;
             });
         }
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return sqlAndParameterBind.setSql(sql);
     }
 
@@ -255,7 +256,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(VALUES)
                 .withElements(valueJoin.build())
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return sqlAndParameterBind.setSql(sql);
     }
 
@@ -327,7 +328,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(StringUtils.isNotBlank(where), WHERE)
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return new SqlAndParameterBind(parameterBind).setSql(sql);
     }
 
@@ -376,7 +377,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(WHERE)
                 .withElements(StringUtils.trim(sqlAndParameterBind.getSql(), AND, null))
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return sqlAndParameterBind.setSql(sql);
     }
 
@@ -409,7 +410,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                     }
                 });
 
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return setSqlAndParameterBind.setSql(sql);
     }
 
@@ -423,14 +424,14 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(WHERE)
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
-        return sqlRender.renderWithTableAlias(sql, false);
+        return sqlRender.render(sql);
     }
 
     @Override
     public SqlAndParameterBind provideJpaFind(boolean distinct, String whereSql, String orderBy, Integer limit) {
         String sql = getSimpleSelectSql(distinct, excludeLogicDeleteSql(whereSql));
         if (StringUtils.isNotBlank(orderBy)) {
-            sql = sql + SPACE + sqlRender.renderWithTableAlias(orderBy, false);
+            sql = sql + SPACE + sqlRender.render(orderBy);
         }
         if (limit > 0) {
             sql = dialect.getLimitHandler().processSql(sql, 0, limit);
@@ -448,7 +449,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(WHERE)
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         return new SqlAndParameterBind(sql);
     }
 
@@ -462,7 +463,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(WHERE)
                 .withElements(StringUtils.trim(where, AND, null))
                 .build();
-        sql = sqlRender.renderWithTableAlias(sql, false);
+        sql = sqlRender.render(sql);
         sql = dialect.getLimitHandler().processSql(sql, 0, 1);
         return new SqlAndParameterBind(sql);
     }
@@ -524,7 +525,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         SqlAndParameterBind sqlAndParameterBind = new SqlAndParameterBind(parameterBind);
         String whereSql = EMPTY;
         if (structure instanceof QueryStructure) {
-            QueryStructure<?> queryStructure = (QueryStructure<?>) structure;
+            QueryStructure queryStructure = (QueryStructure) structure;
             QuerySQLRender render = queryStructure.getRender(sqlRender);
             if (queryStructure.getCriterion().map(GroupCriterion::hasCriterion).orElse(false)) {
                 whereSql = render.renderWhere(parameterBind);

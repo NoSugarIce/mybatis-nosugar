@@ -16,7 +16,6 @@
 
 package com.nosugarice.mybatis.sql.render;
 
-import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.util.StringFormatter;
 import com.nosugarice.mybatis.util.StringUtils;
 
@@ -42,20 +41,27 @@ import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
 public class EntitySQLRender {
 
     private final Map<String, String> placeholderValues;
-    private final Map<String, String> placeholderValuesWithAlias;
 
     public EntitySQLRender(Builder builder) {
-        this.placeholderValues = builder.buildPlaceholderValues(false);
-        this.placeholderValuesWithAlias = builder.buildPlaceholderValues(true);
+        this.placeholderValues = builder.buildPlaceholderValues();
     }
 
     public String render(String sql) {
-        return renderWithTableAlias(sql, false);
+        return StringFormatter.replacePlaceholder(sql, placeholderValues);
     }
 
-    public String renderWithTableAlias(String sql, boolean withTableAlias) {
-        return withTableAlias ? StringFormatter.replacePlaceholder(sql, placeholderValuesWithAlias)
-                : StringFormatter.replacePlaceholder(sql, placeholderValues);
+    public String renderWithTableAlias(String sql, String alias) {
+        Map<String, String> placeholderValuesWithAlias = new HashMap<>(placeholderValues);
+        String fromTable = placeholderValues.get(FROM_TABLE_P);
+        String asAlias = AS_ + alias;
+        String fromWithAlias = fromTable + asAlias;
+        String aliasState = alias + DOT;
+
+        placeholderValuesWithAlias.put(TABLE_ALIAS_P, alias);
+        placeholderValuesWithAlias.put(AS_ALIAS_P, asAlias);
+        placeholderValuesWithAlias.put(FROM_WITH_ALIAS_P, fromWithAlias);
+        placeholderValuesWithAlias.put(ALIAS_STATE_P, aliasState);
+        return StringFormatter.replacePlaceholder(sql, placeholderValuesWithAlias);
     }
 
     public static class Builder {
@@ -79,32 +85,20 @@ public class EntitySQLRender {
             return new EntitySQLRender(this);
         }
 
-        public Map<String, String> buildPlaceholderValues(boolean withTableAlias) {
+        public Map<String, String> buildPlaceholderValues() {
             Map<String, String> placeholderValues = new HashMap<>(7);
             String tableName = supportDynamicTableName ? TABLE_P : table;
             if (StringUtils.isNotBlank(schema)) {
                 tableName = schema + DOT + tableName;
             }
-            String alias = SQLPart.tableAlias(table);
-            String asAlias = AS_ + alias;
             String fromTable = FROM + SPACE + tableName;
-            String fromWithAlias = fromTable + asAlias;
-            String aliasState = alias + DOT;
 
             placeholderValues.put(TABLE_P, tableName);
             placeholderValues.put(FROM_TABLE_P, fromTable);
-
-            if (withTableAlias) {
-                placeholderValues.put(TABLE_ALIAS_P, alias);
-                placeholderValues.put(AS_ALIAS_P, asAlias);
-                placeholderValues.put(FROM_WITH_ALIAS_P, fromWithAlias);
-                placeholderValues.put(ALIAS_STATE_P, aliasState);
-            } else {
-                placeholderValues.put(TABLE_ALIAS_P, EMPTY);
-                placeholderValues.put(AS_ALIAS_P, EMPTY);
-                placeholderValues.put(FROM_WITH_ALIAS_P, fromTable);
-                placeholderValues.put(ALIAS_STATE_P, EMPTY);
-            }
+            placeholderValues.put(TABLE_ALIAS_P, EMPTY);
+            placeholderValues.put(AS_ALIAS_P, EMPTY);
+            placeholderValues.put(FROM_WITH_ALIAS_P, fromTable);
+            placeholderValues.put(ALIAS_STATE_P, EMPTY);
             return placeholderValues;
         }
 

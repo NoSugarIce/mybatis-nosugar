@@ -17,77 +17,34 @@
 package com.nosugarice.mybatis.criteria.select;
 
 import com.nosugarice.mybatis.criteria.criterion.JoinCriterion;
-import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
-import com.nosugarice.mybatis.sql.ParameterBind;
-import com.nosugarice.mybatis.sql.SQLPart;
-import com.nosugarice.mybatis.sql.render.EntitySQLRender;
-import com.nosugarice.mybatis.sql.render.JoinQuerySQLRender;
-import com.nosugarice.mybatis.util.StringJoinerBuilder;
-import com.nosugarice.mybatis.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static com.nosugarice.mybatis.sql.SQLConstants.DOT;
-import static com.nosugarice.mybatis.sql.SQLConstants.EQUALS_TO;
-import static com.nosugarice.mybatis.sql.SQLConstants.LINE_SEPARATOR;
-import static com.nosugarice.mybatis.sql.SQLConstants.ON;
-import static com.nosugarice.mybatis.sql.SQLConstants.SPACE;
 
 /**
  * @author dingjingyang@foxmail.com
  * @date 2021/9/19
  */
-public class JoinCriteria<T> {
+public class JoinCriteria {
 
     private final String masterTableAlias;
 
     private final List<JoinCriterion<?, ?, ?, ?>> joinCriterionList = new ArrayList<>();
-    private final Map<Integer, JoinQuerySQLRender> joinCriterionMap = new HashMap<>();
 
-    public JoinCriteria(Class<T> masterType) {
-        String masterTable = EntityMetadataRegistry.getInstance().getTable(masterType);
-        this.masterTableAlias = SQLPart.tableAlias(masterTable);
+    public JoinCriteria(String masterTableAlias) {
+        this.masterTableAlias = masterTableAlias;
     }
 
     public void addJoinCriterion(JoinCriterion<?, ?, ?, ?> joinCriterion) {
         joinCriterionList.add(joinCriterion);
-        joinCriterionMap.put(Objects.hash(joinCriterion), new JoinQuerySQLRender((QueryStructure<?>) joinCriterion, new EntitySQLRender.Builder()
-                .withTable(joinCriterion.getTable(), joinCriterion.getSchema())
-                .withSupportDynamicTableName(false)
-                .build()));
     }
 
-    public String getSelectionSql() {
-        return joinCriterionList.stream()
-                .map(joinCriterion -> joinCriterionMap.get(Objects.hash(joinCriterion)))
-                .map(JoinQuerySQLRender::renderColumnSelect)
-                .collect(Collectors.joining());
+    public String getMasterTableAlias() {
+        return masterTableAlias;
     }
 
-    public String getJoinSql() {
-        return joinCriterionList.stream()
-                .map(joinCriterion -> StringJoinerBuilder.createSpaceJoin()
-                        .withPrefix(SPACE)
-                        .withSuffix(LINE_SEPARATOR)
-                        .withElements(joinCriterion.getJoinType().getName())
-                        .withElements(StringUtils.isNotBlank(joinCriterion.getSchema()), joinCriterion.getSchema() + DOT)
-                        .withElements(joinCriterion.getTable(), joinCriterion.getTableAlias(), ON)
-                        .withElements(masterTableAlias + DOT + joinCriterion.getMasterColumn())
-                        .withElements(EQUALS_TO, joinCriterion.getTableAlias() + DOT + joinCriterion.getColumn())
-                        .build())
-                .collect(Collectors.joining(SPACE));
-    }
-
-    public String getWhereSql(ParameterBind parameterBind) {
-        return joinCriterionList.stream()
-                .map(joinCriterion -> joinCriterionMap.get(Objects.hash(joinCriterion)))
-                .map(render -> render.renderWhere(parameterBind))
-                .collect(Collectors.joining(SPACE));
+    public List<JoinCriterion<?, ?, ?, ?>> getJoinCriterionList() {
+        return joinCriterionList;
     }
 
 }
