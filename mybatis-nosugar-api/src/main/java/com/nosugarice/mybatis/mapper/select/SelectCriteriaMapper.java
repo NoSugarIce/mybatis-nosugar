@@ -114,6 +114,20 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
     }
 
     /**
+     * 查询第一个实体
+     *
+     * @param entity 实体参数
+     * @return 第一个实体
+     */
+    default T selectFirst(T entity) {
+        List<T> list = selectList(entity, 1);
+        if (list.size() == 1) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    /**
      * 查询所有符合的记录
      *
      * @param entity 实体参数
