@@ -34,6 +34,8 @@ public class SimpleValue implements Value {
 
     private ValueHandler<?> resultHandler;
 
+    private ValueHandler<?> conditionHandler;
+
     public SimpleValue() {
     }
 
@@ -95,6 +97,15 @@ public class SimpleValue implements Value {
 
     public void setResultHandler(ValueHandler<?> resultHandler) {
         this.resultHandler = resultHandler;
+    }
+
+    @Override
+    public ValueHandler<?> conditionHandler() {
+        return conditionHandler;
+    }
+
+    public void setConditionHandler(ValueHandler<?> conditionHandler) {
+        this.conditionHandler = conditionHandler;
     }
 
 }

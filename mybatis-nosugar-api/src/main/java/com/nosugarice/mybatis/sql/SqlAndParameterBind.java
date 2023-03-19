@@ -67,6 +67,10 @@ public class SqlAndParameterBind {
         return parameterBind.bindValue(value, column, entityClass);
     }
 
+    public ParameterColumnBind bindConditionValue(Object value, String column, Class<?> entityClass) {
+        return parameterBind.bindConditionValue(value, column, entityClass);
+    }
+
     public void addParameter(String key, Object value) {
         if (parameters == null) {
             parameters = new HashMap<>();

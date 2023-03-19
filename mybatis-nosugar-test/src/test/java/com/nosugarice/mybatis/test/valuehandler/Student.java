@@ -47,7 +47,8 @@ public class Student implements Serializable {
     private String id;
 
     /** 姓名 */
-    @ColumnOptions(insertHandler = EncryptionHandler.class, resultHandler = DecryptHandler.class)
+    @ColumnOptions(insertHandler = EncryptionHandler.class, updateHandler = EncryptionHandler.class
+            , resultHandler = DecryptHandler.class, conditionHandler = ConditionHandler.class)
     @Column(name = "name", nullable = false)
     private String name;
 

@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
  * @date 2021/7/20
  */
 class ValueHandlerMapperTest extends BaseMapperTest {
+
     @Test
     public void valueHandler() {
         StudentMapper mapper = getMapper(StudentMapper.class);
@@ -54,16 +55,33 @@ class ValueHandlerMapperTest extends BaseMapperTest {
         );
 
         studentA.setCardBalance(new BigDecimal("100"));
+        studentA.setName("王小二");
         mapper.updateById(studentA);
 
-        Student studentB = mapper.selectById(studentA.getId()).orElseThrow(NullPointerException::new);
+        Student studentB = mapper.selectById(student.getId()).orElseThrow(NullPointerException::new);
 
         Assertions.assertAll(
                 () -> Assertions.assertNotNull(studentB.getUpdatedAt()),
                 () -> Assertions.assertTrue(LocalDateTime.now().isAfter(studentB.getUpdatedAt()))
         );
 
+        Student studentC = new Student();
+        studentC.setName("王小二");
+
+        Student studentD = mapper.selectFirst(studentC);
+
+        Assertions.assertAll(
+                () -> Assertions.assertEquals("王小二-假装加密-假装解密", studentD.getName())
+        );
     }
+
+    @Override
+    public String[] withScript() {
+        return new String[]{
+                "INSERT INTO student VALUES ('002f2dcb10ba4be0adc333cecb886111', '王小二', 18, 0, 1, '18600509022', '南京', 0.00, 0, 0,'2021-07-03 14:46:23', NULL, NULL);",
+        };
+    }
+
 
     @Override
     public String[] withScriptPath() {

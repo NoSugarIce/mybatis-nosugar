@@ -86,6 +86,13 @@ public interface Value {
      */
     ValueHandler<?> resultHandler();
 
+    /**
+     * 条件处理
+     *
+     * @return
+     */
+    ValueHandler<?> conditionHandler();
+
 
     /**
      * 获取默认值

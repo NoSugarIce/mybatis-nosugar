@@ -81,6 +81,14 @@ public class LogicDeleteValue extends SimpleValue {
     }
 
     @Override
+    public ValueHandler<?> conditionHandler() {
+        if (super.conditionHandler() != null) {
+            return super.conditionHandler();
+        }
+        return (ValueHandler<Serializable>) value -> getDefaultValue();
+    }
+
+    @Override
     public Serializable getDefaultValue() {
         return LogicDeleteValueGenerator.INSTANCE.generateValue(defaultValue, getType());
     }

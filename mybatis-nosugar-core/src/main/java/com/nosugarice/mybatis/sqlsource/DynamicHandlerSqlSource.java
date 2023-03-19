@@ -185,17 +185,21 @@ public class DynamicHandlerSqlSource implements SqlSource {
             }
             builder.jdbcType(JDBC_TYPE_MAP.get(propertyType));
             ParameterMapping parameterMapping = builder.build();
-            if (property != null && parameterColumnBind.isCanHandle()) {
-                ValueHandler<?> valueHandler = null;
-                if (dmlType == DmlType.INSERT) {
-                    valueHandler = property.getValue().insertHandler();
-                } else if (dmlType == DmlType.UPDATE) {
-                    valueHandler = property.getValue().updateHandler();
-                } else if (dmlType == DmlType.LOGIC_DELETE) {
-                    valueHandler = property.getValue().logicDeleteHandler();
+            if (property != null) {
+                ValueHandler<?> handler = null;
+                if (parameterColumnBind.isCondition()) {
+                    handler = property.getValue().conditionHandler();
+                } else {
+                    if (dmlType == DmlType.INSERT) {
+                        handler = property.getValue().insertHandler();
+                    } else if (dmlType == DmlType.UPDATE) {
+                        handler = property.getValue().updateHandler();
+                    } else if (dmlType == DmlType.LOGIC_DELETE) {
+                        handler = property.getValue().logicDeleteHandler();
+                    }
                 }
-                if (valueHandler != null) {
-                    builder.typeHandler(createTypeHandler(parameterMapping.getTypeHandler(), valueHandler));
+                if (handler != null) {
+                    builder.typeHandler(createTypeHandler(parameterMapping.getTypeHandler(), handler));
                 }
             }
             parameterMappings.add(parameterMapping);

@@ -53,6 +53,8 @@ public @interface ColumnOptions {
 
     Class<? extends ValueHandler<? extends Serializable>> resultHandler() default VoidHandler.class;
 
+    Class<? extends ValueHandler<? extends Serializable>> conditionHandler() default VoidHandler.class;
+
     class VoidHandler implements TypeHandler<Void>, ValueHandler<VoidHandler.VoidS> {
 
         @Override
@@ -79,7 +81,7 @@ public @interface ColumnOptions {
             return null;
         }
 
-        public static class VoidS implements Serializable {
+        private static class VoidS implements Serializable {
             private static final long serialVersionUID = -7262888801476099994L;
         }
     }

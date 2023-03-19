@@ -54,11 +54,11 @@ public class PlaceholderSQLVisitor implements CriterionSQLVisitor<SqlAndParamete
     public SqlAndParameterBind visit(ColumnCriterion<?> criterion) {
         List<String> paramKeys = new ArrayList<>();
         if (criterion.isSingleValue()) {
-            String paramKey1 = parameterBind.bindValue(criterion.getValue(), criterion.getColumn(), entityClass).getParameter();
+            String paramKey1 = parameterBind.bindConditionValue(criterion.getValue(), criterion.getColumn(), entityClass).getParameter();
             paramKeys.add(paramKey1);
         } else if (criterion.isTwoValue()) {
-            String paramKey1 = parameterBind.bindValue(criterion.getValue(), criterion.getColumn(), entityClass).getParameter();
-            String paramKey2 = parameterBind.bindValue(criterion.getSecondValue(), criterion.getColumn(), entityClass).getParameter();
+            String paramKey1 = parameterBind.bindConditionValue(criterion.getValue(), criterion.getColumn(), entityClass).getParameter();
+            String paramKey2 = parameterBind.bindConditionValue(criterion.getSecondValue(), criterion.getColumn(), entityClass).getParameter();
             paramKeys.add(paramKey1);
             paramKeys.add(paramKey2);
         } else if (criterion.isListValue()) {
@@ -66,7 +66,7 @@ public class PlaceholderSQLVisitor implements CriterionSQLVisitor<SqlAndParamete
             if (CollectionUtils.isNotEmpty(listValueCriterion.getValue())) {
                 Collection<?> values = listValueCriterion.getValue();
                 for (Object value : values) {
-                    String paramKey = parameterBind.bindValue(value, criterion.getColumn(), entityClass).getParameter();
+                    String paramKey = parameterBind.bindConditionValue(value, criterion.getColumn(), entityClass).getParameter();
                     paramKeys.add(paramKey);
                 }
             }

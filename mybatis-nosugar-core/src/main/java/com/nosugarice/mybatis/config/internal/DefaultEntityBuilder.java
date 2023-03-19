@@ -128,12 +128,15 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 ValueHandler<?> updateHandler = getValueHandler(columnOptions.updateHandler());
                 ValueHandler<?> logicDeleteHandler = getValueHandler(columnOptions.logicDeleteHandler());
                 ValueHandler<?> resultHandler = getValueHandler(columnOptions.resultHandler());
-                if (insertHandler != null || updateHandler != null || logicDeleteHandler != null || resultHandler != null) {
+                ValueHandler<?> conditionHandler = getValueHandler(columnOptions.conditionHandler());
+                if (insertHandler != null || updateHandler != null || logicDeleteHandler != null || resultHandler != null
+                        || conditionHandler != null) {
                     SimpleValue value = new SimpleValue(relationalProperty.getJavaType());
                     value.setInsertHandler(insertHandler);
                     value.setUpdateHandler(updateHandler);
                     value.setLogicDeleteHandler(logicDeleteHandler);
                     value.setResultHandler(resultHandler);
+                    value.setConditionHandler(conditionHandler);
                     relationalProperty.setValue(value);
                 }
             }

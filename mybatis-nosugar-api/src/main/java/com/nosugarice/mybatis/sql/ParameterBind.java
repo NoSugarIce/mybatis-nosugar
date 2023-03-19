@@ -35,8 +35,16 @@ public class ParameterBind implements Cloneable {
     private List<ParameterColumnBind> parameterColumnBinds = new ArrayList<>();
 
     public ParameterColumnBind bindValue(Object value, String column, Class<?> entityClass) {
+        return bindValue(value, column, entityClass, false);
+    }
+
+    public ParameterColumnBind bindConditionValue(Object value, String column, Class<?> entityClass) {
+        return bindValue(value, column, entityClass, true);
+    }
+
+    public ParameterColumnBind bindValue(Object value, String column, Class<?> entityClass, boolean isCondition) {
         String parameterPlaceholder = nextParameterPlaceholder(column);
-        ParameterColumnBind parameterColumnBind = new ParameterColumnBind(parameterPlaceholder, column, value, entityClass);
+        ParameterColumnBind parameterColumnBind = new ParameterColumnBind(parameterPlaceholder, column, value, entityClass, isCondition);
         parameterColumnBinds.add(parameterColumnBind);
         return parameterColumnBind;
     }
@@ -61,17 +69,15 @@ public class ParameterBind implements Cloneable {
         private final String column;
         private final Object value;
         private final Class<?> entityClass;
-        private boolean canHandle;
 
-        private ParameterColumnBind(String parameter, String column, Object value, Class<?> entityClass) {
+        private final boolean condition;
+
+        private ParameterColumnBind(String parameter, String column, Object value, Class<?> entityClass, boolean isCondition) {
             this.parameter = parameter;
             this.column = column;
             this.value = value;
             this.entityClass = entityClass;
-        }
-
-        public void canHandle() {
-            this.canHandle = true;
+            this.condition = isCondition;
         }
 
         public String getParameter() {
@@ -90,8 +96,8 @@ public class ParameterBind implements Cloneable {
             return entityClass;
         }
 
-        public boolean isCanHandle() {
-            return canHandle;
+        public boolean isCondition() {
+            return condition;
         }
 
         @Override
@@ -112,15 +118,14 @@ public class ParameterBind implements Cloneable {
                 return false;
             }
             ParameterColumnBind that = (ParameterColumnBind) o;
-            return canHandle == that.canHandle
-                    && Objects.equals(parameter, that.parameter)
+            return Objects.equals(parameter, that.parameter)
                     && Objects.equals(column, that.column) && Objects.equals(value, that.value)
                     && Objects.equals(entityClass, that.entityClass);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(parameter, column, value, entityClass, canHandle);
+            return Objects.hash(parameter, column, value, entityClass);
         }
     }
 
