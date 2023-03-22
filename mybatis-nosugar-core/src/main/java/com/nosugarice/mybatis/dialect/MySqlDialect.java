@@ -16,8 +16,6 @@
 
 package com.nosugarice.mybatis.dialect;
 
-import com.nosugarice.mybatis.util.StringFormatter;
-
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
@@ -63,9 +61,6 @@ public class MySqlDialect implements Dialect {
 
         INSTANCE;
 
-        private static final String SQL_TEMP_LATE = "{} LIMIT {}, {}";
-        private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "{} LIMIT {}";
-
         @Override
         public boolean supportsLimit() {
             return true;
@@ -73,9 +68,7 @@ public class MySqlDialect implements Dialect {
 
         @Override
         public String processSql(String sql, int offset, int limit) {
-            boolean hasFirstRow = hasFirstRow(offset);
-            return hasFirstRow ? StringFormatter.format(SQL_TEMP_LATE, sql, offset, limit)
-                    : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
+            return hasFirstRow(offset) ? sql + " LIMIT " + offset + ", " + limit : sql + " LIMIT " + limit;
         }
     }
 

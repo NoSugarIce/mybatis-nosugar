@@ -69,8 +69,7 @@ public class PostgreSqlDialect implements Dialect {
 
         @Override
         public String processSql(String sql, int offset, int limit) {
-            boolean hasFirstRow = hasFirstRow(offset);
-            return hasFirstRow ? StringFormatter.format(SQL_TEMP_LATE, sql, offset, limit)
+            return hasFirstRow(offset) ? StringFormatter.format(SQL_TEMP_LATE, sql, offset, limit)
                     : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
         }
     }

@@ -46,8 +46,7 @@ public class SqlServer2012Dialect extends SqlServerDialect {
 
         @Override
         public String processSql(String sql, int offset, int limit) {
-            boolean hasFirstRow = hasFirstRow(offset);
-            if (!hasFirstRow) {
+            if (!hasFirstRow(offset)) {
                 return StringFormatter.format(noFirstRowSqlTempLate(), limit, removeSelect(sql));
             }
             if (!haseOrderBy(sql)) {

@@ -19,6 +19,8 @@ package com.nosugarice.mybatis.dialect;
 import com.nosugarice.mybatis.sql.SQLConstants;
 import com.nosugarice.mybatis.util.StringUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
@@ -102,15 +104,7 @@ public interface Dialect {
      * @return
      */
     default String interceptOrderBy(String sql) {
-        String upperCaseSql = sql.toUpperCase();
-        int orderByIndex = upperCaseSql.lastIndexOf(SQLConstants.ORDER_BY);
-        if (orderByIndex > 1) {
-            String orderByAfter = sql.substring(orderByIndex);
-            if (!orderByAfter.contains(")")) {
-                sql = sql.substring(0, orderByIndex);
-            }
-        }
-        return sql;
+        return Pattern.compile("(?i)\\s+ORDER\\s+BY\\s+[^)]+$").matcher(sql).replaceAll("");
     }
 
     /**
