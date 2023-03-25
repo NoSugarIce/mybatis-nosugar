@@ -38,12 +38,12 @@ public interface Dialect {
     }
 
     /**
-     * 处理数据库关键字
+     * 转义数据库关键字
      *
      * @param name
      * @return
      */
-    default String processKeywords(String name) {
+    default String escapeKeywords(String name) {
         return "\"" + name + "\"";
     }
 
@@ -52,14 +52,14 @@ public interface Dialect {
      *
      * @return
      */
-    Identity getIdentity();
+    PrimaryKeyStrategy getPrimaryKeyStrategy();
 
     /**
      * 获取分页处理方法
      *
      * @return
      */
-    Limitable getLimitHandler();
+    LimitHandler getLimitHandler();
 
     /**
      * 优化 Count 语句
@@ -93,7 +93,7 @@ public interface Dialect {
     default String optimizationExistsSql(String sql) {
         String upperCaseSql = sql.toUpperCase();
         sql = sql.substring(upperCaseSql.indexOf(SQLConstants.FROM));
-        return getLimitHandler().processSql("SELECT 1 " + interceptOrderBy(sql), 0, 1);
+        return getLimitHandler().applyLimit("SELECT 1 " + interceptOrderBy(sql), 0, 1);
     }
 
     /**

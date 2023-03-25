@@ -20,7 +20,7 @@ package com.nosugarice.mybatis.dialect;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/7
  */
-public interface Identity {
+public interface PrimaryKeyStrategy {
 
     /**
      * 是否支持自增

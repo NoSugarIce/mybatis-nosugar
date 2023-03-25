@@ -23,13 +23,13 @@ package com.nosugarice.mybatis.dialect;
 public class MySqlDialect implements Dialect {
 
     @Override
-    public String processKeywords(String name) {
+    public String escapeKeywords(String name) {
         return "`" + name + "`";
     }
 
     @Override
-    public Identity getIdentity() {
-        return new Identity() {
+    public PrimaryKeyStrategy getPrimaryKeyStrategy() {
+        return new PrimaryKeyStrategy() {
             @Override
             public boolean supportsAutoIncrement() {
                 return true;
@@ -53,21 +53,16 @@ public class MySqlDialect implements Dialect {
     }
 
     @Override
-    public Limitable getLimitHandler() {
-        return LimitableImpl.INSTANCE;
+    public LimitHandler getLimitHandler() {
+        return LimitHandlerImpl.INSTANCE;
     }
 
-    private enum LimitableImpl implements Limitable {
+    private enum LimitHandlerImpl implements LimitHandler {
 
         INSTANCE;
 
         @Override
-        public boolean supportsLimit() {
-            return true;
-        }
-
-        @Override
-        public String processSql(String sql, int offset, int limit) {
+        public String applyLimit(String sql, int offset, int limit) {
             return hasFirstRow(offset) ? sql + " LIMIT " + offset + ", " + limit : sql + " LIMIT " + limit;
         }
     }

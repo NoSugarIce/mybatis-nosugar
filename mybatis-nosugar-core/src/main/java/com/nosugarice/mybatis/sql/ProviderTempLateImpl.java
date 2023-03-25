@@ -164,7 +164,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         if (structure.getLimit().isPresent()) {
             RowBounds rowBounds = structure.getLimit().get();
             sql = sql.endsWith(FOR_UPDATE) ? sql.replace(FOR_UPDATE, SQLConstants.EMPTY) : sql;
-            sql = dialect.getLimitHandler().processSql(sql, rowBounds.getOffset(), rowBounds.getLimit());
+            sql = dialect.getLimitHandler().applyLimit(sql, rowBounds.getOffset(), rowBounds.getLimit());
         }
         structure.getCountColumn().ifPresent(countColumn ->
                 whereSqlAndParameterBind.addParameter(Constants.COUNT_COLUMN, countColumn));
@@ -435,7 +435,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
             sql = sql + SPACE + sqlRender.render(orderBy);
         }
         if (limit > 0) {
-            sql = dialect.getLimitHandler().processSql(sql, 0, limit);
+            sql = dialect.getLimitHandler().applyLimit(sql, 0, limit);
         }
         return sqlAndParameterBind.setSql(sql);
     }
@@ -465,7 +465,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
                 .withElements(StringUtils.trim(sqlAndParameterBind.getSql(), AND, null))
                 .build();
         sql = sqlRender.render(sql);
-        sql = dialect.getLimitHandler().processSql(sql, 0, 1);
+        sql = dialect.getLimitHandler().applyLimit(sql, 0, 1);
         return sqlAndParameterBind.setSql(sql);
     }
 

@@ -25,8 +25,8 @@ import com.nosugarice.mybatis.util.StringFormatter;
 public class OracleDialect implements Dialect {
 
     @Override
-    public Identity getIdentity() {
-        return new Identity() {
+    public PrimaryKeyStrategy getPrimaryKeyStrategy() {
+        return new PrimaryKeyStrategy() {
             @Override
             public boolean supportsAutoIncrement() {
                 return false;
@@ -50,11 +50,11 @@ public class OracleDialect implements Dialect {
     }
 
     @Override
-    public Limitable getLimitHandler() {
-        return LimitableImpl.INSTANCE;
+    public LimitHandler getLimitHandler() {
+        return LimitHandlerImpl.INSTANCE;
     }
 
-    private enum LimitableImpl implements Limitable {
+    private enum LimitHandlerImpl implements LimitHandler {
 
         INSTANCE;
 
@@ -74,12 +74,7 @@ public class OracleDialect implements Dialect {
                 "   ROWNUM <= {}";
 
         @Override
-        public boolean supportsLimit() {
-            return true;
-        }
-
-        @Override
-        public String processSql(String sql, int offset, int limit) {
+        public String applyLimit(String sql, int offset, int limit) {
             return hasFirstRow(offset) ? StringFormatter.format(SQL_TEMP_LATE, sql, offset + limit, offset)
                     : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
         }

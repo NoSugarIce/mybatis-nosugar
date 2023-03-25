@@ -32,13 +32,13 @@ public class SqlServerDialect implements Dialect {
     }
 
     @Override
-    public String processKeywords(String name) {
+    public String escapeKeywords(String name) {
         return "[" + name + "]";
     }
 
     @Override
-    public Identity getIdentity() {
-        return new Identity() {
+    public PrimaryKeyStrategy getPrimaryKeyStrategy() {
+        return new PrimaryKeyStrategy() {
             @Override
             public boolean supportsAutoIncrement() {
                 return true;
@@ -62,15 +62,15 @@ public class SqlServerDialect implements Dialect {
     }
 
     @Override
-    public Limitable getLimitHandler() {
-        return LimitHolder.LIMITABLE_INSTANCE;
+    public LimitHandler getLimitHandler() {
+        return LimitHolder.LIMIT_HANDLER_INSTANCE;
     }
 
     private static class LimitHolder {
-        private static final Limitable LIMITABLE_INSTANCE = new SqlServerLimitable();
+        private static final LimitHandler LIMIT_HANDLER_INSTANCE = new SqlServerLimitHandler();
     }
 
-    public static class SqlServerLimitable implements Limitable {
+    public static class SqlServerLimitHandler implements LimitHandler {
 
         private static final String ORDER_BY = "ORDER BY";
 
@@ -107,12 +107,7 @@ public class SqlServerDialect implements Dialect {
                 "   AND __ROW_NR__ < {}";
 
         @Override
-        public boolean supportsLimit() {
-            return true;
-        }
-
-        @Override
-        public String processSql(String sql, int offset, int limit) {
+        public String applyLimit(String sql, int offset, int limit) {
             if (!hasFirstRow(offset)) {
                 return StringFormatter.format(noFirstRowSqlTempLate(), limit, removeSelect(sql));
             }

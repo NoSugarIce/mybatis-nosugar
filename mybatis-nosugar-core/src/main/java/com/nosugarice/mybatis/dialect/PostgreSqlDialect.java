@@ -25,8 +25,8 @@ import com.nosugarice.mybatis.util.StringFormatter;
 public class PostgreSqlDialect implements Dialect {
 
     @Override
-    public Identity getIdentity() {
-        return new Identity() {
+    public PrimaryKeyStrategy getPrimaryKeyStrategy() {
+        return new PrimaryKeyStrategy() {
             @Override
             public boolean supportsAutoIncrement() {
                 return true;
@@ -51,11 +51,11 @@ public class PostgreSqlDialect implements Dialect {
 
 
     @Override
-    public Limitable getLimitHandler() {
-        return LimitableImpl.INSTANCE;
+    public LimitHandler getLimitHandler() {
+        return LimitHandlerImpl.INSTANCE;
     }
 
-    private enum LimitableImpl implements Limitable {
+    private enum LimitHandlerImpl implements LimitHandler {
 
         INSTANCE;
 
@@ -63,12 +63,7 @@ public class PostgreSqlDialect implements Dialect {
         private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "{} LIMIT {} ";
 
         @Override
-        public boolean supportsLimit() {
-            return true;
-        }
-
-        @Override
-        public String processSql(String sql, int offset, int limit) {
+        public String applyLimit(String sql, int offset, int limit) {
             return hasFirstRow(offset) ? StringFormatter.format(SQL_TEMP_LATE, sql, offset, limit)
                     : StringFormatter.format(NO_FIRST_ROW_SQL_TEMP_LATE, sql, limit);
         }

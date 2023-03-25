@@ -39,6 +39,10 @@ import java.util.stream.Stream;
  */
 public class LogicDeleteValue extends SimpleValue {
 
+    private static final Set<Class<?>> SUPPORTS_LOGIC_DELETE_TYPE = Stream.of(int.class, Integer.class, long.class
+                    , Long.class, boolean.class, Boolean.class, Date.class, LocalDateTime.class, String.class)
+            .collect(Collectors.toSet());
+
     /** 默认值 */
     private final String defaultValue;
 
@@ -47,6 +51,8 @@ public class LogicDeleteValue extends SimpleValue {
 
     public LogicDeleteValue(Class<?> type, String defaultValue, String logicDeleteValue) {
         super(type);
+        Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type)
+                , "不支持的逻辑删除字段类型" + "[" + type.getName() + "]");
         this.defaultValue = defaultValue;
         this.logicDeleteValue = logicDeleteValue;
     }
@@ -77,7 +83,7 @@ public class LogicDeleteValue extends SimpleValue {
         if (super.logicDeleteHandler() != null) {
             return (ValueHandler<Serializable>) super.logicDeleteHandler();
         }
-        return value -> LogicDeleteValueGenerator.INSTANCE.generateValue(logicDeleteValue, getType());
+        return value -> generateValue(logicDeleteValue, getType());
     }
 
     @Override
@@ -90,52 +96,36 @@ public class LogicDeleteValue extends SimpleValue {
 
     @Override
     public Serializable getDefaultValue() {
-        return LogicDeleteValueGenerator.INSTANCE.generateValue(defaultValue, getType());
+        return generateValue(defaultValue, getType());
     }
 
-    private static class LogicDeleteValueGenerator {
-
-        private static final Set<Class<?>> SUPPORTS_LOGIC_DELETE_TYPE = Stream.of(int.class, Integer.class, long.class
-                        , Long.class, boolean.class, Boolean.class, Date.class, LocalDateTime.class, String.class)
-                .collect(Collectors.toSet());
-
-        private static final LogicDeleteValueGenerator INSTANCE = new LogicDeleteValueGenerator();
-
-        public Serializable generateValue(String value, Class<?> type) {
-            Preconditions.checkArgument(SUPPORTS_LOGIC_DELETE_TYPE.contains(type)
-                    , "不支持的逻辑删除字段类型" + "[" + type.getName() + "]");
-
-            if (LogicDelete.NULL.equalsIgnoreCase(value)) {
-                return null;
-            }
-
-            if (LogicDelete.NOW.equalsIgnoreCase(value)) {
-                value = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            }
-
-            if (String.class.isAssignableFrom(type)) {
-                return value;
-            }
-            if (Integer.class.isAssignableFrom(type)) {
-                return Integer.valueOf(value);
-            } else if (Long.class.isAssignableFrom(type)) {
-                return Long.valueOf(value);
-            } else if (LocalDateTime.class.isAssignableFrom(type)) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                return LocalDateTime.parse(value, dateTimeFormatter);
-            } else if (Date.class.isAssignableFrom(type)) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                try {
-                    return dateFormat.parse(value);
-                } catch (ParseException e) {
-                    throw new NoSugarException(e);
-                }
-            } else if (Boolean.class.isAssignableFrom(type)) {
-                return Boolean.valueOf(value);
-            }
+    private static Serializable generateValue(String value, Class<?> type) {
+        if (LogicDelete.NULL.equalsIgnoreCase(value)) {
             return null;
         }
-
+        if (LogicDelete.NOW.equalsIgnoreCase(value)) {
+            return LocalDateTime.now();
+        }
+        if (String.class.isAssignableFrom(type)) {
+            return value;
+        }
+        if (Integer.class.isAssignableFrom(type)) {
+            return Integer.valueOf(value);
+        } else if (Long.class.isAssignableFrom(type)) {
+            return Long.valueOf(value);
+        } else if (LocalDateTime.class.isAssignableFrom(type)) {
+            return LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        } else if (Date.class.isAssignableFrom(type)) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                return dateFormat.parse(value);
+            } catch (ParseException e) {
+                throw new NoSugarException(e);
+            }
+        } else if (Boolean.class.isAssignableFrom(type)) {
+            return Boolean.valueOf(value);
+        }
+        return null;
     }
 
 }

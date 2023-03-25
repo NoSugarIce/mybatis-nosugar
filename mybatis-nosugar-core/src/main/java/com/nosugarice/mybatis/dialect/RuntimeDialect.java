@@ -25,12 +25,12 @@ import com.nosugarice.mybatis.config.DialectContext;
 public class RuntimeDialect implements Dialect {
 
     @Override
-    public Identity getIdentity() {
-        return DialectContext.getDialect().getIdentity();
+    public PrimaryKeyStrategy getPrimaryKeyStrategy() {
+        return DialectContext.getDialect().getPrimaryKeyStrategy();
     }
 
     @Override
-    public Limitable getLimitHandler() {
+    public LimitHandler getLimitHandler() {
         return DialectContext.getDialect().getLimitHandler();
     }
 

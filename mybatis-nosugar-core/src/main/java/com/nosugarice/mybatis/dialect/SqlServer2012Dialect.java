@@ -32,20 +32,20 @@ public class SqlServer2012Dialect extends SqlServerDialect {
     }
 
     @Override
-    public Limitable getLimitHandler() {
-        return LimitHolder.LIMITABLE_INSTANCE;
+    public LimitHandler getLimitHandler() {
+        return LimitHolder.LIMIT_HANDLER_INSTANCE;
     }
 
     private static class LimitHolder {
-        private static final Limitable LIMITABLE_INSTANCE = new SqlServer2012Limitable();
+        private static final LimitHandler LIMIT_HANDLER_INSTANCE = new SqlServer2012LimitHandler();
     }
 
-    public static class SqlServer2012Limitable extends SqlServerLimitable {
+    public static class SqlServer2012LimitHandler extends SqlServerLimitHandler {
 
         private static final String ORDER_BY_SQL_TEMP_LATE = "{} OFFSET {} ROWS FETCH NEXT {} ROWS ONLY";
 
         @Override
-        public String processSql(String sql, int offset, int limit) {
+        public String applyLimit(String sql, int offset, int limit) {
             if (!hasFirstRow(offset)) {
                 return StringFormatter.format(noFirstRowSqlTempLate(), limit, removeSelect(sql));
             }

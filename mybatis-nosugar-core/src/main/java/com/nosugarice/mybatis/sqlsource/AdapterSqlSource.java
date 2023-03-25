@@ -124,7 +124,7 @@ public class AdapterSqlSource implements SqlSource {
                 boundSql = originalBoundSql;
             } else {
                 sql = sql.endsWith(SQLConstants.FOR_UPDATE) ? sql.replace(SQLConstants.FOR_UPDATE, SQLConstants.EMPTY) : sql;
-                String pageSql = dialect.getLimitHandler().processSql(sql, page.getOffset(), page.getLimit());
+                String pageSql = dialect.getLimitHandler().applyLimit(sql, page.getOffset(), page.getLimit());
                 boundSql = createNewBoundSql(configuration, pageSql, originalBoundSql);
             }
         } else if (adapterType == ProviderAdapter.Type.EXISTS) {

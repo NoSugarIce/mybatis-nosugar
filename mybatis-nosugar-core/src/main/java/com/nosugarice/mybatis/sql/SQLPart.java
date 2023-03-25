@@ -142,7 +142,7 @@ public interface SQLPart {
      * @return
      */
     static String safeColumnName(String column, Dialect dialect) {
-        return ReservedWords.SQL.isKeyword(column) ? dialect.processKeywords(column) : column;
+        return ReservedWords.SQL.isKeyword(column) ? dialect.escapeKeywords(column) : column;
     }
 
 

@@ -20,7 +20,7 @@ import com.nosugarice.mybatis.assign.id.IdGenerator;
 import com.nosugarice.mybatis.assign.value.KeyValue;
 import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.Supports;
-import com.nosugarice.mybatis.dialect.Identity;
+import com.nosugarice.mybatis.dialect.PrimaryKeyStrategy;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
 import com.nosugarice.mybatis.util.Preconditions;
 import com.nosugarice.mybatis.util.StringUtils;
@@ -69,17 +69,17 @@ public class InsertStatementBuilder extends StatementBuilder {
         KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
         Supports supports = entityMetadata.getSupports();
         if (supports.isSupportAutoIncrement()) {
-            Identity identity = buildingContext.getDialect().getIdentity();
-            boolean autoIncrement = identity.supportsAutoIncrement();
+            PrimaryKeyStrategy primaryKeyStrategy = buildingContext.getDialect().getPrimaryKeyStrategy();
+            boolean autoIncrement = primaryKeyStrategy.supportsAutoIncrement();
             if (autoIncrement) {
                 keyGenerator = Jdbc3KeyGenerator.INSTANCE;
             } else {
                 RelationalProperty idGeneratorProperty = entityMetadata.getIdGeneratorProperty();
                 KeyValue keyValue = idGeneratorProperty.getAsKeyValue();
                 String sql = keyValue.getGenerator();
-                if (identity.supportsSelectIdentity()) {
+                if (primaryKeyStrategy.supportsSelectIdentity()) {
                     if (StringUtils.isEmpty(sql)) {
-                        sql = identity.getIdentitySelectString();
+                        sql = primaryKeyStrategy.getIdentitySelectString();
                     }
                 } else {
                     Preconditions.checkArgument(StringUtils.isNotEmpty(sql)
@@ -87,7 +87,7 @@ public class InsertStatementBuilder extends StatementBuilder {
                                     + "." + idGeneratorProperty.getName() + "没有设置主键生成语句");
                 }
                 MappedStatement keyStatement = getKeyMappedStatement(id, idGeneratorProperty.getJavaType(), sql);
-                keyGenerator = new SelectKeyGenerator(keyStatement, identity.executeBeforeIdentitySelect());
+                keyGenerator = new SelectKeyGenerator(keyStatement, primaryKeyStrategy.executeBeforeIdentitySelect());
                 configuration.addKeyGenerator(id, keyGenerator);
             }
         } else if (supports.isSupportIdGenerator()) {

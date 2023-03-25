@@ -20,14 +20,7 @@ package com.nosugarice.mybatis.dialect;
  * @author dingjingyang@foxmail.com
  * @date 2020/12/19
  */
-public interface Limitable {
-
-    /**
-     * 是否支持分页
-     *
-     * @return
-     */
-    boolean supportsLimit();
+public interface LimitHandler {
 
     /**
      * 处理sql 添加分页方法
@@ -37,7 +30,7 @@ public interface Limitable {
      * @param limit
      * @return
      */
-    String processSql(String sql, int offset, int limit);
+    String applyLimit(String sql, int offset, int limit);
 
     /**
      * 是否不从头开始
