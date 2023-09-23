@@ -19,6 +19,8 @@ package com.nosugarice.mybatis.dialect;
 import com.nosugarice.mybatis.util.StringFormatter;
 
 /**
+ * 可能存在错误,谨慎使用
+ *
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
  */

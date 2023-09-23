@@ -56,7 +56,7 @@ public class EntityToCriterionImpl implements EntityToCriterion {
         EntityMetadata entityMetadata = EntityMetadataRegistry.getInstance().getEntityMetadata(entity.getClass());
         Map<String, Object> columnValues = new LinkedHashMap<>(entityMetadata.getRelationalEntity().getProperties().size());
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
-            Object value = property.getValue(entity);
+            Object value = property.valueByObj(entity);
             if (value != null || nullable) {
                 columnValues.put(property.getColumn(), value);
             }

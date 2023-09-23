@@ -107,13 +107,4 @@ public interface Dialect {
         return Pattern.compile("(?i)\\s+ORDER\\s+BY\\s+[^)]+$").matcher(sql).replaceAll("");
     }
 
-    /**
-     * 获取字面值处理器
-     *
-     * @return
-     */
-    default LiteralValueHandler getLiteralValueHandler() {
-        return LiteralValueHandler.getLiteralValueHandler();
-    }
-
 }

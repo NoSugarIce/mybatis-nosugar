@@ -29,6 +29,8 @@ import com.nosugarice.mybatis.mapper.logicdelete.LogicDeleteMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateMapper;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.sql.SQLPart;
+import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.ResultType;
@@ -123,7 +125,7 @@ public class StatementBuilder {
         return DmlType.SELECT;
     }
 
-    public void addMappedStatement(Method method, String script) {
+    public void addMappedStatement(Method method, SqlAndParameterBind sqlAndParameterBind) {
         String mappedStatementId = mapperClass.getName() + "." + method.getName();
         if (configuration.hasStatement(mappedStatementId)) {
             return;
@@ -133,7 +135,7 @@ public class StatementBuilder {
         StatementType statementType = StatementType.PREPARED;
         DmlType dmlType = getDmlType(method);
         final SqlCommandType sqlCommandType = dmlType.getSqlCommandType();
-        SqlSource sqlSource = createSqlSource(configuration, method, script, parameterTypeClass, dmlType);
+        SqlSource sqlSource = createSqlSource(configuration, method, sqlAndParameterBind, parameterTypeClass, dmlType);
 
         boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
         boolean flushCache = !isSelect;
@@ -163,12 +165,14 @@ public class StatementBuilder {
                 configuration.getLanguageRegistry().getDefaultDriver(), null);
     }
 
-    protected SqlSource createSqlSource(Configuration configuration, Method method, String script, Class<?> parameterType
+    protected SqlSource createSqlSource(Configuration configuration, Method method
+            , SqlAndParameterBind sqlAndParameterBind, Class<?> parameterType
             , DmlType dmlType) {
-        if (script == null) {
-            return sqlSourceScriptBuilder.buildSqlSource(method, dmlType);
+        if (sqlAndParameterBind == null || sqlAndParameterBind.hasParameterHandle()) {
+            return sqlSourceScriptBuilder.buildSqlSource(method, dmlType, sqlAndParameterBind, parameterType);
         }
-        return configuration.getLanguageRegistry().getDefaultDriver().createSqlSource(configuration, script, parameterType);
+        return configuration.getLanguageRegistry().getDefaultDriver()
+                .createSqlSource(configuration, SQLPart.script(sqlAndParameterBind.getSql()), parameterType);
     }
 
 

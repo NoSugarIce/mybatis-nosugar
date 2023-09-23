@@ -81,7 +81,7 @@ public class DynamicHandlerSqlSource implements SqlSource {
     private static final Map<ParameterColumnBind, ParameterColumnBind> PARAMETER_COLUMN_BIND_CACHE = new HashMap<>();
 
     public DynamicHandlerSqlSource(DmlType dmlType, MetadataBuildingContext buildingContext, String[] parameterNames
-            , FunS<SqlAndParameterBind> providerFun, SqlSourceScriptBuilder sqlSourceScriptBuilder, boolean fixedParameter) {
+            , FunS<SqlAndParameterBind> providerFun, boolean fixedParameter, SqlSourceScriptBuilder sqlSourceScriptBuilder) {
         this.dmlType = dmlType;
         this.buildingContext = buildingContext;
         this.parameterNames = parameterNames;
@@ -91,7 +91,7 @@ public class DynamicHandlerSqlSource implements SqlSource {
     }
 
     static {
-        JDBC_TYPE_MAP = new HashMap<>(27);
+        JDBC_TYPE_MAP = new HashMap<>();
         JDBC_TYPE_MAP.put(BigDecimal.class, JdbcType.NUMERIC);
         JDBC_TYPE_MAP.put(BigInteger.class, JdbcType.BIGINT);
         JDBC_TYPE_MAP.put(boolean.class, JdbcType.BOOLEAN);
@@ -147,9 +147,9 @@ public class DynamicHandlerSqlSource implements SqlSource {
             }
             BoundSql boundSql = new BoundSql(buildingContext.getConfiguration(), sqlHandler(sqlAndParameterBindCache.getSql())
                     , parameterMappingsCache, parameterObject);
-            if (sqlAndParameterBindCache.getParameterHandle() != null) {
-                sqlAndParameterBindCache.getParameterHandle()
-                        .apply(parameterObject, sqlAndParameterBindCache.getParameterBind().getParameterColumnBinds(), boundSql);
+            if (sqlAndParameterBindCache.hasParameterHandle()) {
+                sqlAndParameterBindCache.getParameterHandles().forEach(handle -> handle.apply(
+                        parameterObject, sqlAndParameterBindCache.getParameterBind().getParameterColumnBinds(), boundSql));
             }
             return boundSql;
         } else {
@@ -186,16 +186,34 @@ public class DynamicHandlerSqlSource implements SqlSource {
             builder.jdbcType(JDBC_TYPE_MAP.get(propertyType));
             ParameterMapping parameterMapping = builder.build();
             if (property != null) {
-                ValueHandler<?> handler = null;
+                ValueHandler<?> fillHandler = null;
+                ValueHandler<?> valueHandler = null;
                 if (parameterColumnBind.isCondition()) {
-                    handler = property.getValue().conditionHandler();
+                    fillHandler = property.getValue().isConditionFill() ? property.getValue().fillHandler() : null;
+                    valueHandler = property.getValue().conditionHandler();
                 } else {
                     if (dmlType == DmlType.INSERT) {
-                        handler = property.getValue().insertHandler();
+                        fillHandler = property.getValue().isInsertFill() ? property.getValue().fillHandler() : null;
+                        valueHandler = property.getValue().insertHandler();
                     } else if (dmlType == DmlType.UPDATE) {
-                        handler = property.getValue().updateHandler();
+                        fillHandler = property.getValue().isUpdateFill() ? property.getValue().fillHandler() : null;
+                        valueHandler = property.getValue().updateHandler();
                     } else if (dmlType == DmlType.LOGIC_DELETE) {
-                        handler = property.getValue().logicDeleteHandler();
+                        valueHandler = property.getValue().logicDeleteHandler();
+                    }
+                }
+
+                ValueHandler<?> handler = null;
+                //先使用fillHandler赋值
+                if (fillHandler != null) {
+                    handler = fillHandler;
+                }
+                //再使用valueHandler后置处理
+                if (valueHandler != null) {
+                    if (handler == null) {
+                        handler = valueHandler;
+                    } else {
+                        handler = handler.andThen((ValueHandler<Object>) valueHandler);
                     }
                 }
                 if (handler != null) {

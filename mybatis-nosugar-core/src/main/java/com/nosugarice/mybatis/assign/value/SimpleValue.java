@@ -36,6 +36,12 @@ public class SimpleValue implements Value {
 
     private ValueHandler<?> conditionHandler;
 
+    private ValueHandler<?> fillHandler;
+
+    private boolean insertFill;
+    private boolean updateFill;
+    private boolean conditionFill;
+
     public SimpleValue() {
     }
 
@@ -106,6 +112,42 @@ public class SimpleValue implements Value {
 
     public void setConditionHandler(ValueHandler<?> conditionHandler) {
         this.conditionHandler = conditionHandler;
+    }
+
+    @Override
+    public ValueHandler<?> fillHandler() {
+        return fillHandler;
+    }
+
+    public void setFillHandler(ValueHandler<?> fillHandler) {
+        this.fillHandler = fillHandler;
+    }
+
+    @Override
+    public boolean isInsertFill() {
+        return insertFill;
+    }
+
+    public void setInsertFill(boolean insertFill) {
+        this.insertFill = insertFill;
+    }
+
+    @Override
+    public boolean isUpdateFill() {
+        return updateFill;
+    }
+
+    public void setUpdateFill(boolean updateFill) {
+        this.updateFill = updateFill;
+    }
+
+    @Override
+    public boolean isConditionFill() {
+        return conditionFill;
+    }
+
+    public void setConditionFill(boolean conditionFill) {
+        this.conditionFill = conditionFill;
     }
 
 }

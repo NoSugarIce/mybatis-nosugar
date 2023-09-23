@@ -1,5 +1,10 @@
 ## 插入时主键策略
 
+根据实体注解`@Id;@GeneratedValue`
+判断该实体是否支持自增主键.如果支持则检查当前数据库是否支持自增主键.如果支持则使用`Jdbc3KeyGenerator`
+作为主键生成器;否则根据实体元数据中的主键生成语句构造出一个`SelectKeyGenerator`.
+如果实体不支持自增主键,但支持使用自定义主键生成器,则根据实体元数据中的主键生成语句构造出一个`CustomizeKeyGenerator`.
+
 ### 数据库支持自增主键
 
 在需要自增的主键列上添加`@GeneratedValue(strategy = GenerationType.IDENTITY)`
@@ -15,17 +20,18 @@ private Integer id;
 
 查询语句可以为
 
-- 查询最后生成的id(需要数据库支持).如DB2 的`VALUES IDENTITY_VAL_LOCAL()`
-- 查询序列的方式(需要数据库支持序列),如Oracle的`SELECT xxx.nextval FROM DUAL`
+- 查询最后生成的id(需要数据库支持).如DB2 的`IDENTITY_VAL_LOCAL()`
+- 查询序列的方式(需要数据库支持序列),如Oracle的`SELECT sequence_name.NEXTVAL FROM DUAL`
 - 查询表
 
 数据库支持[查询最后生成的id]在需要自增的主键列上添加`@GeneratedValue(strategy = GenerationType.IDENTITY)`.
 
-如果数据库不支持*查询最后生成的id*并且`generator`没有设置查询语句会报错.系统会自动使用数据库默认的*查询最后生成id*的语句查询并赋值,如果`generator`有值,则会优先使用`generator`返回的语句,
+如果数据库不支持[查询最后生成的id]并且`generator`没有设置查询语句会报错.系统会自动使用数据库默认的[查询最后生成id]
+的语句查询并赋值,如果`generator`有值,则会优先使用`generator`返回的语句,
 
 ```java
 @Id
-@GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT xxx.nextval  FROM DUAL")
+@GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT sequence_name.NEXTVAL FROM DUAL")
 @Column(name = "id", nullable = false)
 private Integer id;
 ```

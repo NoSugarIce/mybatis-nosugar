@@ -16,8 +16,8 @@
 
 package com.nosugarice.mybatis.test.logicdelete;
 
-import com.nosugarice.mybatis.annotation.ColumnOptions;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.annotation.LogicDeleteHandler;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -47,11 +47,11 @@ public class Student implements Serializable {
     @Column(name = "disabled")
     private Integer disabled;
 
-    @ColumnOptions(logicDeleteHandler = LogicDeleteDisabledByHandler.class)
+    @LogicDeleteHandler(LogicDeleteDisabledByHandler.class)
     @Column(name = "disabled_by")
     private Integer disabledBy;
 
-    @ColumnOptions(logicDeleteHandler = LogicDeleteDisabledNameHandler.class)
+    @LogicDeleteHandler(LogicDeleteDisabledNameHandler.class)
     @Column(name = "disabled_name", nullable = false)
     private String disabledName;
 

@@ -17,7 +17,9 @@
 package com.nosugarice.mybatis.test.db;
 
 import com.nosugarice.mybatis.annotation.ColumnOptions;
+import com.nosugarice.mybatis.annotation.InsertHandler;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.annotation.UpdateHandler;
 import com.nosugarice.mybatis.test.base.mode.StatusEnum;
 import com.nosugarice.mybatis.test.base.typehandler.StatusEnumTypeHandler;
 import com.nosugarice.mybatis.test.base.valuehandler.NowHandler;
@@ -73,12 +75,12 @@ public class Student implements Serializable {
     private Integer version;
 
     /** 创建时间 */
-    @ColumnOptions(insertHandler = NowHandler.class)
+    @InsertHandler(value = NowHandler.class)
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     /** 更新时间 */
-    @ColumnOptions(updateHandler = NowHandler.class)
+    @UpdateHandler(NowHandler.class)
     private LocalDateTime updatedAt;
 
     /** 删除时间 */

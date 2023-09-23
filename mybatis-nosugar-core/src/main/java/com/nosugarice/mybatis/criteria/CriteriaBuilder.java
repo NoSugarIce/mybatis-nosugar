@@ -307,7 +307,7 @@ public class CriteriaBuilder {
             if (entity != null) {
                 EntityMetadata entityMetadata = EntityMetadataRegistry.getInstance().getEntityMetadata(entity.getClass());
                 for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
-                    Object value = property.getValue(entity);
+                    Object value = property.valueByObj(entity);
                     if (value != null) {
                         entityCriterions.add(new EqualTo<>(property.getColumn(), value));
                     }

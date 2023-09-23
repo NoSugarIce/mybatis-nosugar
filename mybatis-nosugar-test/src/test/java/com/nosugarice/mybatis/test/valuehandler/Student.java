@@ -17,7 +17,11 @@
 package com.nosugarice.mybatis.test.valuehandler;
 
 import com.nosugarice.mybatis.annotation.ColumnOptions;
+import com.nosugarice.mybatis.annotation.ConditionHandler;
+import com.nosugarice.mybatis.annotation.InsertHandler;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.annotation.ResultHandler;
+import com.nosugarice.mybatis.annotation.UpdateHandler;
 import com.nosugarice.mybatis.test.base.mode.StatusEnum;
 import com.nosugarice.mybatis.test.base.typehandler.StatusEnumTypeHandler;
 import com.nosugarice.mybatis.test.base.valuehandler.NowHandler;
@@ -47,8 +51,10 @@ public class Student implements Serializable {
     private String id;
 
     /** 姓名 */
-    @ColumnOptions(insertHandler = EncryptionHandler.class, updateHandler = EncryptionHandler.class
-            , resultHandler = DecryptHandler.class, conditionHandler = ConditionHandler.class)
+    @InsertHandler(EncryptionHandler.class)
+    @UpdateHandler(EncryptionHandler.class)
+    @ResultHandler(DecryptHandler.class)
+    @ConditionHandler(ConditionEncryptionHandler.class)
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -87,12 +93,12 @@ public class Student implements Serializable {
     private Integer version;
 
     /** 创建时间 */
-    @ColumnOptions(insertHandler = NowHandler.class)
+    @InsertHandler(value = NowHandler.class)
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     /** 更新时间 */
-    @ColumnOptions(updateHandler = NowHandler.class)
+    @UpdateHandler(NowHandler.class)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 

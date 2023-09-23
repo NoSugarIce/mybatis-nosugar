@@ -78,16 +78,20 @@ public class SqlSourceScriptBuilder {
         return build(providerFun, args);
     }
 
-    public SqlSource buildSqlSource(Method method, DmlType dmlType) {
+    public SqlSource buildSqlSource(Method method, DmlType dmlType, SqlAndParameterBind sqlAndParameterBind, Class<?> parameterType) {
         SqlSource sqlSource;
         SqlBuilder sqlBuilder = method.getAnnotation(SqlBuilder.class);
         if (sqlBuilder != null) {
             String[] parameterNames = new ParamNameResolver(buildingContext.getConfiguration(), method).getNames();
             sqlSource = new DynamicHandlerSqlSource(dmlType, buildingContext, parameterNames
-                    , sqlBuilder.sqlFunction().providerFun(), this, sqlBuilder.fixedParameter());
+                    , sqlBuilder.sqlFunction().providerFun(), sqlBuilder.fixedParameter(), this);
         } else {
-            String script = build(method).getSql();
-            sqlSource = new StaticSqlSource(buildingContext.getConfiguration(), script);
+            if (sqlAndParameterBind != null) {
+                sqlSource = new ParameterHandleRawSqlSource(buildingContext.getConfiguration(), sqlAndParameterBind, parameterType);
+            } else {
+                String script = build(method).getSql();
+                sqlSource = new StaticSqlSource(buildingContext.getConfiguration(), script);
+            }
         }
         if (entityMetadata.getSupports().isSupportDynamicTableName() && sqlSource instanceof DynamicHandlerSqlSource) {
             ((DynamicHandlerSqlSource) sqlSource).addSqlHandler(sql -> {

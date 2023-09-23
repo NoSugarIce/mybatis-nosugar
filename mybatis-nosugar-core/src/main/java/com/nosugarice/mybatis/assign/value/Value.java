@@ -95,6 +95,19 @@ public interface Value {
 
 
     /**
+     * 填充处理器
+     *
+     * @return
+     */
+    ValueHandler<?> fillHandler();
+
+    boolean isInsertFill();
+
+    boolean isUpdateFill();
+
+    boolean isConditionFill();
+
+    /**
      * 获取默认值
      * 默认值可以在程序初始化时候确认,直接拼接到sql了
      *

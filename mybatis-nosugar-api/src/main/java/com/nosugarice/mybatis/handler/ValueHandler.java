@@ -32,4 +32,9 @@ public interface ValueHandler<T> {
      */
     T setValue(T value);
 
+    @SuppressWarnings("unchecked")
+    default ValueHandler<T> andThen(ValueHandler<Object> after) {
+        return value -> (T) after.setValue(setValue(value));
+    }
+
 }

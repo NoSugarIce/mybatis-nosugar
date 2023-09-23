@@ -51,7 +51,7 @@ public class EntityDataImpl implements EntityData, OrderComparator {
                 .map(EntityMetadata::getPrimaryKeyProperty)
                 .orElse(null);
 
-        return (ID) Preconditions.checkNotNull(pkProperty, entity.getClass().getName() + ":未找到主键属性!").getValue(entity);
+        return (ID) Preconditions.checkNotNull(pkProperty, entity.getClass().getName() + ":未找到主键属性!").valueByObj(entity);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class EntityDataImpl implements EntityData, OrderComparator {
 
         if (relationalProperties != null) {
             return relationalProperties.stream()
-                    .filter(relationalProperty -> !Objects.equals(relationalProperty.getValue(sourceEntity), relationalProperty.getValue(entity)))
+                    .filter(relationalProperty -> !Objects.equals(relationalProperty.valueByObj(sourceEntity), relationalProperty.valueByObj(entity)))
                     .map(RelationalProperty::getName)
                     .collect(Collectors.toSet());
         } else {

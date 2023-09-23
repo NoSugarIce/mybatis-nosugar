@@ -48,13 +48,18 @@ public class VersionValue extends SimpleValue {
     }
 
     @Override
-    public ValueHandler<?> insertHandler() {
+    public ValueHandler<?> updateHandler() {
+        return (ValueHandler<Serializable>) versionType::nextValue;
+    }
+
+    @Override
+    public ValueHandler<?> fillHandler() {
         return value -> versionType.getDefaultValue();
     }
 
     @Override
-    public ValueHandler<?> updateHandler() {
-        return (ValueHandler<Serializable>) versionType::nextValue;
+    public boolean isInsertFill() {
+        return true;
     }
 
     private enum VersionType {

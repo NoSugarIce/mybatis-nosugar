@@ -156,7 +156,7 @@ public class JpaMapperBuilder extends AbstractMapperBuilder {
                 Preconditions.checkNotNull(providerFun, "未设置构建SQL方法.");
                 sqlAndParameterBind = sqlSourceScriptBuilder.build(providerFun, whereSql);
             }
-            statementBuilder.addMappedStatement(method, SQLPart.script(sqlAndParameterBind.getSql()));
+            statementBuilder.addMappedStatement(method, sqlAndParameterBind);
         }
     }
 

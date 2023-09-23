@@ -163,11 +163,10 @@ public class AdapterSqlSource implements SqlSource {
     public static BoundSql createNewBoundSql(Configuration configuration, String sql, BoundSql originalBoundSql) {
         BoundSql boundSql = new BoundSql(configuration, sql, originalBoundSql.getParameterMappings(), originalBoundSql.getParameterObject());
         for (ParameterMapping parameterMapping : originalBoundSql.getParameterMappings()) {
-            Object parameter = originalBoundSql.getAdditionalParameter(parameterMapping.getProperty());
-            if (parameter == null && !boundSql.hasAdditionalParameter(parameterMapping.getProperty())) {
-                continue;
+            if (originalBoundSql.hasAdditionalParameter(parameterMapping.getProperty())) {
+                boundSql.setAdditionalParameter(parameterMapping.getProperty()
+                        , originalBoundSql.getAdditionalParameter(parameterMapping.getProperty()));
             }
-            boundSql.setAdditionalParameter(parameterMapping.getProperty(), parameter);
         }
         return boundSql;
     }

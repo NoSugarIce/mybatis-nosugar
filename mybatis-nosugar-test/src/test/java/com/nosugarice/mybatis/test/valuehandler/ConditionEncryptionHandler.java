@@ -14,33 +14,17 @@
  * limitations under the License.
  */
 
-package com.nosugarice.mybatis.annotation;
+package com.nosugarice.mybatis.test.valuehandler;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.nosugarice.mybatis.handler.ValueHandler;
 
 /**
- * 逻辑删除
- * 期待 未来Java @interface 可以更碉堡一点
- *
  * @author dingjingyang@foxmail.com
- * @date 2020/12/6
+ * @date 2021/11/26
  */
-@Documented
-@Target({ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LogicDelete {
-
-    String NULL = "NULL";
-    String NOW = "NOW";
-
-    //默认值
-    String defaultValue() default NULL;
-
-    //逻辑删除值
-    String deleteValue();
-
+public class ConditionEncryptionHandler implements ValueHandler<String> {
+    @Override
+    public String setValue(String value) {
+        return value + "-假装加密";
+    }
 }

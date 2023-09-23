@@ -16,8 +16,9 @@
 
 package com.nosugarice.mybatis.test.parentproperty;
 
-import com.nosugarice.mybatis.annotation.ColumnOptions;
+import com.nosugarice.mybatis.annotation.InsertHandler;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.annotation.UpdateHandler;
 import com.nosugarice.mybatis.test.base.valuehandler.NowHandler;
 
 import javax.persistence.Column;
@@ -41,12 +42,12 @@ public abstract class BaseEntity implements Serializable {
     private String id;
 
     /** 创建时间 */
-    @ColumnOptions(insertHandler = NowHandler.class)
+    @InsertHandler(value = NowHandler.class)
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     /** 更新时间 */
-    @ColumnOptions(updateHandler = NowHandler.class)
+    @UpdateHandler(NowHandler.class)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 

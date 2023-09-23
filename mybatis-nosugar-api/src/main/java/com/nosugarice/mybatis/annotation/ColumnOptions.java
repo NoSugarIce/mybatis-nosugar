@@ -16,11 +16,9 @@
 
 package com.nosugarice.mybatis.annotation;
 
-import com.nosugarice.mybatis.handler.ValueHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
-import java.io.Serializable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -41,21 +39,9 @@ import java.sql.ResultSet;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnOptions {
 
-    boolean ignoreEmptyChar() default false;
+    Class<? extends TypeHandler<?>> typeHandler() default VoidTypeHandler.class;
 
-    Class<? extends TypeHandler<?>> typeHandler() default VoidHandler.class;
-
-    Class<? extends ValueHandler<? extends Serializable>> insertHandler() default VoidHandler.class;
-
-    Class<? extends ValueHandler<? extends Serializable>> updateHandler() default VoidHandler.class;
-
-    Class<? extends ValueHandler<? extends Serializable>> logicDeleteHandler() default VoidHandler.class;
-
-    Class<? extends ValueHandler<? extends Serializable>> resultHandler() default VoidHandler.class;
-
-    Class<? extends ValueHandler<? extends Serializable>> conditionHandler() default VoidHandler.class;
-
-    class VoidHandler implements TypeHandler<Void>, ValueHandler<VoidHandler.VoidS> {
+    class VoidTypeHandler implements TypeHandler<Void> {
 
         @Override
         public void setParameter(PreparedStatement ps, int i, Void parameter, JdbcType jdbcType) {
@@ -76,14 +62,6 @@ public @interface ColumnOptions {
             return null;
         }
 
-        @Override
-        public VoidS setValue(VoidS value) {
-            return null;
-        }
-
-        private static class VoidS implements Serializable {
-            private static final long serialVersionUID = -7262888801476099994L;
-        }
     }
 
 }

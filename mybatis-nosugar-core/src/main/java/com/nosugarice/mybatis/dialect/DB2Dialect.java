@@ -19,6 +19,8 @@ package com.nosugarice.mybatis.dialect;
 import com.nosugarice.mybatis.util.StringFormatter;
 
 /**
+ * 可能存在错误,谨慎使用
+ *
  * @author dingjingyang@foxmail.com
  * @date 2020/11/15
  */
@@ -39,7 +41,7 @@ public class DB2Dialect implements Dialect {
 
             @Override
             public String getIdentitySelectString() {
-                return "VALUES IDENTITY_VAL_LOCAL()";
+                return "IDENTITY_VAL_LOCAL()";
             }
 
             @Override
@@ -58,24 +60,9 @@ public class DB2Dialect implements Dialect {
 
         INSTANCE;
 
-        private static final String SQL_TEMP_LATE = "" +
-                "SELECT\n" +
-                "   * \n" +
-                "FROM\n" +
-                "   (\n" +
-                "   SELECT\n" +
-                "       INNER2_.*,\n" +
-                "       ROWNUMBER ( ) OVER ( ORDER BY ORDER of INNER2_ ) AS ROWNUMBER_ \n" +
-                "   FROM\n" +
-                "       ( {} FETCH FIRST {} ROWS ONLY ) AS INNER2_ \n" +
-                "   ) AS INNER1_ \n" +
-                "WHERE\n" +
-                "   ROWNUMBER_ > {} \n" +
-                "ORDER BY\n" +
-                "   ROWNUMBER_";
+        private static final String SQL_TEMP_LATE = "{} FETCH FIRST {} ROWS ONLY OFFSET {} ROWS";
 
-        private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "" +
-                "{} FETCH FIRST {} ROWS ONLY";
+        private static final String NO_FIRST_ROW_SQL_TEMP_LATE = "{} FETCH FIRST {} ROWS ONLY";
 
         @Override
         public String applyLimit(String sql, int offset, int limit) {

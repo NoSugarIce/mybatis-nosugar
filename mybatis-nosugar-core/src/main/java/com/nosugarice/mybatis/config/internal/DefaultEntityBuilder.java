@@ -17,7 +17,14 @@
 package com.nosugarice.mybatis.config.internal;
 
 import com.nosugarice.mybatis.annotation.ColumnOptions;
+import com.nosugarice.mybatis.annotation.ColumnOptions.VoidTypeHandler;
+import com.nosugarice.mybatis.annotation.ConditionHandler;
+import com.nosugarice.mybatis.annotation.Fill;
+import com.nosugarice.mybatis.annotation.InsertHandler;
 import com.nosugarice.mybatis.annotation.LogicDelete;
+import com.nosugarice.mybatis.annotation.LogicDeleteHandler;
+import com.nosugarice.mybatis.annotation.ResultHandler;
+import com.nosugarice.mybatis.annotation.UpdateHandler;
 import com.nosugarice.mybatis.assign.value.KeyValue;
 import com.nosugarice.mybatis.assign.value.LogicDeleteValue;
 import com.nosugarice.mybatis.assign.value.SimpleValue;
@@ -51,6 +58,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -116,28 +124,11 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 relationalProperty.setPrimaryKey(true);
                 relationalProperty.setValue(Value.SIMPLE_KEY_VALUE);
             }
+
             if (isAnnotationPresent(ColumnOptions.class)) {
                 ColumnOptions columnOptions = getAnnotation(ColumnOptions.class);
-                if (StringUtils.isChar(type)) {
-                    relationalProperty.setIgnoreEmptyChar(columnOptions.ignoreEmptyChar());
-                }
-                if (columnOptions.typeHandler() != ColumnOptions.VoidHandler.class) {
+                if (columnOptions.typeHandler() != VoidTypeHandler.class) {
                     relationalProperty.setTypeHandler(columnOptions.typeHandler());
-                }
-                ValueHandler<?> insertHandler = getValueHandler(columnOptions.insertHandler());
-                ValueHandler<?> updateHandler = getValueHandler(columnOptions.updateHandler());
-                ValueHandler<?> logicDeleteHandler = getValueHandler(columnOptions.logicDeleteHandler());
-                ValueHandler<?> resultHandler = getValueHandler(columnOptions.resultHandler());
-                ValueHandler<?> conditionHandler = getValueHandler(columnOptions.conditionHandler());
-                if (insertHandler != null || updateHandler != null || logicDeleteHandler != null || resultHandler != null
-                        || conditionHandler != null) {
-                    SimpleValue value = new SimpleValue(relationalProperty.getJavaType());
-                    value.setInsertHandler(insertHandler);
-                    value.setUpdateHandler(updateHandler);
-                    value.setLogicDeleteHandler(logicDeleteHandler);
-                    value.setResultHandler(resultHandler);
-                    value.setConditionHandler(conditionHandler);
-                    relationalProperty.setValue(value);
                 }
             }
 
@@ -175,8 +166,6 @@ public class DefaultEntityBuilder extends EntityBuilder {
                         , "[" + member.getName() + "]" + "逻辑删除值未设置!");
                 relationalProperty.setLogicDelete(true);
                 LogicDeleteValue value = new LogicDeleteValue(type, logicDelete.defaultValue(), logicDelete.deleteValue());
-                value.setLogicDeleteHandler(getValueHandler(logicDelete.deleteValueHandler()));
-
                 relationalProperty.setValue(value);
             }
             if (isAnnotationPresent(OrderBy.class)) {
@@ -186,6 +175,43 @@ public class DefaultEntityBuilder extends EntityBuilder {
                     relationalProperty.setOrderBy(orderByAnn.value());
                 }
             }
+
+            ValueHandler<?> insertHandler = Optional.ofNullable(getAnnotation(InsertHandler.class))
+                    .map(InsertHandler::value).map(this::getValueHandler).orElse(null);
+            ValueHandler<?> updateHandler = Optional.ofNullable(getAnnotation(UpdateHandler.class))
+                    .map(UpdateHandler::value).map(this::getValueHandler).orElse(null);
+            ValueHandler<?> logicDeleteHandler = Optional.ofNullable(getAnnotation(LogicDeleteHandler.class))
+                    .map(LogicDeleteHandler::value).map(this::getValueHandler).orElse(null);
+            ValueHandler<?> resultHandler = Optional.ofNullable(getAnnotation(ResultHandler.class))
+                    .map(ResultHandler::value).map(this::getValueHandler).orElse(null);
+            ValueHandler<?> conditionHandler = Optional.ofNullable(getAnnotation(ConditionHandler.class))
+                    .map(ConditionHandler::value).map(this::getValueHandler).orElse(null);
+            if (insertHandler != null || updateHandler != null || logicDeleteHandler != null || resultHandler != null
+                    || conditionHandler != null) {
+                Value value = relationalProperty.getValue() == Value.SIMPLE_VALUE
+                        ? new SimpleValue(relationalProperty.getJavaType()) : relationalProperty.getValue();
+                if (value instanceof SimpleValue) {
+                    ((SimpleValue) value).setInsertHandler(insertHandler);
+                    ((SimpleValue) value).setUpdateHandler(updateHandler);
+                    ((SimpleValue) value).setLogicDeleteHandler(logicDeleteHandler);
+                    ((SimpleValue) value).setResultHandler(resultHandler);
+                    ((SimpleValue) value).setConditionHandler(conditionHandler);
+                }
+                relationalProperty.setValue(value);
+            }
+
+            Optional.ofNullable(getAnnotation(Fill.class)).ifPresent(fill -> {
+                Value value = relationalProperty.getValue() == Value.SIMPLE_VALUE
+                        ? new SimpleValue(relationalProperty.getJavaType()) : relationalProperty.getValue();
+                if (value instanceof SimpleValue) {
+                    ((SimpleValue) value).setFillHandler(getValueHandler(fill.value()));
+                    ((SimpleValue) value).setInsertFill(fill.insert());
+                    ((SimpleValue) value).setUpdateFill(fill.update());
+                    ((SimpleValue) value).setConditionFill(fill.condition());
+                }
+                relationalProperty.setValue(value);
+            });
+
             String column = null;
             if (isAnnotationPresent(Column.class)) {
                 Column columnAnn = getAnnotation(Column.class);
@@ -216,11 +242,8 @@ public class DefaultEntityBuilder extends EntityBuilder {
         }
 
         private ValueHandler<?> getValueHandler(Class<? extends ValueHandler<? extends Serializable>> valueHandlerType) {
-            if (valueHandlerType != ColumnOptions.VoidHandler.class) {
-                valueHandlerRegistry.registerType(valueHandlerType);
-                return valueHandlerRegistry.getObject(valueHandlerType);
-            }
-            return null;
+            valueHandlerRegistry.registerType(valueHandlerType);
+            return valueHandlerRegistry.getObject(valueHandlerType);
         }
     }
 

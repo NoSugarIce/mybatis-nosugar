@@ -49,7 +49,7 @@ long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetwee
 - [快速开始](doc/quickStart.md)
 - [配置](doc/config.md)
 - [插入时主键策略](doc/idGenerated.md)
-- [增删改查](doc/USER_GUIDE.md)
+- [增删改查(暂时还没写文档,请根据test模块查看示例)]()
 - [查询条件构造](doc/criterion.md)
 - [JPA式方法名实现查询](doc/jpa.md)
 - [全新Count查询](doc/count.md)
@@ -58,6 +58,7 @@ long count=studentMapper.countP3(studentMapper::findByNameStartsWithAndAgeBetwee
 - [乐观锁](doc/version.md)
 - [动态表名](doc/dynamicTableName.md)
 - [批处理增强模式](doc/batch.md)
+- [自动填充器与属性值处理器](doc/fillAndHandler.md)
 
 
 

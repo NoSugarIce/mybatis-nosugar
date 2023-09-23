@@ -87,15 +87,12 @@ public class RelationalProperty {
     /** 查询默认排序 */
     private String orderBy;
 
-    /** 忽略空字符 */
-    private boolean ignoreEmptyChar;
-
     public RelationalProperty(Member member) {
         ((AccessibleObject) member).setAccessible(true);
         this.member = member;
     }
 
-    public Object getValue(Object obj) {
+    public Object valueByObj(Object obj) {
         try {
             return member instanceof Field ? ((Field) member).get(obj) : ((Method) member).invoke(obj);
         } catch (Exception e) {
@@ -254,11 +251,4 @@ public class RelationalProperty {
         this.orderBy = orderBy;
     }
 
-    public boolean isIgnoreEmptyChar() {
-        return ignoreEmptyChar;
-    }
-
-    public void setIgnoreEmptyChar(boolean ignoreEmptyChar) {
-        this.ignoreEmptyChar = ignoreEmptyChar;
-    }
 }
