@@ -13,8 +13,8 @@
 
     <properties>
         <junit.version>5.8.2</junit.version>
-        <logback.version>1.4.5</logback.version>
-        <hsqldb.version>2.7.1</hsqldb.version>
+        <logback.version>1.4.14</logback.version>
+        <hsqldb.version>2.7.2</hsqldb.version>
         <mysql-connector.version>8.0.25</mysql-connector.version>
         <ojdbc11.version>21.4.0.0.1</ojdbc11.version>
         <mssql-jdbc.version>10.1.0.jre17-preview</mssql-jdbc.version>

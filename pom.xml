@@ -49,12 +49,12 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <mybatis.version>3.5.12</mybatis.version>
-        <mybatis-spring.version>2.1.0</mybatis-spring.version>
-        <spring.version>5.3.25</spring.version>
+        <mybatis.version>3.5.15</mybatis.version>
+        <mybatis-spring.version>2.1.2</mybatis-spring.version>
+        <spring.version>5.3.31</spring.version>
         <javax.persistence.version>2.2</javax.persistence.version>
 
-        <maven-compiler-plugin.version>3.9.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
     </properties>
 
     <dependencyManagement>
