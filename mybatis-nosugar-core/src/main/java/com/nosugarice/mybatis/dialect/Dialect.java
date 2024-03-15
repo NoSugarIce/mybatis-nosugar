@@ -62,6 +62,15 @@ public interface Dialect {
     LimitHandler getLimitHandler();
 
     /**
+     * 流式查询的FetchSize大小
+     *
+     * @return
+     */
+    default Integer streamingResultSetFetchSize() {
+        return null;
+    }
+
+    /**
      * 优化 Count 语句
      * TODO 先简单粗暴
      *

@@ -71,7 +71,7 @@ public class ReflectionUtils {
         List<Field> fields = new ArrayList<>();
         Set<String> fieldNames = new HashSet<>();
         for (Field field : clazz.getDeclaredFields()) {
-            if (ReflectionUtils.isProperty(field)) {
+            if (isProperty(field)) {
                 fields.add(field);
                 fieldNames.add(field.getName());
             }
@@ -79,7 +79,7 @@ public class ReflectionUtils {
         Class<?> superClass = clazz;
         while ((superClass = superClass.getSuperclass()) != null) {
             for (Field field : superClass.getDeclaredFields()) {
-                if (ReflectionUtils.isProperty(field)) {
+                if (isProperty(field)) {
                     if (!fieldNames.contains(field.getName())) {
                         fields.add(field);
                         fieldNames.add(field.getName());
@@ -100,7 +100,7 @@ public class ReflectionUtils {
         List<Method> methods = new ArrayList<>();
         Set<String> methodNames = new HashSet<>();
         for (Method method : clazz.getDeclaredMethods()) {
-            if (ReflectionUtils.isProperty(method)) {
+            if (isProperty(method)) {
                 methods.add(method);
                 methodNames.add(method.getName());
             }
@@ -108,7 +108,7 @@ public class ReflectionUtils {
         Class<?> superClass = clazz;
         while ((superClass = superClass.getSuperclass()) != null) {
             for (Method method : superClass.getDeclaredMethods()) {
-                if (ReflectionUtils.isProperty(method)) {
+                if (isProperty(method)) {
                     if (!methodNames.contains(method.getName())) {
                         methods.add(method);
                         methodNames.add(method.getName());
@@ -157,7 +157,7 @@ public class ReflectionUtils {
     }
 
     private static String decapitalize(String name) {
-        if (name != null && name.length() != 0) {
+        if (name != null && !name.isEmpty()) {
             if (name.length() > 1 && Character.isUpperCase(name.charAt(1))) {
                 return name;
             } else {

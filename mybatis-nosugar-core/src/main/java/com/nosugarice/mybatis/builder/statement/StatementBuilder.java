@@ -19,6 +19,7 @@ package com.nosugarice.mybatis.builder.statement;
 import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
+import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.domain.Page;
 import com.nosugarice.mybatis.handler.ResultValueHandler;
 import com.nosugarice.mybatis.handler.ValueHandler;
@@ -60,6 +61,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -153,9 +155,17 @@ public class StatementBuilder {
         String resultMapId = getResultMapId(method);
         if (resultMapId == null && isSelect) {
             Class<?> entityClass = entityMetadata.getEntityClass();
-            if (entityClass == returnType) {
+            if (returnType == entityClass) {
                 returnType = null;
                 resultMapId = getDefaultResultMapId();
+            } else if (returnType == void.class) {
+                boolean hasResultHandler = Arrays.stream(method.getParameterTypes()).anyMatch(aClass -> aClass == ResultHandler.class);
+                if (hasResultHandler) {
+                    returnType = null;
+                    resultMapId = getDefaultResultMapId();
+                    Dialect dialect = buildingContext.getDialect();
+                    fetchSize = dialect.streamingResultSetFetchSize();
+                }
             }
         }
 

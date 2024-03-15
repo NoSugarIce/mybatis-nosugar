@@ -24,9 +24,9 @@ import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.sql.SqlBuilder;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.exceptions.TooManyResultsException;
+import org.apache.ibatis.session.ResultHandler;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -46,53 +46,21 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
     <C> List<T> selectList(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C, ?> criteria);
 
     /**
+     * 查询符合条件的记录
+     *
+     * @param criteria 查询条件封装
+     * @return 符合条件的记录
+     */
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.SELECT_LIST)
+    <C> void selectResultHandler(@Param(MapperParam.CRITERIA) CriteriaQuery<T, C, ?> criteria, ResultHandler<T> resultHandler);
+
+    /**
      * 查询所有记录
      *
      * @return 所有记录
      */
     default <C> List<T> selectAll() {
         return selectList((CriteriaQuery<T, C, ?>) null);
-    }
-
-    /**
-     * 查询是否存在
-     *
-     * @param criteria 查询条件封装
-     * @return 是否存在包装
-     */
-    default <C> Optional<Integer> exists(CriteriaQuery<T, C, ?> criteria) {
-        return adapterExists((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria);
-    }
-
-    /**
-     * 查询符合条件的记录数
-     *
-     * @param criteria 查询条件封装
-     * @return 符合条件的记录数
-     */
-    default <C> long count(CriteriaQuery<T, C, ?> criteria) {
-        return adapterCount((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria).longValue();
-    }
-
-
-    /**
-     * 查询符合的行数
-     *
-     * @param entity 实体参数
-     * @return 行数
-     */
-    default long count(T entity) {
-        return count(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity));
-    }
-
-    /**
-     * 查询是否存在
-     *
-     * @param entity 实体参数
-     * @return 行数
-     */
-    default boolean exists(T entity) {
-        return exists(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity)).isPresent();
     }
 
     /**
@@ -190,6 +158,46 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
             page.setContent(list);
         }
         return page;
+    }
+
+    /**
+     * 查询是否存在
+     *
+     * @param criteria 查询条件封装
+     * @return 是否存在包装
+     */
+    default <C> boolean exists(CriteriaQuery<T, C, ?> criteria) {
+        return adapterExists((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria).isPresent();
+    }
+
+    /**
+     * 查询是否存在
+     *
+     * @param entity 实体参数
+     * @return 行数
+     */
+    default boolean exists(T entity) {
+        return exists(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity));
+    }
+
+    /**
+     * 查询符合条件的记录数
+     *
+     * @param criteria 查询条件封装
+     * @return 符合条件的记录数
+     */
+    default <C> long count(CriteriaQuery<T, C, ?> criteria) {
+        return adapterCount((FunS.Param1<CriteriaQuery<T, C, ?>, List<T>>) this::selectList, criteria).longValue();
+    }
+
+    /**
+     * 查询符合的行数
+     *
+     * @param entity 实体参数
+     * @return 行数
+     */
+    default long count(T entity) {
+        return count(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(entity));
     }
 
 }

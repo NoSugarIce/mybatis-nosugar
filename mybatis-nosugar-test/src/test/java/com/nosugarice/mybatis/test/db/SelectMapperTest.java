@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -92,8 +91,8 @@ public abstract class SelectMapperTest extends BaseDbMapperTest {
                 .between(Student::getAge, 10, 30)
                 .lessThan(Student::getCardBalance, new BigDecimal("200"));
 
-        Optional<Integer> exists = mapper.exists(query);
-        Assertions.assertTrue(exists.isPresent());
+        boolean exists = mapper.exists(query);
+        Assertions.assertTrue(exists);
     }
 
     @Test

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -72,6 +72,18 @@ class SelectMapperTest extends BaseMapperTest {
     }
 
     @Test
+    void selectResultHandler() {
+        StudentMapper mapper = getMapper(StudentMapper.class);
+
+        LambdaQuery<Student> query = CriteriaBuilder.lambdaQuery(Student.class);
+
+        AtomicInteger atomicInteger = new AtomicInteger();
+
+        mapper.selectResultHandler(query, resultContext -> atomicInteger.getAndIncrement());
+        System.out.println(atomicInteger.get());
+    }
+
+    @Test
     void count() {
         StudentMapper mapper = getMapper(StudentMapper.class);
 
@@ -93,8 +105,8 @@ class SelectMapperTest extends BaseMapperTest {
                 .between(Student::getAge, 10, 30)
                 .lessThan(Student::getCardBalance, new BigDecimal("200"));
 
-        Optional<Integer> exists = mapper.exists(query);
-        Assertions.assertTrue(exists.isPresent());
+        boolean exists = mapper.exists(query);
+        Assertions.assertTrue(exists);
     }
 
     @Test

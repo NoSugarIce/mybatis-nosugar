@@ -67,4 +67,9 @@ public class MySqlDialect implements Dialect {
         }
     }
 
+    @Override
+    public Integer streamingResultSetFetchSize() {
+        return Integer.MIN_VALUE;
+    }
+
 }
