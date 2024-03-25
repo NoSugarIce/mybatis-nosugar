@@ -45,19 +45,19 @@ public class EntityToCriterionImpl implements EntityToCriterion {
     }
 
     @Override
-    public <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteria, boolean nullable) {
+    public <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteria, boolean selective) {
         criteria.cleanValues();
-        Map<String, Object> setValues = entityToSetValues(entity, nullable);
+        Map<String, Object> setValues = entityToSetValues(entity, selective);
         setValues.forEach(criteria::setByColumn);
         return criteria;
     }
 
-    private <T> Map<String, Object> entityToSetValues(T entity, boolean nullable) {
+    private <T> Map<String, Object> entityToSetValues(T entity, boolean selective) {
         EntityMetadata entityMetadata = EntityMetadataRegistry.getInstance().getEntityMetadata(entity.getClass());
         Map<String, Object> columnValues = new LinkedHashMap<>(entityMetadata.getRelationalEntity().getProperties().size());
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
             Object value = property.valueByObj(entity);
-            if (value != null || nullable) {
+            if (value != null || selective) {
                 columnValues.put(property.getColumn(), value);
             }
         }

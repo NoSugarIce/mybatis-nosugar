@@ -69,7 +69,7 @@ class UpdateMapperTest extends BaseMapperTest {
         Assertions.assertEquals(12, student.getAge());
 
         student.setAge(null);
-        mapper.updateByIdNullable(student);
+        mapper.updateByIdSelective(student);
 
         student = mapper.selectById("002f2dcb10ba4be0adc333cecb886111").orElseThrow(NullPointerException::new);
         Assertions.assertEquals(12, student.getAge());

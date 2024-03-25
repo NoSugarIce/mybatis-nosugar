@@ -57,7 +57,7 @@ public interface UpdateCriteriaMapper<T> extends UpdateMapper {
      * @param criteria ,#set(k, v)将忽略
      * @return 更新行数
      */
-    default <C> int updateNullable(T entity, CriteriaUpdate<T, C, ?> criteria) {
+    default <C> int updateSelective(T entity, CriteriaUpdate<T, C, ?> criteria) {
         return update(EntityToCriterion.getInstance().mergeCriteriaUpdate(entity, criteria, false));
     }
 
@@ -79,8 +79,8 @@ public interface UpdateCriteriaMapper<T> extends UpdateMapper {
      * @param selectParameter 查询条件
      * @return 更新行数
      */
-    default int updateNullable(T entity, T selectParameter) {
-        return updateNullable(entity, EntityToCriterion.getInstance().entityToCriteriaUpdate(selectParameter));
+    default int updateSelective(T entity, T selectParameter) {
+        return updateSelective(entity, EntityToCriterion.getInstance().entityToCriteriaUpdate(selectParameter));
     }
 
 }

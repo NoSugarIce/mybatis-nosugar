@@ -63,10 +63,10 @@ public @interface SqlBuilder {
                 return ProviderTempLate::insert;
             }
         },
-        INSERT_NULLABLE() {
+        INSERT_SELECTIVE() {
             @Override
             public <T, ID> FunS.Param2<ProviderTempLate, T, SqlAndParameterBind> providerFun() {
-                return ProviderTempLate::insertNullable;
+                return ProviderTempLate::insertSelective;
             }
         },
         UPDATE_BY_ID() {

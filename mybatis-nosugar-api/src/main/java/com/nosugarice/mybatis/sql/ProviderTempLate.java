@@ -37,9 +37,9 @@ public interface ProviderTempLate {
 
     <T> SqlAndParameterBind insert(T entity);
 
-    <T> SqlAndParameterBind insertNullable(T entity);
+    <T> SqlAndParameterBind insertSelective(T entity);
 
-    <T> SqlAndParameterBind updateById(T entity, boolean nullable);
+    <T> SqlAndParameterBind updateById(T entity, boolean selective);
 
     <T> SqlAndParameterBind updateByIdChoseProperty(T entity, Set<String> choseProperties);
 

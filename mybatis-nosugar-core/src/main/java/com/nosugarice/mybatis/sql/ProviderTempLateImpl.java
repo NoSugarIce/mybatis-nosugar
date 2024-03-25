@@ -231,7 +231,7 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind insertNullable(T entity) {
+    public <T> SqlAndParameterBind insertSelective(T entity) {
         StringJoinerBuilder columnJoin = StringJoinerBuilder.createSpaceJoin().withDelimiter(", ").withPrefix("(").withSuffix(")");
         StringJoinerBuilder valueJoin = StringJoinerBuilder.createSpaceJoin().withDelimiter(", ").withPrefix("(").withSuffix(")");
 
@@ -266,8 +266,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
     }
 
     @Override
-    public <T> SqlAndParameterBind updateById(T entity, boolean nullable) {
-        return updateById(entity, null, nullable);
+    public <T> SqlAndParameterBind updateById(T entity, boolean selective) {
+        return updateById(entity, null, selective);
     }
 
     @Override
@@ -279,8 +279,8 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         return updateById(entity, updateColumns, false);
     }
 
-    private <T> SqlAndParameterBind updateById(T entity, Set<String> choseColumns, boolean nullable) {
-        Map<String, Object> updateColumnValues = getEntityColumnValues(entity, nullable);
+    private <T> SqlAndParameterBind updateById(T entity, Set<String> choseColumns, boolean selective) {
+        Map<String, Object> updateColumnValues = getEntityColumnValues(entity, selective);
         if (choseColumns != null) {
             updateColumnValues.entrySet().removeIf(entry -> !choseColumns.contains(entry.getKey()));
         }
@@ -611,11 +611,11 @@ public class ProviderTempLateImpl implements ProviderTempLate {
         return sqlAndParameterBind;
     }
 
-    private <T> Map<String, Object> getEntityColumnValues(T entity, boolean nullable) {
+    private <T> Map<String, Object> getEntityColumnValues(T entity, boolean selective) {
         Map<String, Object> columnValues = new LinkedHashMap<>(entityMetadata.getRelationalEntity().getProperties().size());
         for (RelationalProperty property : entityMetadata.getRelationalEntity().getProperties()) {
             Object value = property.valueByObj(entity);
-            if (value != null || !nullable) {
+            if (value != null || !selective) {
                 columnValues.put(property.getColumn(), value);
             }
         }

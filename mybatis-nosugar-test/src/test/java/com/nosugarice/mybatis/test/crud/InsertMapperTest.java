@@ -57,7 +57,7 @@ class InsertMapperTest extends BaseMapperTest {
         student.setSno(1);
         student.setStatus(StatusEnum.ON);
 
-        mapper.insertNullable(student);
+        mapper.insertSelective(student);
 
         Assertions.assertNotNull(student.getId());
     }

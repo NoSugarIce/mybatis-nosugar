@@ -58,11 +58,11 @@ public interface EntityToCriterion {
      *
      * @param entity
      * @param criteriaUpdate
-     * @param nullable
+     * @param selective
      * @param <T>
      * @return
      */
-    <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteriaUpdate, boolean nullable);
+    <T, C> CriteriaUpdate<T, C, ?> mergeCriteriaUpdate(T entity, CriteriaUpdate<T, C, ?> criteriaUpdate, boolean selective);
 
     /**
      * 获取实例

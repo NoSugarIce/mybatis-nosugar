@@ -36,11 +36,11 @@ public interface UpdatePrimaryKeyMapper<T> extends BatchMapper, UpdateMapper {
      * 根据主键更新
      *
      * @param entity   实体
-     * @param nullable 属性为空的时候是否忽略,true:忽略,false:不忽略
+     * @param selective 属性为空的时候是否忽略,true:忽略,false:不忽略
      * @return
      */
     @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.UPDATE_BY_ID)
-    int updateById(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param("nullable") boolean nullable);
+    int updateById(@Param(MapperParam.UPDATE_COLUMN) T entity, @Param("selective") boolean selective);
 
     /**
      * 根据主键更新,属性值为空的也写入
@@ -58,7 +58,7 @@ public interface UpdatePrimaryKeyMapper<T> extends BatchMapper, UpdateMapper {
      * @param entity
      * @return
      */
-    default int updateByIdNullable(T entity) {
+    default int updateByIdSelective(T entity) {
         return updateById(entity, true);
     }
 
@@ -88,13 +88,13 @@ public interface UpdatePrimaryKeyMapper<T> extends BatchMapper, UpdateMapper {
      *
      * @param entities  实体列表
      * @param batchSize 每批的数量
-     * @param nullable  字段是否忽空值
+     * @param selective  字段是否忽空值
      */
     @SpeedBatch
-    default void updateByIdBatchMode(Iterable<T> entities, int batchSize, boolean nullable) {
+    default void updateByIdBatchMode(Iterable<T> entities, int batchSize, boolean selective) {
         int index = 0;
         for (T entity : entities) {
-            int i = nullable ? updateByIdNullable(entity) : updateById(entity);
+            int i = selective ? updateByIdSelective(entity) : updateById(entity);
             index++;
             if (index % batchSize == 0) {
                 flush();

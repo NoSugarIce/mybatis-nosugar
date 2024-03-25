@@ -42,21 +42,21 @@ public interface InsertMapper<T> extends BatchMapper, Mapper {
      * @param entity
      * @return
      */
-    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.INSERT_NULLABLE)
-    int insertNullable(T entity);
+    @SqlBuilder(sqlFunction = SqlBuilder.SqlFunction.INSERT_SELECTIVE)
+    int insertSelective(T entity);
 
     /**
      * 批量模式插入
      *
      * @param entities  实体列表
      * @param batchSize 每批的数量
-     * @param nullable  字段是否忽空值
+     * @param selective  字段是否忽空值
      */
     @SpeedBatch
-    default void insertBatch(Iterable<T> entities, int batchSize, boolean nullable) {
+    default void insertBatch(Iterable<T> entities, int batchSize, boolean selective) {
         int index = 0;
         for (T entity : entities) {
-            int i = nullable ? insertNullable(entity) : insert(entity);
+            int i = selective ? insertSelective(entity) : insert(entity);
             index++;
             if (index % batchSize == 0) {
                 flush();
