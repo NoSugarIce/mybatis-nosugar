@@ -57,6 +57,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,8 +118,10 @@ public class DefaultEntityBuilder extends EntityBuilder {
         public RelationalProperty build() {
             RelationalProperty relationalProperty = new RelationalProperty(member);
             relationalProperty.setName(ReflectionUtils.getPropertyName(member));
-            Class<?> type = ReflectionUtils.getPropertyType(member);
-            relationalProperty.setJavaType(type);
+            Class<?> clazz = ReflectionUtils.getPropertyType(member);
+            Type type = ReflectionUtils.getGenericType(member);
+            relationalProperty.setJavaType(clazz);
+            relationalProperty.setGenericType(type);
             relationalProperty.setValue(Value.SIMPLE_VALUE);
             if (isAnnotationPresent(Id.class)) {
                 relationalProperty.setPrimaryKey(true);
@@ -155,7 +158,7 @@ public class DefaultEntityBuilder extends EntityBuilder {
                         , "[" + member.getName() + "]" + "@Version 设置错误!");
                 relationalProperty.setVersion(true);
                 relationalProperty.setNullable(false);
-                Value value = VersionValue.of(type);
+                Value value = VersionValue.of(clazz);
                 relationalProperty.setValue(value);
             }
             if (isAnnotationPresent(LogicDelete.class)) {
@@ -165,7 +168,7 @@ public class DefaultEntityBuilder extends EntityBuilder {
                 Preconditions.checkArgument(StringUtils.isNotBlank(logicDelete.deleteValue())
                         , "[" + member.getName() + "]" + "逻辑删除值未设置!");
                 relationalProperty.setLogicDelete(true);
-                LogicDeleteValue value = new LogicDeleteValue(type, logicDelete.defaultValue(), logicDelete.deleteValue());
+                LogicDeleteValue value = new LogicDeleteValue(clazz, logicDelete.defaultValue(), logicDelete.deleteValue());
                 relationalProperty.setValue(value);
             }
             if (isAnnotationPresent(OrderBy.class)) {

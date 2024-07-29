@@ -19,10 +19,12 @@ package com.nosugarice.mybatis.sqlsource;
 import com.nosugarice.mybatis.config.DmlType;
 import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
+import com.nosugarice.mybatis.handler.AbstractGenericHandler;
 import com.nosugarice.mybatis.handler.ParameterValueHandler;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapper.function.FunS;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.registry.GenericHandlerRegistrar;
 import com.nosugarice.mybatis.sql.ParameterBind.ParameterColumnBind;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import org.apache.ibatis.binding.MapperMethod;
@@ -181,7 +183,14 @@ public class DynamicHandlerSqlSource implements SqlSource {
             ParameterMapping.Builder builder = new ParameterMapping.Builder(buildingContext.getConfiguration()
                     , parameterColumnBind.getParameter(), propertyType);
             if (typeHandlerType != null) {
-                builder.typeHandler(buildingContext.getConfiguration().getTypeHandlerRegistry().getTypeHandler(typeHandlerType));
+                TypeHandler<?> typeHandler;
+                if (AbstractGenericHandler.class.isAssignableFrom(typeHandlerType) && property.getGenericType() != null) {
+                    GenericHandlerRegistrar genericHandlerRegistrar = buildingContext.getGenericHandlerRegistrar();
+                    typeHandler = genericHandlerRegistrar.getHandler((Class<? extends AbstractGenericHandler>) typeHandlerType, property.getGenericType());
+                } else {
+                    typeHandler = buildingContext.getConfiguration().getTypeHandlerRegistry().getTypeHandler(typeHandlerType);
+                }
+                builder.typeHandler(typeHandler);
             }
             builder.jdbcType(JDBC_TYPE_MAP.get(propertyType));
             ParameterMapping parameterMapping = builder.build();

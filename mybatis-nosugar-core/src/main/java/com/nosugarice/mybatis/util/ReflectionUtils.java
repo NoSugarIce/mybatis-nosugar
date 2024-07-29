@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -130,8 +132,40 @@ public class ReflectionUtils {
         }
     }
 
+    public static <T> T newInstance(Class<T> clazz, Object... args) {
+        try {
+            Constructor<?>[] constructors = clazz.getConstructors();
+            for (Constructor<?> constructor : constructors) {
+                Class<?>[] parameterTypes = constructor.getParameterTypes();
+                if (parameterTypes.length == args.length) {
+                    boolean match = true;
+                    for (int i = 0; i < parameterTypes.length; i++) {
+                        if (!parameterTypes[i].isInstance(args[i])) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        return (T) constructor.newInstance(args);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new NoSugarException(e);
+        }
+        throw new NoSugarException("未找到相应参数构造函数");
+    }
+
     public static Class<?> getPropertyType(Member member) {
         return member instanceof Field ? ((Field) member).getType() : ((Method) member).getReturnType();
+    }
+
+    public static Type getGenericType(Member member) {
+        Type type = member instanceof Field ? ((Field) member).getGenericType() : ((Method) member).getGenericReturnType();
+        if (type instanceof ParameterizedType) {
+            return type;
+        }
+        return null;
     }
 
     public static String getPropertyName(Member member) {

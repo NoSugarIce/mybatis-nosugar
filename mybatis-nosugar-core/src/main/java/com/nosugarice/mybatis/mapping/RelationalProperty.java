@@ -27,6 +27,7 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * @author dingjingyang@foxmail.com
@@ -41,6 +42,9 @@ public class RelationalProperty {
 
     /** java 类型 */
     private Class<?> javaType;
+
+    /** Type */
+    private Type genericType;
 
     /** 对应列名 */
     private String column;
@@ -129,6 +133,14 @@ public class RelationalProperty {
 
     public void setJavaType(Class<?> javaType) {
         this.javaType = javaType;
+    }
+
+    public Type getGenericType() {
+        return genericType;
+    }
+
+    public void setGenericType(Type genericType) {
+        this.genericType = genericType;
     }
 
     public String getColumn() {

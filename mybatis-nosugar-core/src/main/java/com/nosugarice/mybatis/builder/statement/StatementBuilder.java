@@ -21,6 +21,7 @@ import com.nosugarice.mybatis.config.EntityMetadata;
 import com.nosugarice.mybatis.config.MetadataBuildingContext;
 import com.nosugarice.mybatis.dialect.Dialect;
 import com.nosugarice.mybatis.domain.Page;
+import com.nosugarice.mybatis.handler.AbstractGenericHandler;
 import com.nosugarice.mybatis.handler.ResultValueHandler;
 import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapper.delete.DeleteMapper;
@@ -30,6 +31,7 @@ import com.nosugarice.mybatis.mapper.logicdelete.LogicDeleteMapper;
 import com.nosugarice.mybatis.mapper.update.UpdateMapper;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.mapping.RelationalProperty;
+import com.nosugarice.mybatis.registry.GenericHandlerRegistrar;
 import com.nosugarice.mybatis.sql.SQLPart;
 import com.nosugarice.mybatis.sql.SqlAndParameterBind;
 import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
@@ -224,14 +226,21 @@ public class StatementBuilder {
                 if (property.getJdbcType() != null) {
                     builder.jdbcType(JdbcType.forCode(property.getJdbcType()));
                 }
-                if (property.getTypeHandler() != null) {
-                    TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
-                    TypeHandler<?> typeHandler = typeHandlerRegistry.getMappingTypeHandler(property.getTypeHandler());
-                    if (typeHandler == null) {
-                        typeHandler = typeHandlerRegistry.getInstance(property.getJavaType(), property.getTypeHandler());
-                        typeHandlerRegistry.register(typeHandler);
-                        builder.typeHandler(typeHandler);
+                Class<? extends TypeHandler<?>> typeHandlerType = property.getTypeHandler();
+                if (typeHandlerType != null) {
+                    TypeHandler<?> typeHandler;
+                    if (AbstractGenericHandler.class.isAssignableFrom(typeHandlerType) && property.getGenericType() != null) {
+                        GenericHandlerRegistrar genericHandlerRegistrar = buildingContext.getGenericHandlerRegistrar();
+                        typeHandler = genericHandlerRegistrar.getHandler((Class<? extends AbstractGenericHandler>) typeHandlerType, property.getGenericType());
+                    } else {
+                        TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+                        typeHandler = typeHandlerRegistry.getMappingTypeHandler(typeHandlerType);
+                        if (typeHandler == null) {
+                            typeHandler = typeHandlerRegistry.getInstance(property.getJavaType(), typeHandlerType);
+                            typeHandlerRegistry.register(typeHandler);
+                        }
                     }
+                    builder.typeHandler(typeHandler);
                 }
             }
             ResultMapping resultMapping = builder.build();

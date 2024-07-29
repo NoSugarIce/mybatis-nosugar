@@ -25,6 +25,7 @@ import com.nosugarice.mybatis.handler.ValueHandler;
 import com.nosugarice.mybatis.mapping.RelationalEntity;
 import com.nosugarice.mybatis.registry.BeanRegistry;
 import com.nosugarice.mybatis.registry.EntityMetadataRegistry;
+import com.nosugarice.mybatis.registry.GenericHandlerRegistrar;
 import com.nosugarice.mybatis.registry.IdGeneratorRegistry;
 import com.nosugarice.mybatis.sqlsource.SqlSourceScriptBuilder;
 import com.nosugarice.mybatis.util.Preconditions;
@@ -49,6 +50,7 @@ public class MetadataBuildingContext {
     private final Dialect dialect;
     private final BeanRegistry<IdGenerator<?>> idGeneratorRegistry;
     private final BeanRegistry<ValueHandler<?>> valueHandlerRegistry;
+    private final GenericHandlerRegistrar genericHandlerRegistrar;
     private final Map<Class<?>, Class<?>> mapperEntityClassMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, EntityMetadata> entityMetadataMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, SqlSourceScriptBuilder> entitySqlScriptBuilderMap = new ConcurrentHashMap<>();
@@ -68,6 +70,7 @@ public class MetadataBuildingContext {
         this.dialect = config.getSqlBuildConfig().isRuntimeDialect() ? new RuntimeDialect() : defaultDialect;
         this.idGeneratorRegistry = new IdGeneratorRegistry();
         this.valueHandlerRegistry = new BeanRegistry<>();
+        this.genericHandlerRegistrar = new GenericHandlerRegistrar();
         registryBean(config.getRelationalConfig());
     }
 
@@ -160,4 +163,7 @@ public class MetadataBuildingContext {
         return idGeneratorRegistry;
     }
 
+    public GenericHandlerRegistrar getGenericHandlerRegistrar() {
+        return genericHandlerRegistrar;
+    }
 }
