@@ -7,7 +7,7 @@
     <groupId>com.nosugarice</groupId>
     <artifactId>mybatis-nosugar</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-DEMO</version>
+    <version>0.6.18</version>
     <modules>
         <module>mybatis-nosugar-api</module>
         <module>mybatis-nosugar-core</module>
