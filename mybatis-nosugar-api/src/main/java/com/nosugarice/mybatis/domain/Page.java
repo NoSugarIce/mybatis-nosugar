@@ -62,7 +62,9 @@ public interface Page<T> extends Serializable {
      *
      * @return
      */
-    int getTotalPages();
+    default int getTotalPages() {
+        return getTotal() > 0 ? (int) Math.ceil((double) getTotal() / (double) getSize()) : 1;
+    }
 
     /**
      * 获取数据
@@ -115,28 +117,36 @@ public interface Page<T> extends Serializable {
      *
      * @return
      */
-    boolean isFirst();
+    default boolean isFirst() {
+        return getNumber() == 1;
+    }
 
     /**
      * 是否为最后一页
      *
      * @return
      */
-    boolean isLast();
+    default boolean isLast() {
+        return !hasNext();
+    }
 
     /**
      * 是否存在下一页
      *
      * @return
      */
-    boolean hasNext();
+    default boolean hasNext() {
+        return getNumber() + 1 <= getTotalPages();
+    }
 
     /**
      * 是否存在上一页
      *
      * @return
      */
-    boolean hasPrevious();
+    default boolean hasPrevious() {
+        return getNumber() > 1;
+    }
 
     /**
      * 当前页参数

@@ -83,11 +83,6 @@ public class PageImpl<T> implements Page<T> {
     }
 
     @Override
-    public int getTotalPages() {
-        return total > 0 ? (int) Math.ceil((double) total / (double) getSize()) : 1;
-    }
-
-    @Override
     public List<T> getContent() {
         return content;
     }
@@ -105,26 +100,6 @@ public class PageImpl<T> implements Page<T> {
     @Override
     public void setTotal(long total) {
         this.total = total;
-    }
-
-    @Override
-    public boolean isFirst() {
-        return pageNumber == 1;
-    }
-
-    @Override
-    public boolean isLast() {
-        return !hasNext();
-    }
-
-    @Override
-    public boolean hasNext() {
-        return getNumber() + 1 <= getTotalPages();
-    }
-
-    @Override
-    public boolean hasPrevious() {
-        return getNumber() > 1;
     }
 
     @Override
