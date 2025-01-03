@@ -37,7 +37,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param selectFunction 查询方法
      * @return 分页数据
      */
-    default Page<T> selectPageP0(Page<T> page, FunS.Param0<List<T>> selectFunction) {
+    default <P extends Page<T>> P selectPageP0(P page, FunS.Param0<List<T>> selectFunction) {
         return selectPage(page, selectFunction);
     }
 
@@ -50,7 +50,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param <X1>           参数1 类型
      * @return 分页数据
      */
-    default <X1> Page<T> selectPageP1(Page<T> page, FunS.Param1<X1, List<T>> selectFunction, X1 params) {
+    default <X1, P extends Page<T>> P selectPageP1(P page, FunS.Param1<X1, List<T>> selectFunction, X1 params) {
         return selectPage(page, selectFunction, params);
     }
 
@@ -65,7 +65,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param <X2>           参数2 类型
      * @return 分页数据
      */
-    default <X1, X2> Page<T> selectPageP2(Page<T> page, FunS.Param2<X1, X2, List<T>> selectFunction, X1 params1, X2 params2) {
+    default <X1, X2, P extends Page<T>> P selectPageP2(P page, FunS.Param2<X1, X2, List<T>> selectFunction, X1 params1, X2 params2) {
         return selectPage(page, selectFunction, params1, params2);
     }
 
@@ -82,7 +82,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param <X3>           参数3 类型
      * @return 分页数据
      */
-    default <X1, X2, X3> Page<T> selectPageP3(Page<T> page, FunS.Param3<X1, X2, X3, List<T>> selectFunction
+    default <X1, X2, X3, P extends Page<T>> P selectPageP3(P page, FunS.Param3<X1, X2, X3, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3) {
         return selectPage(page, selectFunction, params1, params2, params3);
     }
@@ -102,7 +102,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param <X4>           参数4 类型
      * @return 分页数据
      */
-    default <X1, X2, X3, X4> Page<T> selectPageP4(Page<T> page, FunS.Param4<X1, X2, X3, X4, List<T>> selectFunction
+    default <X1, X2, X3, X4, P extends Page<T>> P selectPageP4(P page, FunS.Param4<X1, X2, X3, X4, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4) {
         return selectPage(page, selectFunction, params1, params2, params3, params4);
     }
@@ -124,7 +124,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param <X5>           参数5 类型
      * @return 分页数据
      */
-    default <X1, X2, X3, X4, X5> Page<T> selectPageP5(Page<T> page, FunS.Param5<X1, X2, X3, X4, X5, List<T>> selectFunction
+    default <X1, X2, X3, X4, X5, P extends Page<T>> P selectPageP5(P page, FunS.Param5<X1, X2, X3, X4, X5, List<T>> selectFunction
             , X1 params1, X2 params2, X3 params3, X4 params4, X5 params5) {
         return selectPage(page, selectFunction, params1, params2, params3, params4, params5);
     }
@@ -138,7 +138,7 @@ public interface SelectPageMapper<T> extends SelectMapper {
      * @param params         参数列表
      * @return 分页数据
      */
-    default Page<T> selectPage(Page<T> page, FunS<List<T>> selectFunction, Object... params) {
+    default <P extends Page<T>> P selectPage(P page, FunS<List<T>> selectFunction, Object... params) {
         Assert.notNull(page, "Page不能为空.");
         long count = page.getTotal() > 0 ? page.getTotal() : adapterCount(selectFunction, params).longValue();
         page.setTotal(count);

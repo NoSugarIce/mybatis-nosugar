@@ -123,7 +123,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param page   分页参数
      * @return 分页数据
      */
-    default Page<T> selectPage(T entity, Page<T> page) {
+    default <P extends Page<T>> P selectPage(T entity, P page) {
         return selectPageX(entity, page, this::count
                 , (tEntity, tPage) -> selectList(EntityToCriterion.getInstance().entityToSimpleCriteriaQuery(tEntity).limit(tPage)));
     }
@@ -135,7 +135,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param page     分页参数
      * @return 分页数据
      */
-    default <C> Page<T> selectPage(CriteriaQuery<T, C, ?> criteria, Page<T> page) {
+    default <C, P extends Page<T>> P selectPage(CriteriaQuery<T, C, ?> criteria, P page) {
         return selectPageX(criteria, page, this::count, (tCriteriaQuery, tPage) -> selectList(tCriteriaQuery.limit(tPage)));
     }
 
@@ -150,7 +150,7 @@ public interface SelectCriteriaMapper<T> extends SelectMapper {
      * @param <X>            查询参数类型
      * @return 分页数据
      */
-    default <X> Page<T> selectPageX(X x, Page<T> page, Function<X, Long> countFunction, BiFunction<X, Page<T>, List<T>> selectFunction) {
+    default <X, P extends Page<T>> P selectPageX(X x, P page, Function<X, Long> countFunction, BiFunction<X, P, List<T>> selectFunction) {
         long count = page.getTotal() > 0 ? page.getTotal() : countFunction.apply(x);
         page.setTotal(count);
         if (count > 0 && (long) (page.getNumber() - 1) * page.getSize() < count) {
